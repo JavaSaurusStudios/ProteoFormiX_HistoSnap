@@ -4,6 +4,7 @@ import be.javasaurusstudios.msimagizer.view.component.ProgressBarFrame;
 import be.javasaurusstudios.msimagizer.control.tasks.WorkingThread;
 import be.javasaurusstudios.msimagizer.control.MSiImageCache;
 import be.javasaurusstudios.msimagizer.control.tasks.ImageExtractionTask;
+import be.javasaurusstudios.msimagizer.control.tasks.ImageRandomizerTask;
 import be.javasaurusstudios.msimagizer.model.MSScanAdduct;
 import be.javasaurusstudios.msimagizer.model.image.MSiImage;
 import be.javasaurusstudios.msimagizer.control.util.color.ColorRange;
@@ -133,10 +134,10 @@ public class MSImagizer extends javax.swing.JFrame {
         btnSave = new javax.swing.JMenuItem();
         btnExit = new javax.swing.JMenuItem();
         menuExtract = new javax.swing.JMenu();
+        btnExtractRandomly = new javax.swing.JMenuItem();
         btnGenerateImage = new javax.swing.JMenuItem();
         btnGenerateSequence = new javax.swing.JMenuItem();
         btnExtractMz = new javax.swing.JMenuItem();
-        btnExtractRandomly = new javax.swing.JMenuItem();
         menuOptions = new javax.swing.JMenu();
         btnColor = new javax.swing.JMenu();
         btnBlueYellow = new javax.swing.JMenuItem();
@@ -289,6 +290,14 @@ public class MSImagizer extends javax.swing.JFrame {
 
         menuExtract.setText("Extract");
 
+        btnExtractRandomly.setText("Generate Background");
+        btnExtractRandomly.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExtractRandomlyActionPerformed(evt);
+            }
+        });
+        menuExtract.add(btnExtractRandomly);
+
         btnGenerateImage.setText("Generate Image");
         btnGenerateImage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -312,14 +321,6 @@ public class MSImagizer extends javax.swing.JFrame {
             }
         });
         menuExtract.add(btnExtractMz);
-
-        btnExtractRandomly.setText("Extract Randomly");
-        btnExtractRandomly.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnExtractRandomlyActionPerformed(evt);
-            }
-        });
-        menuExtract.add(btnExtractRandomly);
 
         jMenuBar1.add(menuExtract);
 
@@ -1077,11 +1078,8 @@ public class MSImagizer extends javax.swing.JFrame {
     }//GEN-LAST:event_btnExtractMzActionPerformed
 
     private void btnExtractRandomlyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExtractRandomlyActionPerformed
-
         JTextField samples = new JTextField();
-
         JTextField mzTolerance = new JTextField(".05");
-
         JTextField lowerRangeMZ = new JTextField();
         JTextField upperRangeMZ = new JTextField();
 
@@ -1099,6 +1097,7 @@ public class MSImagizer extends javax.swing.JFrame {
             new JLabel("Maximal Mz"),
             upperRangeMZ,};
         int result = JOptionPane.showConfirmDialog(this, inputs, "Generate Random Images...", JOptionPane.PLAIN_MESSAGE);
+
         if (result == JOptionPane.OK_OPTION) {
             int sampleCount;
             try {
@@ -1151,26 +1150,19 @@ public class MSImagizer extends javax.swing.JFrame {
                 UILogger.Log("Failed to calculate similarities : invalid tolerance provided", UILogger.Level.ERROR);
                 return;
             }
-            Random rnd = new Random();
-            for (int i = 0; i < sampleCount; i++) {
 
-                float sampledValue = lowerMzBoundary + (Math.abs(upperMzBoundary - lowerMzBoundary) * rnd.nextFloat());
+            ImageRandomizerTask task = new ImageRandomizerTask(
+                    this,
+                    tfInput,
+                    lbImage,
+                    lowerMzBoundary,
+                    upperMzBoundary,
+                    sampleCount,
+                    progressFrame
+            );
+            task.setNotifyWhenRead(false);
+            new WorkingThread(this, task).execute();
 
-                ImageExtractionTask task = new ImageExtractionTask(
-                        this,
-                        progressFrame,
-                        tfInput,
-                        sampledValue - toleranceValue,
-                        sampledValue + toleranceValue,
-                        1,
-                        lbImage,
-                        currentScale,
-                        currentMode,
-                        currentRange,
-                        false);
-                task.setNotifyWhenRead(false);
-                new WorkingThread(this, task).execute();
-            }
         }
     }//GEN-LAST:event_btnExtractRandomlyActionPerformed
 
@@ -1472,8 +1464,8 @@ public class MSImagizer extends javax.swing.JFrame {
     @Override
     public void paint(Graphics g) {
         super.paint(g); //To change body of generated methods, choose Tools | Templates.
-      }
-    
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBoxMenuItem BtnAllCations;
     private javax.swing.JCheckBoxMenuItem btn90th;

@@ -177,7 +177,7 @@ public class ImageExtractionTask extends WorkingTask {
      * intermediate
      * @throws Exception
      */
-    private void Process(JTextField tfInput, JLabel imageIcon, int scale, ColorRange range, boolean autoSave) throws Exception {
+    protected void Process(JTextField tfInput, JLabel imageIcon, int scale, ColorRange range, boolean autoSave) throws Exception {
 
         if (minMZ == -1 || maxMZ == -1) {
             throw new Exception("Please check the mz range...");

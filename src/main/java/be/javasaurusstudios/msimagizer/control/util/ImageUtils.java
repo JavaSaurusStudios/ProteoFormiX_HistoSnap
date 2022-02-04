@@ -1,19 +1,21 @@
 package be.javasaurusstudios.msimagizer.control.util;
 
-import be.javasaurusstudios.msimagizer.model.SimilarityResult;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 
 /**
  * This class contains useful methods to manipulate a buffered image
+ *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public class ImageUtils {
 
     /**
      * Adds a title to a buffered image
+     *
      * @param image the input image
      * @param title the title to put on the image
      * @return the buffered image with a title
@@ -29,8 +31,8 @@ public class ImageUtils {
 
         return framedImage;
     }
-    
-        /**
+
+    /**
      * Creates a buffered image highlighting the selected "region of interest"
      *
      * @param minX the lower left X for the rectangle
@@ -39,7 +41,7 @@ public class ImageUtils {
      * @param maxY the upper left Y for the rectangle
      * @return a buffered image with a highlighted region of interest
      */
-    public static BufferedImage HighlightZone(BufferedImage image,int minX, int maxX, int minY, int maxY) {
+    public static BufferedImage HighlightZone(BufferedImage image, int minX, int maxX, int minY, int maxY) {
         BufferedImage framedImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
 
         Graphics2D graph = framedImage.createGraphics();
@@ -53,6 +55,22 @@ public class ImageUtils {
         );
         return framedImage;
     }
-    
-    
+
+    public static BufferedImage CreatePooledImage(BufferedImage[] images) {
+        BufferedImage average = new BufferedImage(images[0].getWidth(), images[0].getHeight(), BufferedImage.TYPE_INT_ARGB);
+        WritableRaster raster = average.getRaster().createCompatibleWritableRaster();
+        for (int k = 0; k < images[0].getHeight(); ++k) {
+            for (int j = 0; j < images[0].getWidth(); ++j) {
+                float sum = 0.0f;
+                for (int i = 0; i < images.length; ++i) {
+                    sum = sum + images[i].getRaster().getSample(j, k, 0);
+                }
+                raster.setSample(j, k, 0, Math.round(sum / images.length));
+            }
+        }
+        average.setData(raster);
+        return average;
+
+    }
+
 }

@@ -43,7 +43,7 @@ public class ColorUtils {
                 return colors[bin];
             }
         }
-        return colors[colors.length - 1];
+        return colors[0];
     }
 
     /**
@@ -125,6 +125,27 @@ public class ColorUtils {
         }
 
         return gradient;
+    }
+
+    public static Color Average(Color first, Color second) {
+        return new Color(Average(first.getRGB(), second.getRGB()));
+    }
+
+    /**
+     * Calculate the average value between two int colors
+     *
+     * @param argb1 input rgb value 1
+     * @param argb2 input rgb value 2
+     * @return the average rgb int
+     */
+    public static int Average(int argb1, int argb2) {
+        return (((argb1 & 0xFF) + (argb2 & 0xFF)) >> 1)
+                | //b
+                (((argb1 >> 8 & 0xFF) + (argb2 >> 8 & 0xFF)) >> 1) << 8
+                | //g
+                (((argb1 >> 16 & 0xFF) + (argb2 >> 16 & 0xFF)) >> 1) << 16
+                | //r
+                (((argb1 >> 24 & 0xFF) + (argb2 >> 24 & 0xFF)) >> 1) << 24;  //a
     }
 
 }

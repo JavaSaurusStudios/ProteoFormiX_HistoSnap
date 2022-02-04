@@ -34,11 +34,12 @@ public class ListActionPopupProvider implements ListenerProvider {
     private JMenuItem saveFrameItem;
     private JMenuItem similarityItem;
     private final ImageLabel imgLabel;
+    private JMenuItem generateCombinedImage;
 
-    public ListActionPopupProvider(ImageLabel imgLabel){
-        this.imgLabel=imgLabel;
+    public ListActionPopupProvider(ImageLabel imgLabel) {
+        this.imgLabel = imgLabel;
     }
-    
+
     @Override
     public void SetUp(JComponent component) {
 
@@ -85,6 +86,35 @@ public class ListActionPopupProvider implements ListenerProvider {
             }
         });
 
+        generateCombinedImage = new JMenuItem("Combine...");
+        menu.add(generateCombinedImage);
+        generateCombinedImage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
+                if (selectedImages.size() <= 1) {
+                    return;
+                }
+                try {
+                    UILogger.Log("Creating combined image for " + selectedImages.size() + " images...", UILogger.Level.INFO);
+                    MSImagizer.instance.getProgressFrame().setVisible(true);
+                    MSImagizer.instance.getProgressFrame().setText("Generating combined image...");
+                    MSiImage image = MSiImage.CreateCombinedImage(selectedImages);
+                        
+                    MSImagizer.AddToCache(image);
+                    
+                    MSImagizer.MSI_IMAGE = image;
+                    MSImagizer.instance.getProgressFrame().setText("Removing hotspots");
+                    MSImagizer.MSI_IMAGE.RemoveHotSpots(99);
+                    MSImagizer.instance.getProgressFrame().setText("Generating heatmap...");
+                    MSImagizer.MSI_IMAGE.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
+                    MSImagizer.CURRENT_IMAGE = MSImagizer.MSI_IMAGE.getScaledImage(MSImagizer.instance.getCurrentScale());
+                } finally {
+                    MSImagizer.instance.getProgressFrame().setVisible(false);
+                }
+            }
+        });
+
         saveAnimationItem = new JMenuItem("Save Animation...");
         menu.add(saveAnimationItem);
         saveAnimationItem.addActionListener(new ActionListener() {
@@ -114,7 +144,7 @@ public class ListActionPopupProvider implements ListenerProvider {
             @Override
             public void actionPerformed(ActionEvent e) {
                 List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
-                new SaveSimilaritiesDialog(imgLabel,selectedImages).Show();
+                new SaveSimilaritiesDialog(imgLabel, selectedImages).Show();
             }
         });
 

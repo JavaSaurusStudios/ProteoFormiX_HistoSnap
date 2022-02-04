@@ -1,13 +1,18 @@
 package be.javasaurusstudios.msimagizer.model.image;
 
-import be.javasaurusstudios.msimagizer.control.util.UILogger;
+import be.javasaurusstudios.msimagizer.control.util.ImageUtils;
 import be.javasaurusstudios.msimagizer.control.util.color.ColorUtils;
+import be.javasaurusstudios.msimagizer.view.MSImagizer;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.imageio.ImageIO;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
@@ -110,7 +115,10 @@ public class MSiImage extends BufferedImage {
 
         DescriptiveStatistics stat = new DescriptiveStatistics();
         for (MSiPixel pixel : frame.getPixels()) {
-            stat.addValue(pixel.getStat().getMax());
+            double frameValue = pixel.getStat().getMax();
+            if (!Double.isNaN(frameValue)) {
+                stat.addValue(frameValue);
+            }
         }
 
         double reference = getStat(mode, stat);
@@ -179,6 +187,61 @@ public class MSiImage extends BufferedImage {
     @Override
     public String toString() {
         return getName();
+    }
+
+
+    public static MSiImage CreateCombinedImage(List<MSiImage> images) {
+
+        MSiFrame frame = new MSiFrame();
+        frame.setWidth(images.get(0).getFrame().getWidth());
+        frame.setHeight(images.get(0).getFrame().getHeight());
+
+        for (int x = 0; x < frame.getWidth(); x++) {
+            for (int y = 0; y < frame.getHeight(); y++) {
+
+                MSiPixel newPixel = new MSiPixel(x, y);
+
+                DescriptiveStatistics iStats = new DescriptiveStatistics();
+
+                List<Double> mz = new ArrayList<>();
+                List<Double> intensity = new ArrayList<>();
+
+                for (int i = 0; i < images.size(); i++) {
+                    for (MSiPixel otherPixel : images.get(i).getFrame().getPixels()) {
+                        if (otherPixel.getX() == x && otherPixel.getY() == y) {
+
+                            for (int j = 0; j < otherPixel.getMz().length; j++) {
+                                iStats.addValue(otherPixel.getI()[j]);
+                            }
+                            mz.addAll(Arrays.asList(otherPixel.getMz()));
+                            intensity.addAll(Arrays.asList(otherPixel.getI()));
+                        }
+                    }
+                }
+
+                //filter out to 95th percentile
+                List<Double> mzPass = new ArrayList<>();
+                List<Double> intensityPass = new ArrayList<>();
+
+                double threshold = iStats.getPercentile(50);
+                for (int i = mz.size() - 1; i > 0; i--) {
+                    if (intensity.get(i) > threshold) {
+                        mzPass.add(mz.get(i));
+                        intensityPass.add(intensity.get(i));
+                    }
+                }
+
+                newPixel.setMz(mzPass.toArray(new Double[mzPass.size()]));
+                newPixel.setI(intensityPass.toArray(new Double[intensityPass.size()]));
+
+                frame.AddPixel(newPixel);
+            }
+        }
+
+        MSiImage image = new MSiImage(frame);
+        image.setName("Combined");
+
+        return image;
     }
 
 }

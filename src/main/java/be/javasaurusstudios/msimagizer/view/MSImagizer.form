@@ -58,6 +58,14 @@
             <Property name="text" type="java.lang.String" value="Extract"/>
           </Properties>
           <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="btnExtractRandomly">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Generate Background"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnExtractRandomlyActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="btnGenerateImage">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Generate Image"/>
@@ -80,14 +88,6 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnExtractMzActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="btnExtractRandomly">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Extract Randomly"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnExtractRandomlyActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
