@@ -1,24 +1,20 @@
 package be.javasaurusstudios.msimagizer.view;
 
 import be.javasaurusstudios.msimagizer.view.component.ProgressBarFrame;
-import be.javasaurusstudios.msimagizer.view.component.SimilaritySetup;
 import be.javasaurusstudios.msimagizer.control.tasks.WorkingThread;
 import be.javasaurusstudios.msimagizer.control.MSiImageCache;
 import be.javasaurusstudios.msimagizer.control.tasks.ImageExtractionTask;
 import be.javasaurusstudios.msimagizer.model.MSScanAdduct;
 import be.javasaurusstudios.msimagizer.model.image.MSiImage;
-import be.javasaurusstudios.msimagizer.control.util.AnimationExporter;
 import be.javasaurusstudios.msimagizer.control.util.color.ColorRange;
-import be.javasaurusstudios.msimagizer.control.util.ImageUtils;
 import be.javasaurusstudios.msimagizer.control.util.UILogger;
+import be.javasaurusstudios.msimagizer.view.listeners.impl.ImageHighlightProvider;
 import be.javasaurusstudios.msimagizer.view.listeners.impl.ListActionPopupProvider;
 import be.javasaurusstudios.msimagizer.view.listeners.impl.ListSavePopupProvider;
 import be.javasaurusstudios.msimagizer.view.listeners.impl.ListSelectionUpdateProvider;
-import be.javasaurusstudios.msimagizer.view.prompt.impl.SaveAnimationDialog;
 import java.awt.Desktop;
+import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +28,6 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -65,7 +60,7 @@ public class MSImagizer extends javax.swing.JFrame {
     //The progress bar (can be updated by working tasks)
     private final ProgressBarFrame progressFrame;
     //The UI element for the produced images
-    private static JList imageCacheList;
+    public static JList imageCacheList;
     //The current pixel scale
     private int currentScale = 4;
     //The current range of colors that will be applied
@@ -129,7 +124,7 @@ public class MSImagizer extends javax.swing.JFrame {
         imageList = new javax.swing.JList<>();
         jScrollPane4 = new javax.swing.JScrollPane();
         jScrollPane1 = new javax.swing.JScrollPane();
-        lbImage = new javax.swing.JLabel();
+        lbImage = new be.javasaurusstudios.msimagizer.view.component.ImageLabel();
         jScrollPane5 = new javax.swing.JScrollPane();
         logArea = new javax.swing.JList<>();
         jMenuBar1 = new javax.swing.JMenuBar();
@@ -218,8 +213,9 @@ public class MSImagizer extends javax.swing.JFrame {
         jScrollPane1.setBackground(new java.awt.Color(204, 204, 204));
 
         lbImage.setBackground(new java.awt.Color(204, 204, 204));
+        lbImage.setForeground(new java.awt.Color(0, 0, 0));
         lbImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lbImage.setText("<image goes here>");
+        lbImage.setToolTipText("");
         jScrollPane1.setViewportView(lbImage);
 
         jScrollPane4.setViewportView(jScrollPane1);
@@ -1307,8 +1303,8 @@ public class MSImagizer extends javax.swing.JFrame {
     private void InitListeners() {
         new ListSavePopupProvider().SetUp(lbImage);
         new ListSelectionUpdateProvider().SetUp(imageCacheList);
-        new ListActionPopupProvider().SetUp(imageCacheList);
-
+        new ListActionPopupProvider(lbImage).SetUp(imageCacheList);
+        new ImageHighlightProvider().SetUp(lbImage);
     }
 
     private void InitModes() {
@@ -1473,6 +1469,11 @@ public class MSImagizer extends javax.swing.JFrame {
         return progressFrame;
     }
 
+    @Override
+    public void paint(Graphics g) {
+        super.paint(g); //To change body of generated methods, choose Tools | Templates.
+      }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBoxMenuItem BtnAllCations;
     private javax.swing.JCheckBoxMenuItem btn90th;
@@ -1535,7 +1536,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
-    private javax.swing.JLabel lbImage;
+    private be.javasaurusstudios.msimagizer.view.component.ImageLabel lbImage;
     private javax.swing.JList<String> logArea;
     private javax.swing.JMenu menuExtract;
     private javax.swing.JMenu menuFile;

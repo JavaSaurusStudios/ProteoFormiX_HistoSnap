@@ -1,5 +1,6 @@
 package be.javasaurusstudios.msimagizer.control.util;
 
+import be.javasaurusstudios.msimagizer.model.SimilarityResult;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -28,4 +29,30 @@ public class ImageUtils {
 
         return framedImage;
     }
+    
+        /**
+     * Creates a buffered image highlighting the selected "region of interest"
+     *
+     * @param minX the lower left X for the rectangle
+     * @param maxX the upper right X for the rectangle
+     * @param minY the lower left Y for the rectangle
+     * @param maxY the upper left Y for the rectangle
+     * @return a buffered image with a highlighted region of interest
+     */
+    public static BufferedImage HighlightZone(BufferedImage image,int minX, int maxX, int minY, int maxY) {
+        BufferedImage framedImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+
+        Graphics2D graph = framedImage.createGraphics();
+        graph.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
+        graph.setColor(Color.red);
+        graph.drawRect(
+                minX,
+                minY,
+                Math.abs(maxX - minX),
+                Math.abs(maxY - minY)
+        );
+        return framedImage;
+    }
+    
+    
 }

@@ -6,9 +6,10 @@ import be.javasaurusstudios.msimagizer.view.listeners.ListenerProvider;
 import be.javasaurusstudios.msimagizer.view.MSImagizer;
 import static be.javasaurusstudios.msimagizer.view.MSImagizer.CACHE;
 import static be.javasaurusstudios.msimagizer.view.MSImagizer.MSI_IMAGE;
+import be.javasaurusstudios.msimagizer.view.component.ImageLabel;
 import be.javasaurusstudios.msimagizer.view.prompt.impl.SaveAnimationDialog;
 import be.javasaurusstudios.msimagizer.view.prompt.impl.SaveFramesDialog;
-import be.javasaurusstudios.msimagizer.view.prompt.impl.ShowSimilaritiesDialog;
+import be.javasaurusstudios.msimagizer.view.prompt.impl.SaveSimilaritiesDialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -32,7 +33,12 @@ public class ListActionPopupProvider implements ListenerProvider {
     private JMenuItem saveAnimationItem;
     private JMenuItem saveFrameItem;
     private JMenuItem similarityItem;
+    private final ImageLabel imgLabel;
 
+    public ListActionPopupProvider(ImageLabel imgLabel){
+        this.imgLabel=imgLabel;
+    }
+    
     @Override
     public void SetUp(JComponent component) {
 
@@ -108,7 +114,7 @@ public class ListActionPopupProvider implements ListenerProvider {
             @Override
             public void actionPerformed(ActionEvent e) {
                 List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
-                new ShowSimilaritiesDialog(selectedImages).Show();
+                new SaveSimilaritiesDialog(imgLabel,selectedImages).Show();
             }
         });
 
