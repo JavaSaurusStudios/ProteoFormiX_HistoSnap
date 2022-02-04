@@ -3,6 +3,7 @@ package be.javasaurusstudios.msimagizer.view.prompt.impl;
 import static be.javasaurusstudios.msimagizer.control.similarities.SimilarityCalculator.DoSimilarities;
 import be.javasaurusstudios.msimagizer.control.tasks.WorkingTaskPostProcess;
 import be.javasaurusstudios.msimagizer.control.util.ImageUtils;
+import be.javasaurusstudios.msimagizer.control.util.UILogger;
 import be.javasaurusstudios.msimagizer.model.SimilarityResult;
 import be.javasaurusstudios.msimagizer.model.image.MSiImage;
 import be.javasaurusstudios.msimagizer.view.MSImagizer;
@@ -20,11 +21,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
@@ -58,6 +62,9 @@ public class SaveSimilaritiesDialog implements UserPrompt {
                 valueDisplay.setText((((float) toleranceSlider.getValue())) + " %");
             }
         });
+
+        MSiImage[] images = selectedImages.toArray(new MSiImage[selectedImages.size()]);
+        JComboBox selectedImageBox = new JComboBox(images);
 
         JTextField outputFile = new JTextField();
         JButton saveFramesLocationButton = new JButton("...");
@@ -94,6 +101,8 @@ public class SaveSimilaritiesDialog implements UserPrompt {
             new JLabel("Minimal Difference Threshold"),
             valueDisplay,
             toleranceSlider,
+            new JLabel("Reference Image"),
+            selectedImageBox,
             new JLabel("Output File"),
             outputFile,
             saveFramesLocationButton};
@@ -103,14 +112,15 @@ public class SaveSimilaritiesDialog implements UserPrompt {
         if (result == JOptionPane.OK_OPTION) {
             File outputFolder = new File(outputFile.getText());
             outputFolder.mkdirs();
-            Process(outputFolder, ((float) toleranceSlider.getValue()) / 100);
+            Process(outputFolder, ((float) toleranceSlider.getValue()) / 100, (MSiImage) selectedImageBox.getSelectedItem());
         }
 
     }
 
-    public void Process(File outputFolder, double threshold) {
+    public void Process(File outputFolder, double threshold, MSiImage selectedImage) {
 
-        MSiImage selectedImage = MSImagizer.imageCacheList.getSelectedIndex() >= 0 ? (MSiImage) MSImagizer.imageCacheList.getSelectedValue() : selectedImages.get(0);
+        UILogger.Log("Calculating similarities based on "+selectedImage.getName(), UILogger.Level.NONE);
+        
         selectedImage.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
         BufferedImage refImage = selectedImage.getScaledImage(MSImagizer.instance.getCurrentScale());
         String refName = selectedImage.getName();
