@@ -11,13 +11,14 @@ import be.javasaurusstudios.msimagizer.control.util.AnimationExporter;
 import be.javasaurusstudios.msimagizer.control.util.color.ColorRange;
 import be.javasaurusstudios.msimagizer.control.util.ImageUtils;
 import be.javasaurusstudios.msimagizer.control.util.UILogger;
+import be.javasaurusstudios.msimagizer.view.listeners.impl.ListActionPopupProvider;
+import be.javasaurusstudios.msimagizer.view.listeners.impl.ListSavePopupProvider;
+import be.javasaurusstudios.msimagizer.view.listeners.impl.ListSelectionUpdateProvider;
+import be.javasaurusstudios.msimagizer.view.prompt.impl.SaveAnimationDialog;
 import java.awt.Desktop;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -38,14 +39,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -55,6 +52,8 @@ import javax.swing.filechooser.FileFilter;
  */
 public class MSImagizer extends javax.swing.JFrame {
 
+    //The singleton instance
+    public static MSImagizer instance;
     //The last directory that was used by the user interface
     public static File lastDirectory = new File(System.getProperty("user.home"));
     //The currently active MSI_Image
@@ -73,11 +72,6 @@ public class MSImagizer extends javax.swing.JFrame {
     private ColorRange currentRange = ColorRange.BLUE_YELLOW;
     //The current mode of reference for intensities
     private MSiImage.ImageMode currentMode = MSiImage.ImageMode.MEAN;
-    private JMenuItem deleteItem;
-    private JMenuItem renameItem;
-    private JMenuItem saveAnimationItem;
-    private JMenuItem saveFrameItem;
-    private JMenuItem similarityItem;
 
     /**
      * Creates new form MSImagizer
@@ -87,460 +81,33 @@ public class MSImagizer extends javax.swing.JFrame {
         super.setTitle("ProteoFormiX HistoSnap");
         super.setLocationRelativeTo(null);
 
+        instance = this;
+
         try {
             Image i = ImageIO.read(getClass().getResource("/Logo.png"));
             super.setIconImage(i);
         } catch (IOException ex) {
             Logger.getLogger(MSImagizer.class.getName()).log(Level.SEVERE, null, ex);
         }
+
         initComponents();
-
-        UILogger.LOGGING_AREA = logArea;
-
-        InitAdducts();
-        InitModes();
 
         imageCacheList = imageList;
 
         progressFrame = new ProgressBarFrame();
         progressFrame.setVisible(false);
 
-        InitSavePopup();
-        InitListSelection();
-        InitListPopup();
-
         logArea.setModel(new DefaultListModel<>());
+
+        UILogger.LOGGING_AREA = logArea;
+
+        InitListeners();
+        InitAdducts();
+        InitModes();
 
         UILogger.Log("ProteoFormiX presents", UILogger.Level.NONE);
         UILogger.Log("HistoSnap is ready. Welcome !", UILogger.Level.NONE);
         UILogger.Log("-----------------------------", UILogger.Level.NONE);
-    }
-
-    private void InitModes() {
-        //scale
-        btnX1.setSelected(false);
-        btnX2.setSelected(false);
-        btnX4.setSelected(true);
-        btnX8.setSelected(false);
-        btnX16.setSelected(false);
-        //mode
-        btnMean.setSelected(true);
-        btnMedian.setSelected(false);
-        btnMin.setSelected(false);
-        btnMax.setSelected(false);
-        btnQ1.setSelected(false);
-        btnQ2.setSelected(false);
-        btn90th.setSelected(false);
-        btn95th.setSelected(false);
-        btn99th.setSelected(false);
-    }
-
-    private void InitAdducts() {
-        BtnAllCations.setSelected(false);
-        btnAnionsAll.setSelected(false);
-        InitCationAdducts(false);
-        InitAnionAdducts(false);
-    }
-
-    private void InitCationAdducts(boolean selected) {
-
-        btnCatCH3CNH.setSelected(selected);
-        btnCatCH3OH.setSelected(selected);
-        btnCatDMSO.setSelected(selected);
-        btnCatK.setSelected(selected);
-        btnCatNH4.setSelected(selected);
-        btnCatNa.setSelected(selected);
-    }
-
-    private void InitAnionAdducts(boolean selected) {
-        btnAnionCl.setSelected(selected);
-        btnAnionHCOO.setSelected(selected);
-        btnAnionK.setSelected(selected);
-        btnAnionNa.setSelected(selected);
-        btnAnionOAc.setSelected(selected);
-        btnAnionTFA.setSelected(selected);
-
-    }
-
-    /**
-     * Shows a dialog to selected frame(s)
-     */
-    private void InitSavePopup() {
-        JPopupMenu menu = new JPopupMenu();
-        JMenuItem item = new JMenuItem("Save...");
-        menu.add(item);
-
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Save();
-            }
-        });
-
-        lbImage.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (CURRENT_IMAGE != null && (e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
-                    menu.show(e.getComponent(), e.getX(), e.getY());
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
-
-    }
-
-    /**
-     * Initializes the list of current images
-     */
-    private void InitListSelection() {
-        imageCacheList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (imageCacheList.getSelectedValuesList().size() == 1) {
-                    MSI_IMAGE = (MSiImage) imageCacheList.getSelectedValue();
-                    UpdateImage();
-                }
-            }
-        });
-    }
-
-    /**
-     * Creates a popup menu with options to execute on the list selection
-     */
-    private void InitListPopup() {
-
-        final MSImagizer parent = this;
-
-        JPopupMenu menu = new JPopupMenu();
-        deleteItem = new JMenuItem("Delete...");
-        menu.add(deleteItem);
-        deleteItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
-                CACHE.getImageList().removeAll(selectedImages);
-                UILogger.Log("Deleted " + selectedImages.size() + " image(s)", UILogger.Level.INFO);
-                UpdateCacheUI();
-                if (CACHE.getImageList().size() > 0) {
-                    MSI_IMAGE = CACHE.getImageList().get(0);
-                    imageCacheList.setSelectedIndex(0);
-                }
-
-                UpdateImage();
-            }
-        });
-
-        renameItem = new JMenuItem("Rename...");
-        menu.add(renameItem);
-        renameItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
-                if (selectedImages.size() > 1 || selectedImages.isEmpty()) {
-                    System.out.println("Only works on single selections");
-                    return;
-                }
-                MSI_IMAGE = selectedImages.get(0);
-                String tmpName = MSI_IMAGE.getName();
-                String newName = JOptionPane.showInputDialog(parent, "Enter a new name", MSI_IMAGE.getName());
-                MSI_IMAGE.setName(newName);
-                UILogger.Log("Updated " + tmpName + " to " + newName, UILogger.Level.INFO);
-                UpdateImage();
-            }
-        });
-
-        saveAnimationItem = new JMenuItem("Save Animation...");
-        menu.add(saveAnimationItem);
-        saveAnimationItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
-                if (selectedImages.size() <= 1) {
-                    return;
-                }
-                showSaveAnimationDialog(selectedImages);
-
-            }
-        });
-
-        saveFrameItem = new JMenuItem("Save Frame(s)...");
-        menu.add(saveFrameItem);
-        saveFrameItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
-                showSaveFramesDialog(selectedImages);
-
-            }
-        });
-
-        similarityItem = new JMenuItem("Check Similarities...");
-        menu.add(similarityItem);
-        similarityItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showSimilaritiesDialog(imageCacheList.getSelectedValuesList());
-            }
-        });
-
-        imageCacheList.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (imageCacheList.getSelectedValuesList().size() >= 1 && (imageCacheList.getVisibleRowCount() > 0 & (e.getModifiers() & InputEvent.BUTTON3_MASK) != 0)) {
-
-                    renameItem.setEnabled(imageCacheList.getSelectedValuesList().size() >= 1);
-                    deleteItem.setEnabled(imageCacheList.getSelectedValuesList().size() >= 1);
-                    saveFrameItem.setEnabled(imageCacheList.getSelectedValuesList().size() >= 1);
-
-                    similarityItem.setEnabled(imageCacheList.getSelectedValuesList().size() >= 2);
-                    saveAnimationItem.setEnabled(imageCacheList.getSelectedValuesList().size() >= 2);
-
-                    menu.show(e.getComponent(), e.getX(), e.getY());
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
-    }
-
-    /**
-     * Shows dialog to save selected frames to an animation
-     *
-     * @param selectedImages The selected images
-     */
-    private void showSaveAnimationDialog(List<MSiImage> selectedImages) {
-        final JFrame parent = this;
-        JTextField timeBetweenFrames = new JTextField();
-        JTextField outputFile = new JTextField();
-        JButton saveAnimationLocationButton = new JButton("...");
-        timeBetweenFrames.setText("" + 1000 / 60);
-
-        saveAnimationLocationButton.addActionListener(
-                new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e
-            ) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setDialogTitle("Save animation...");
-                fileChooser.setCurrentDirectory(lastDirectory);
-                fileChooser.setFileFilter(new FileFilter() {
-                    @Override
-                    public boolean accept(File f) {
-                        return f.isDirectory() || f.getAbsolutePath().toLowerCase().endsWith(".gif");
-                    }
-
-                    @Override
-                    public String getDescription() {
-                        return "Output gif animation";
-                    }
-                });
-                int userSelection = fileChooser.showSaveDialog(parent);
-
-                if (userSelection == JFileChooser.APPROVE_OPTION) {
-                    outputFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
-                }
-            }
-        }
-        );
-
-        final JComponent[] inputs = new JComponent[]{
-            new JLabel("Time Between Frames (milliseconds)"),
-            timeBetweenFrames,
-            outputFile,
-            new JLabel("Output File"),
-            outputFile,
-            saveAnimationLocationButton,};
-
-        int result = JOptionPane.showConfirmDialog(this, inputs, "Save animation...", JOptionPane.PLAIN_MESSAGE);
-        if (result == JOptionPane.OK_OPTION) {
-            File fileToStore = new File(outputFile.getText());
-
-            if (!fileToStore.getAbsolutePath().toLowerCase().endsWith(".gif")) {
-                fileToStore = new File(fileToStore.getAbsolutePath() + ".gif");
-            }
-
-            if (fileToStore.exists()) {
-                int response = JOptionPane.showConfirmDialog(this, "File already exists. Override?", "Saving...",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE);
-                if (response != JOptionPane.YES_OPTION) {
-                    return;
-                }
-            }
-
-            try {
-                int ms = Integer.parseInt(timeBetweenFrames.getText());
-
-                BufferedImage[] images = new BufferedImage[selectedImages.size()];
-                for (int i = 0; i < images.length; i++) {
-                    selectedImages.get(i).CreateImage(currentMode, currentRange.getColors());
-                    images[i] = selectedImages.get(i).getScaledImage(currentScale);
-                }
-
-                AnimationExporter.Save(images, fileToStore, ms, true);
-                UILogger.Log("Exported animation to " + fileToStore.getAbsolutePath(), UILogger.Level.INFO);
-                JOptionPane.showMessageDialog(this, "Exported animation to " + fileToStore.getAbsolutePath());
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this,
-                        "Could not save this file : " + ex.getMessage(),
-                        "Failed to export animation...",
-                        JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Failed to export animation...", UILogger.Level.ERROR);
-                return;
-            }
-        }
-
-    }
-
-    /**
-     * Shows dialog to save selected frames as individual frames
-     *
-     * @param selectedImages The selected images
-     */
-    private void showSaveFramesDialog(List<MSiImage> selectedImages) {
-        final JFrame parent = this;
-        JTextField outputFile = new JTextField();
-        JButton saveFramesLocationButton = new JButton("...");
-
-        saveFramesLocationButton.addActionListener(
-                new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e
-            ) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setDialogTitle("Save frame(s)...");
-                fileChooser.setCurrentDirectory(lastDirectory);
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                fileChooser.setFileFilter(new FileFilter() {
-                    @Override
-                    public boolean accept(File f) {
-                        return f.isDirectory();
-                    }
-
-                    @Override
-                    public String getDescription() {
-                        return "Output directory";
-                    }
-                });
-                int userSelection = fileChooser.showSaveDialog(parent);
-
-                if (userSelection == JFileChooser.APPROVE_OPTION) {
-                    outputFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
-                }
-            }
-        }
-        );
-
-        final JComponent[] inputs = new JComponent[]{
-            outputFile,
-            new JLabel("Output Folder"),
-            outputFile,
-            saveFramesLocationButton,};
-
-        int result = JOptionPane.showConfirmDialog(this, inputs, "Save frames...", JOptionPane.PLAIN_MESSAGE);
-        if (result == JOptionPane.OK_OPTION) {
-            File fileToStore = new File(outputFile.getText());
-            fileToStore.mkdirs();
-
-            try {
-
-                for (int i = 0; i < selectedImages.size(); i++) {
-                    selectedImages.get(i).CreateImage(currentMode, currentRange.getColors());
-                    File fileToSave = new File(fileToStore, selectedImages.get(i).getName() + ".png");
-                    BufferedImage bImage = ImageUtils.SetImageTitle(selectedImages.get(i).getScaledImage(currentScale), selectedImages.get(i).getName());
-                    ImageIO.write(bImage, "png", fileToSave);
-                }
-                UILogger.Log("Exported " + selectedImages.size() + " frames to " + fileToStore.getAbsolutePath(), UILogger.Level.INFO);
-                JOptionPane.showMessageDialog(this, "Exported " + selectedImages.size() + " frames to " + fileToStore.getAbsolutePath());
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this,
-                        "Could not save this file : " + ex.getMessage(),
-                        "Failed to export frames...",
-                        JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Failed to export frames...", UILogger.Level.ERROR);
-                return;
-            }
-        }
-
-    }
-
-    /**
-     * Shows a dialog to calculate similarities between images
-     *
-     * @param selectedImages The selected images
-     */
-    private void showSimilaritiesDialog(List<MSiImage> selectedImages) {
-        if (selectedImages.size() > 1) {
-            SimilaritySetup setup = new SimilaritySetup(this);
-            setup.SetImages(selectedImages);
-            setup.setVisible(true);
-            setup.setLocationRelativeTo(this);
-            this.setVisible(false);
-        } else {
-            JOptionPane.showMessageDialog(this, "Please select at least 2 images", "Invalid selection...", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    /**
-     * Adds a new image into the cache
-     *
-     * @param image the new image
-     */
-    public static void AddToCache(MSiImage image) {
-        MSI_IMAGE = image;
-        CACHE.Add(image);
-        UpdateCacheUI();
-    }
-
-    /**
-     * Updates the cache for the UI
-     */
-    private static void UpdateCacheUI() {
-        if (imageCacheList != null) {
-            DefaultListModel model = new DefaultListModel();
-            for (MSiImage cachedImage : CACHE.getImageList()) {
-                model.addElement(cachedImage);
-            }
-            imageCacheList.setModel(model);
-        }
     }
 
     /**
@@ -1121,82 +688,12 @@ public class MSImagizer extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadActionPerformed
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(lastDirectory);
-
-        fileChooser.setFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.isDirectory() || f.getAbsolutePath().toLowerCase().endsWith(".imzml");
-            }
-
-            @Override
-            public String getDescription() {
-                return "imzml image files";
-            }
-        });
-
-        int result = fileChooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            tfInput.setText(selectedFile.getAbsolutePath());
-            lastDirectory = selectedFile.getParentFile();
-        }
+        Load();
     }//GEN-LAST:event_btnLoadActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         Save();
     }//GEN-LAST:event_btnSaveActionPerformed
-
-    /**
-     * Save the images to the specified directory
-     */
-    public void Save() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Specify a file to save");
-        fileChooser.setCurrentDirectory(lastDirectory);
-        fileChooser.setFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.isDirectory() || f.getAbsolutePath().toLowerCase().endsWith(".png");
-            }
-
-            @Override
-            public String getDescription() {
-                return "PNG image files";
-            }
-        });
-        int userSelection = fileChooser.showSaveDialog(this);
-
-        if (userSelection == JFileChooser.APPROVE_OPTION) {
-            File fileToSave = fileChooser.getSelectedFile();
-
-            if (!fileToSave.getAbsolutePath().toLowerCase().endsWith(".png")) {
-                fileToSave = new File(fileToSave.getAbsolutePath() + ".png");
-            }
-
-            if (fileToSave.exists()) {
-                int result = JOptionPane.showConfirmDialog(this, "File already exists. Override?", "Saving...",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE);
-                if (result != JOptionPane.YES_OPTION) {
-                    return;
-                }
-            }
-            try {
-                ImageIO.write(CURRENT_IMAGE, "png", fileToSave);
-                JOptionPane.showMessageDialog(this, "Exported image to " + fileToSave.getAbsolutePath());
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this,
-                        "Could not save this file : " + ex.getMessage(),
-                        "Failed to export image...",
-                        JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Failed to export image...", UILogger.Level.INFO);
-                return;
-            }
-
-        }
-    }
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
         int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to quit?", "Bye bye ?",
@@ -1783,6 +1280,83 @@ public class MSImagizer extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnHelpTextActionPerformed
 
+    /**
+     * Adds a new image into the cache
+     *
+     * @param image the new image
+     */
+    public static void AddToCache(MSiImage image) {
+        MSI_IMAGE = image;
+        CACHE.Add(image);
+        UpdateCacheUI();
+    }
+
+    /**
+     * Updates the cache for the UI
+     */
+    public static void UpdateCacheUI() {
+        if (imageCacheList != null) {
+            DefaultListModel model = new DefaultListModel();
+            for (MSiImage cachedImage : CACHE.getImageList()) {
+                model.addElement(cachedImage);
+            }
+            imageCacheList.setModel(model);
+        }
+    }
+
+    private void InitListeners() {
+        new ListSavePopupProvider().SetUp(lbImage);
+        new ListSelectionUpdateProvider().SetUp(imageCacheList);
+        new ListActionPopupProvider().SetUp(imageCacheList);
+
+    }
+
+    private void InitModes() {
+        //scale
+        btnX1.setSelected(false);
+        btnX2.setSelected(false);
+        btnX4.setSelected(true);
+        btnX8.setSelected(false);
+        btnX16.setSelected(false);
+        //mode
+        btnMean.setSelected(true);
+        btnMedian.setSelected(false);
+        btnMin.setSelected(false);
+        btnMax.setSelected(false);
+        btnQ1.setSelected(false);
+        btnQ2.setSelected(false);
+        btn90th.setSelected(false);
+        btn95th.setSelected(false);
+        btn99th.setSelected(false);
+    }
+
+    private void InitAdducts() {
+        BtnAllCations.setSelected(false);
+        btnAnionsAll.setSelected(false);
+        InitCationAdducts(false);
+        InitAnionAdducts(false);
+    }
+
+    private void InitCationAdducts(boolean selected) {
+
+        btnCatCH3CNH.setSelected(selected);
+        btnCatCH3OH.setSelected(selected);
+        btnCatDMSO.setSelected(selected);
+        btnCatK.setSelected(selected);
+        btnCatNH4.setSelected(selected);
+        btnCatNa.setSelected(selected);
+    }
+
+    private void InitAnionAdducts(boolean selected) {
+        btnAnionCl.setSelected(selected);
+        btnAnionHCOO.setSelected(selected);
+        btnAnionK.setSelected(selected);
+        btnAnionNa.setSelected(selected);
+        btnAnionOAc.setSelected(selected);
+        btnAnionTFA.setSelected(selected);
+
+    }
+
     private void ToggleAdductEnabled(MSScanAdduct.ADDUCTS adduct, JCheckBoxMenuItem button) {
         if (MSScanAdduct.ENABLED_ADDUCTS.contains(adduct)) {
             MSScanAdduct.ENABLED_ADDUCTS.remove(adduct);
@@ -1795,7 +1369,7 @@ public class MSImagizer extends javax.swing.JFrame {
     /**
      * Updates the image on screen
      */
-    private void UpdateImage() {
+    public void UpdateImage() {
         ImageIcon icon = null;
         if (!CACHE.getImageList().isEmpty()) {
             MSImagizer.MSI_IMAGE.CreateImage(currentMode, currentRange.getColors());
@@ -1804,6 +1378,83 @@ public class MSImagizer extends javax.swing.JFrame {
         }
         lbImage.setIcon(icon);
         lbImage.setText("");
+    }
+
+    /**
+     * Save the images to the specified directory
+     */
+    public void Save() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Specify a file to save");
+        fileChooser.setCurrentDirectory(lastDirectory);
+        fileChooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || f.getAbsolutePath().toLowerCase().endsWith(".png");
+            }
+
+            @Override
+            public String getDescription() {
+                return "PNG image files";
+            }
+        });
+        int userSelection = fileChooser.showSaveDialog(this);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+
+            if (!fileToSave.getAbsolutePath().toLowerCase().endsWith(".png")) {
+                fileToSave = new File(fileToSave.getAbsolutePath() + ".png");
+            }
+
+            if (fileToSave.exists()) {
+                int result = JOptionPane.showConfirmDialog(this, "File already exists. Override?", "Saving...",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+                if (result != JOptionPane.YES_OPTION) {
+                    return;
+                }
+            }
+            try {
+                ImageIO.write(CURRENT_IMAGE, "png", fileToSave);
+                JOptionPane.showMessageDialog(this, "Exported image to " + fileToSave.getAbsolutePath());
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Could not save this file : " + ex.getMessage(),
+                        "Failed to export image...",
+                        JOptionPane.ERROR_MESSAGE);
+                UILogger.Log("Failed to export image...", UILogger.Level.INFO);
+                return;
+            }
+
+        }
+    }
+
+    /**
+     * Loads a file
+     */
+    public void Load() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(lastDirectory);
+
+        fileChooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || f.getAbsolutePath().toLowerCase().endsWith(".imzml");
+            }
+
+            @Override
+            public String getDescription() {
+                return "imzml image files";
+            }
+        });
+
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            tfInput.setText(selectedFile.getAbsolutePath());
+            lastDirectory = selectedFile.getParentFile();
+        }
     }
 
     public int getCurrentScale() {
@@ -1821,7 +1472,6 @@ public class MSImagizer extends javax.swing.JFrame {
     public ProgressBarFrame getProgressFrame() {
         return progressFrame;
     }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBoxMenuItem BtnAllCations;
