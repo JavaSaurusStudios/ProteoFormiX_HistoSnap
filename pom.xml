@@ -25,7 +25,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>be.javasaurusstudios.msimagizer.ui.SplashScreen</mainClass>
+                            <mainClass>be.javasaurusstudios.histosnap.view.SplashScreen</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
