@@ -12,16 +12,19 @@ import java.util.List;
 
 /**
  * A simple importer for intermediary MSiSpectrum files
+ *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public class SpectralDataImporter {
 
     /**
-     * Imports a csv file according to the provided specifications to be imported
+     * Imports a csv file according to the provided specifications to be
+     * imported
+     *
      * @param file the import file
      * @return an MSiFrame
      * @throws FileNotFoundException
-     * @throws IOException 
+     * @throws IOException
      */
     public MSiFrame ReadFile(File file) throws FileNotFoundException, IOException {
         MSiFrame frame = new MSiFrame();
@@ -39,8 +42,10 @@ public class SpectralDataImporter {
                 if (line.startsWith(">")) {
                     if (mz.size() > 0) {
                         MSiPixel pixel = new MSiPixel(x - 1, y);
-                        pixel.setI(intensities.toArray(new Double[intensities.size()]));
-                        pixel.setMz(mz.toArray(new Double[mz.size()]));
+                        for (int i = 0; i < intensities.size(); i++) {
+                            pixel.addDataPoint(mz.get(i), intensities.get(i));
+                        }
+
                         frame.AddPixel(pixel);
                     }
                     x = Integer.parseInt(line.split("\t")[1]);
@@ -76,6 +81,7 @@ public class SpectralDataImporter {
 
     /**
      * Translates a collection of lines into an MSiFrame
+     *
      * @param lines the input lines
      * @return a MSiFrame
      */
@@ -94,8 +100,9 @@ public class SpectralDataImporter {
             if (line.startsWith(">")) {
                 if (mz.size() > 0) {
                     MSiPixel pixel = new MSiPixel(x - 1, y);
-                    pixel.setI(intensities.toArray(new Double[intensities.size()]));
-                    pixel.setMz(mz.toArray(new Double[mz.size()]));
+                    for (int i = 0; i < intensities.size(); i++) {
+                        pixel.addDataPoint(mz.get(i), intensities.get(i));
+                    }
                     frame.AddPixel(pixel);
                 }
                 x = Integer.parseInt(line.split("\t")[1]);

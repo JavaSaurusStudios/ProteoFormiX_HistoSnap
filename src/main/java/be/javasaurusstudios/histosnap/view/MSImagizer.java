@@ -68,6 +68,8 @@ public class MSImagizer extends javax.swing.JFrame {
     private ColorRange currentRange = ColorRange.BLUE_YELLOW;
     //The current mode of reference for intensities
     private MSiImage.ImageMode currentMode = MSiImage.ImageMode.MEAN;
+    //Boolean indicating if this machine has enough memory or not
+    private boolean useHighMemory = false;
 
     /**
      * Creates new form MSImagizer
@@ -104,6 +106,10 @@ public class MSImagizer extends javax.swing.JFrame {
         UILogger.Log("ProteoFormiX presents", UILogger.Level.NONE);
         UILogger.Log("HistoSnap is ready. Welcome !", UILogger.Level.NONE);
         UILogger.Log("-----------------------------", UILogger.Level.NONE);
+
+        BtnLowMemory.setSelected(true);
+        btnHighMemory.setSelected(false);
+
     }
 
     /**
@@ -179,6 +185,9 @@ public class MSImagizer extends javax.swing.JFrame {
         btnAnionNa = new javax.swing.JCheckBoxMenuItem();
         btnAnionOAc = new javax.swing.JCheckBoxMenuItem();
         btnAnionTFA = new javax.swing.JCheckBoxMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+        BtnLowMemory = new javax.swing.JCheckBoxMenuItem();
+        btnHighMemory = new javax.swing.JCheckBoxMenuItem();
         btnHelp = new javax.swing.JMenu();
         btnAbout = new javax.swing.JMenuItem();
         btnHelpText = new javax.swing.JMenuItem();
@@ -645,6 +654,28 @@ public class MSImagizer extends javax.swing.JFrame {
         btnAdducts.add(btnAnions);
 
         menuOptions.add(btnAdducts);
+
+        jMenu2.setText("System");
+
+        BtnLowMemory.setSelected(true);
+        BtnLowMemory.setText("Low Memory (slow)");
+        BtnLowMemory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnLowMemoryActionPerformed(evt);
+            }
+        });
+        jMenu2.add(BtnLowMemory);
+
+        btnHighMemory.setSelected(true);
+        btnHighMemory.setText("High Memory");
+        btnHighMemory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnHighMemoryActionPerformed(evt);
+            }
+        });
+        jMenu2.add(btnHighMemory);
+
+        menuOptions.add(jMenu2);
 
         jMenuBar1.add(menuOptions);
 
@@ -1268,6 +1299,20 @@ public class MSImagizer extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnHelpTextActionPerformed
 
+    private void BtnLowMemoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnLowMemoryActionPerformed
+        useHighMemory = false;
+        BtnLowMemory.setSelected(true);
+        btnHighMemory.setSelected(false);
+        UILogger.Log("HistoSnap is now running in " + (useHighMemory ? "High Memory Mode" : "Low Memory Mode"), UILogger.Level.INFO);
+    }//GEN-LAST:event_BtnLowMemoryActionPerformed
+
+    private void btnHighMemoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHighMemoryActionPerformed
+        useHighMemory = true;
+        BtnLowMemory.setSelected(false);
+        btnHighMemory.setSelected(true);
+        UILogger.Log("HistoSnap is now running in " + (useHighMemory ? "High Memory Mode" : "Low Memory Mode"), UILogger.Level.INFO);
+    }//GEN-LAST:event_btnHighMemoryActionPerformed
+
     /**
      * Adds a new image into the cache
      *
@@ -1366,6 +1411,10 @@ public class MSImagizer extends javax.swing.JFrame {
         }
         lbImage.setIcon(icon);
         lbImage.setText("");
+    }
+
+    public boolean isHighMemory() {
+        return useHighMemory;
     }
 
     /**
@@ -1468,6 +1517,7 @@ public class MSImagizer extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBoxMenuItem BtnAllCations;
+    private javax.swing.JCheckBoxMenuItem BtnLowMemory;
     private javax.swing.JCheckBoxMenuItem btn90th;
     private javax.swing.JCheckBoxMenuItem btn95th;
     private javax.swing.JCheckBoxMenuItem btn99th;
@@ -1500,6 +1550,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JMenuItem btnGreenRed;
     private javax.swing.JMenu btnHelp;
     private javax.swing.JMenuItem btnHelpText;
+    private javax.swing.JCheckBoxMenuItem btnHighMemory;
     private javax.swing.JMenu btnIntensityMode;
     private javax.swing.JMenuItem btnLoad;
     private javax.swing.JCheckBoxMenuItem btnMax;
@@ -1520,6 +1571,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JList<String> imageList;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;

@@ -1,21 +1,25 @@
 package be.javasaurusstudios.histosnap.model.image;
 
+import java.util.LinkedList;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 /**
  * A pixel with mass to charge ratios and related intensities.
+ *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public class MSiPixel implements Comparable {
 
     private final int x;
     private final int y;
-    private Double[] mz;
-    private Double[] i;
+    private LinkedList<Double> mz;
+    private LinkedList<Double> i;
 
     public MSiPixel(int x, int y) {
         this.x = x;
         this.y = y;
+        this.mz = new LinkedList<>();
+        this.i = new LinkedList<>();
     }
 
     public int getX() {
@@ -26,24 +30,23 @@ public class MSiPixel implements Comparable {
         return y;
     }
 
-    public Double[] getMz() {
+    public LinkedList<Double> getMz() {
         return mz;
     }
 
-    public void setMz(Double[] mz) {
-        this.mz = mz;
-    }
-
-    public Double[] getI() {
+    public LinkedList<Double> getI() {
         return i;
     }
 
-    public void setI(Double[] i) {
-        this.i = i;
+    public void addDataPoint(double mz, double i) {
+        this.mz.addLast(mz);
+        this.i.addLast(i);
     }
 
     /**
-     * Gets a descriptive statistics object for the intensities in this particular pixel
+     * Gets a descriptive statistics object for the intensities in this
+     * particular pixel
+     *
      * @return the descriptive stats object
      */
     public DescriptiveStatistics getStat() {
@@ -56,30 +59,38 @@ public class MSiPixel implements Comparable {
 
     /**
      * Clamps the values to the given percentile value
+     *
      * @param percentile the maximal percentile to consider
      */
     public void RemoveHotSpots(int percentile) {
         DescriptiveStatistics stats = getStat();
+        LinkedList<Double> tmpI = new LinkedList<>();
         double threshold = stats.getPercentile(percentile);
-        for (int j = 0; j < i.length; j++) {
-            i[j] = Math.min(threshold, i[j]);
-            if (i[j] < 0) {
-                i[j] = 0.0;
+        for (Double intensity : i) {
+            Double tmp = Math.min(threshold, intensity);
+            if (tmp < 0) {
+                tmp = 0.0;
             }
+            tmpI.add(tmp);
         }
+        this.i = tmpI;
     }
 
     /**
      * Clamps the intensity to a set value
-     * @param intensity the maximal intensity to consider
+     *
+     * @param clampValue the maximal intensity to consider
      */
-    public void clampIntensity(double intensity) {
-        for (int j = 0; j < i.length; j++) {
-            i[j] = Math.min(intensity, i[j]);
-            if (i[j] < 0) {
-                i[j] = 0.0;
+    public void clampIntensity(double clampValue) {
+        LinkedList<Double> tmpI = new LinkedList<>();
+        for (Double intensity : i) {
+            Double tmp = Math.min(intensity, clampValue);
+            if (tmp < 0) {
+                tmp = 0.0;
             }
+            tmpI.add(tmp);
         }
+        this.i = tmpI;
     }
 
     @Override

@@ -1,17 +1,13 @@
 package be.javasaurusstudios.histosnap.model.image;
 
-import be.javasaurusstudios.histosnap.control.util.ImageUtils;
 import be.javasaurusstudios.histosnap.control.util.color.ColorUtils;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.imageio.ImageIO;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -210,29 +206,22 @@ public class MSiImage extends BufferedImage {
                     for (MSiPixel otherPixel : images.get(i).getFrame().getPixels()) {
                         if (otherPixel.getX() == x && otherPixel.getY() == y) {
 
-                            for (int j = 0; j < otherPixel.getMz().length; j++) {
-                                iStats.addValue(otherPixel.getI()[j]);
+                            for (int j = 0; j < otherPixel.getMz().size(); j++) {
+                                iStats.addValue(otherPixel.getI().get(j));
                             }
-                            mz.addAll(Arrays.asList(otherPixel.getMz()));
-                            intensity.addAll(Arrays.asList(otherPixel.getI()));
+                            mz.addAll(otherPixel.getMz());
+                            intensity.addAll(otherPixel.getI());
                         }
                     }
                 }
 
                 //filter out to 95th percentile
-                List<Double> mzPass = new ArrayList<>();
-                List<Double> intensityPass = new ArrayList<>();
-
                 double threshold = iStats.getPercentile(50);
                 for (int i = mz.size() - 1; i > 0; i--) {
                     if (intensity.get(i) > threshold) {
-                        mzPass.add(mz.get(i));
-                        intensityPass.add(intensity.get(i));
+                         newPixel.addDataPoint(mz.get(i),intensity.get(i));
                     }
                 }
-
-                newPixel.setMz(mzPass.toArray(new Double[mzPass.size()]));
-                newPixel.setI(intensityPass.toArray(new Double[intensityPass.size()]));
 
                 frame.AddPixel(newPixel);
             }

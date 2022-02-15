@@ -3,12 +3,14 @@ package be.javasaurusstudios.histosnap.model.image;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 /**
@@ -20,7 +22,7 @@ public class MSiFrame {
     /**
      * The collection of pixels in this frame
      */
-    private final List<MSiPixel> pixels;
+    private final HashSet<MSiPixel> pixels;
     /**
      * The width of the frame
      */
@@ -46,7 +48,7 @@ public class MSiFrame {
      * Constructor
      */
     public MSiFrame() {
-        pixels = new ArrayList<>();
+        pixels = new HashSet<>();
         stat = new DescriptiveStatistics();
     }
 
@@ -56,7 +58,9 @@ public class MSiFrame {
      * @param pixel the new pixel
      */
     public void AddPixel(MSiPixel pixel) {
-        pixels.add(pixel);
+        if (!pixels.contains(pixel)) {
+            pixels.add(pixel);
+        }
         for (Double intensity : pixel.getI()) {
             stat.addValue(intensity);
         }
@@ -98,8 +102,13 @@ public class MSiFrame {
         return stat;
     }
 
-    public List<MSiPixel> getPixels() {
+    public HashSet<MSiPixel> getPixels() {
         return pixels;
+    }
+
+    public MSiPixel getPixel(int x, int y) {
+        List<MSiPixel> results = pixels.stream().filter(p -> p.getX() == x && p.getY() == y).collect(Collectors.toList());
+        return results == null || results.isEmpty() ? new MSiPixel(x, y) : results.get(0);
     }
 
     /**
@@ -109,15 +118,18 @@ public class MSiFrame {
      */
     public void RemoveHotSpots(int percentile) {
 
-        UILogger.Log("Postprocessing image...",UILogger.Level.INFO);
+        UILogger.Log("Postprocessing image...", UILogger.Level.INFO);
 
         int threads = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
         ExecutorService executor = Executors.newFixedThreadPool(threads);
 
+        List<MSiPixel> tmpList = new ArrayList<>();
+        tmpList.addAll(pixels);
+
         List<List<MSiPixel>> parts = new ArrayList<List<MSiPixel>>();
-        final int N = pixels.size();
+        final int N = tmpList.size();
         for (int i = 0; i < N; i += threads) {
-            parts.add(new ArrayList<MSiPixel>(pixels.subList(i, Math.min(N, i + threads)))
+            parts.add(new ArrayList<MSiPixel>(tmpList.subList(i, Math.min(N, i + threads)))
             );
         }
 
@@ -140,18 +152,8 @@ public class MSiFrame {
             Logger.getLogger(MSiFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        UILogger.Log("Done !",UILogger.Level.INFO);
-        UILogger.Log("-----------------------------",UILogger.Level.INFO);
-    }
-
-    /**
-     * Prints the contents of this frame to the console
-     */
-    public void Print() {
-        Collections.sort(pixels);
-        pixels.forEach((pixel) -> {
-            UILogger.Log(pixel.getX() + "," + pixel.getY(),UILogger.Level.INFO);
-        });
+        UILogger.Log("Done !", UILogger.Level.INFO);
+        UILogger.Log("-----------------------------", UILogger.Level.INFO);
     }
 
     /**
@@ -179,18 +181,14 @@ public class MSiFrame {
         subFrame.setWidth(width);
         for (MSiPixel pixel : getPixels()) {
             MSiPixel subPixel = new MSiPixel(pixel.getX(), pixel.getY());
-            ArrayList<Double> mzValues = new ArrayList<>();
-            ArrayList<Double> intensityValues = new ArrayList<>();
-            for (int i = 0; i < pixel.getMz().length; i++) {
-                if (pixel.getI()[i] >= intensityThreshold) {
-                    if (pixel.getMz()[i] >= minMz && pixel.getMz()[i] <= maxMz) {
-                        mzValues.add(pixel.getMz()[i]);
-                        intensityValues.add(pixel.getI()[i]);
+            for (int i = 0; i < pixel.getMz().size(); i++) {
+                if (pixel.getI().get(i) >= intensityThreshold) {
+                    if (pixel.getMz().get(i) >= minMz && pixel.getMz().get(i) <= maxMz) {
+                        subPixel.addDataPoint(pixel.getMz().get(i), pixel.getI().get(i));
                     }
                 }
             }
-            subPixel.setI(intensityValues.toArray(new Double[intensityValues.size()]));
-            subPixel.setMz(mzValues.toArray(new Double[mzValues.size()]));
+
             subFrame.AddPixel(subPixel);
         }
 
