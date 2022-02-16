@@ -13,6 +13,7 @@ import be.javasaurusstudios.histosnap.view.listeners.impl.ImageHighlightProvider
 import be.javasaurusstudios.histosnap.view.listeners.impl.ListActionPopupProvider;
 import be.javasaurusstudios.histosnap.view.listeners.impl.ListSavePopupProvider;
 import be.javasaurusstudios.histosnap.view.listeners.impl.ListSelectionUpdateProvider;
+import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -23,7 +24,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -206,7 +206,7 @@ public class MSImagizer extends javax.swing.JFrame {
         jLabel1.setText("Input");
 
         tfInput.setEditable(false);
-        tfInput.setBackground(new java.awt.Color(255, 255, 255));
+        tfInput.setBackground(new java.awt.Color(255, 102, 102));
         tfInput.setText("-");
 
         jScrollPane3.setBackground(new java.awt.Color(204, 204, 204));
@@ -242,15 +242,15 @@ public class MSImagizer extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(tfInput))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE))
-                    .addComponent(jScrollPane5))
+                        .addComponent(jScrollPane4))
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -1491,6 +1491,9 @@ public class MSImagizer extends javax.swing.JFrame {
             File selectedFile = fileChooser.getSelectedFile();
             tfInput.setText(selectedFile.getAbsolutePath());
             lastDirectory = selectedFile.getParentFile();
+            if(selectedFile.exists()){
+                tfInput.setBackground(Color.green);
+            }
         }
     }
 
