@@ -1,53 +1,40 @@
 package be.javasaurusstudios.histosnap.control.cache;
 
 import be.javasaurusstudios.histosnap.control.util.UILogger;
-import be.javasaurusstudios.histosnap.control.util.color.ColorRange;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.model.image.MSiPixel;
 import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
-import javax.imageio.ImageIO;
 
 /**
+ * This class represents a hard drive cached sqlite database to query (avoiding
+ * memory usage)
  *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public class HistoSnapFile {
 
+    /**
+     * The original input file (imzml)
+     */
     private final File inputFile;
+    /**
+     * The database connection
+     */
     private Connection c;
 
-    public static void main(String[] args) throws SQLException, IOException {
-        File inputFile = new File("D:\\ProteoFormiX\\Research\\Testing\\B-1809848-1-2 left (high res, 2nd pass).imzml.db");
-
-        long msecs ;
-
-        HistoSnapFile hsFile = new HistoSnapFile(inputFile);
-
-        MSiImage image = hsFile.getImage(1084.2f, 1084.5f);
-
-        msecs = System.currentTimeMillis();
-
-        image.CreateImage(MSiImage.ImageMode.MEAN, ColorRange.BLUE_YELLOW.getColors());
-
-        System.out.println("Created image " + ((System.currentTimeMillis() - msecs) / 1000) + " seconds");
-        msecs = System.currentTimeMillis();
-
-        File png = new File(inputFile.getAbsolutePath().replace(".db", ".png"));
-        System.out.println("Saving at " + png.getAbsolutePath());
-        ImageIO.write(image.getScaledImage(4), "png", png);
-
-        System.out.println("Saved image in " + ((System.currentTimeMillis() - msecs) / 1000) + " seconds");
-
-    }
-
+    /**
+     * *
+     * Constructor
+     *
+     * @param inputFile the inputfile
+     */
     public HistoSnapFile(File inputFile) {
         this.inputFile = inputFile;
         if (checkForCache()) {
@@ -55,10 +42,18 @@ public class HistoSnapFile {
         }
     }
 
+    /**
+     * Checks if the database file already exists
+     *
+     * @return boolean state
+     */
     private boolean checkForCache() {
         return inputFile != null && inputFile.exists();
     }
 
+    /**
+     * Connects to the cache
+     */
     private void connectToCache() {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -69,11 +64,27 @@ public class HistoSnapFile {
         }
     }
 
+    /**
+     * Retrieve an image in a mass range
+     *
+     * @param min the minimal mz value
+     * @param max the maximal mz value
+     * @return the resulting MSiImage object
+     * @throws SQLException
+     */
     public MSiImage getImage(float min, float max) throws SQLException {
         MSiImage image = new MSiImage(getFullFrame(min, max));
         return image;
     }
 
+    /**
+     * Retrieve an frame in a mass range
+     *
+     * @param min the minimal mz value
+     * @param max the maximal mz value
+     * @return the resulting MSiImage object
+     * @throws SQLException
+     */
     public MSiFrame getFrame(float min, float max) throws SQLException {
         int[] dimensions = getDimensions();
         MSiFrame frame = new MSiFrame();
@@ -94,10 +105,26 @@ public class HistoSnapFile {
         return frame;
     }
 
+    /**
+     * Retrieve an MSI pixel
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @return the resulting pixel
+     * @throws SQLException
+     */
     public MSiPixel getPixel(int x, int y) throws SQLException {
         return getPixel(x, y, 0, Float.MAX_VALUE);
     }
 
+    /**
+     * Retrieve the entire frame between two given mass to charge values
+     *
+     * @param min the minimal mz value
+     * @param max the maximal mz value
+     * @return the resulting MSiFrame
+     * @throws SQLException
+     */
     public MSiFrame getFullFrame(float min, float max) throws SQLException {
         long time = System.currentTimeMillis();
 
@@ -136,6 +163,16 @@ public class HistoSnapFile {
         return frame;
     }
 
+    /**
+     * Retrieve an MSI pixel within a mz range
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @param min the minimal mz value
+     * @param max the maximal mz value
+     * @return the resulting pixel
+     * @throws SQLException
+     */
     public MSiPixel getPixel(int x, int y, float min, float max) throws SQLException {
         String sql = "SELECT mz,i FROM pixels WHERE x=" + x + " AND y=" + y + " AND mz<=" + max + " AND mz>=" + min + ";";
 
@@ -161,6 +198,12 @@ public class HistoSnapFile {
         return pixel;
     }
 
+    /**
+     * Retrieves the dimensions of an image
+     *
+     * @return the dimensions
+     * @throws SQLException
+     */
     public int[] getDimensions() throws SQLException {
         String sql = "SELECT MAX(x),MAX(y) FROM pixels ;";
         PreparedStatement stmt = c.prepareStatement(sql);
