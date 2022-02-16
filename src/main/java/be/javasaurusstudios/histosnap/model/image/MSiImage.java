@@ -38,7 +38,7 @@ public class MSiImage extends BufferedImage {
      * @param frame the input frame
      */
     public MSiImage(MSiFrame frame) {
-        super(frame.getWidth() + 1, frame.getHeight() + 2, BufferedImage.TYPE_INT_ARGB);
+        super(frame.getWidth() , frame.getHeight(), BufferedImage.TYPE_INT_ARGB);
         this.frame = frame;
         this.name = "Default - " + System.currentTimeMillis();
     }

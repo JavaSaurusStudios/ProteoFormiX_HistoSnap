@@ -124,6 +124,9 @@ public class ImageRandomizerTask extends WorkingTask {
             MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
             MSiImage image = extractor.ExtractImage(mZ - tolerance, mZ + tolerance, progressBar);
             rndImages.add(image);
+            if (image == null) {
+                return;
+            }
             image.setName("" + mZ);
             image.RemoveHotSpots(99);
         }

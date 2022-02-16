@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package be.javasaurusstudios.histosnap.control.cache;
 
 import be.javasaurusstudios.histosnap.control.util.UILogger;
@@ -32,7 +27,7 @@ public class HistoSnapFile {
     public static void main(String[] args) throws SQLException, IOException {
         File inputFile = new File("D:\\ProteoFormiX\\Research\\Testing\\B-1809848-1-2 left (high res, 2nd pass).imzml.db");
 
-        long msecs = System.currentTimeMillis();
+        long msecs ;
 
         HistoSnapFile hsFile = new HistoSnapFile(inputFile);
 
