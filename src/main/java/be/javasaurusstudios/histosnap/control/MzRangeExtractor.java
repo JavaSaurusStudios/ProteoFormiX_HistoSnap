@@ -181,7 +181,9 @@ public class MzRangeExtractor {
 
         long time = System.currentTimeMillis();
 
-        String pythonFile = PythonExtractor.getPythonScript("ExtractAndDenoise.py").getAbsolutePath();
+
+        String pythonFile = PythonExtractor.getPythonScript("Extract.py").getAbsolutePath();
+
 
         String[] cmds = new String[]{"python", pythonFile, "--mzMin", "" + mzMin, "--mzMax", "" + mzMax, "--input", in, "--output", out};
 
