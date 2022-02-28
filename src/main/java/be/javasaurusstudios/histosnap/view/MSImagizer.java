@@ -82,7 +82,7 @@ public class MSImagizer extends javax.swing.JFrame {
         instance = this;
 
         try {
-            Image i = ImageIO.read(getClass().getResource("/Logo.png"));
+            Image i = ImageIO.read(getClass().getResource("/icon.PNG"));
             super.setIconImage(i);
         } catch (IOException ex) {
             Logger.getLogger(MSImagizer.class.getName()).log(Level.SEVERE, null, ex);
