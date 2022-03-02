@@ -1,8 +1,8 @@
 package be.javasaurusstudios.histosnap.model.image;
 
 import be.javasaurusstudios.histosnap.control.util.UILogger;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -17,7 +17,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
-public class MSiFrame {
+public class MSiFrame  implements Serializable{
 
     /**
      * The collection of pixels in this frame
@@ -40,10 +40,22 @@ public class MSiFrame {
      */
     private double minMz;
     /**
+     * The input parentFile
+     */
+    private String parentFile;
+    /**
+     * The name of the frame
+     */
+    
+    private String name;
+    
+    /**
      * A helper object to keep track of frame statistics
      */
     private final DescriptiveStatistics stat;
 
+    
+    
     /**
      * Constructor
      */
@@ -106,6 +118,24 @@ public class MSiFrame {
         return pixels;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getParentFile() {
+        return parentFile;
+    }
+
+    public void setParentFile(String parentFile) {
+        this.parentFile = parentFile;
+    }
+
+    
+    
     public MSiPixel getPixel(int x, int y) {
         List<MSiPixel> results = pixels.stream().filter(p -> p.getX() == x && p.getY() == y).collect(Collectors.toList());
         return results == null || results.isEmpty() ? new MSiPixel(x, y) : results.get(0);

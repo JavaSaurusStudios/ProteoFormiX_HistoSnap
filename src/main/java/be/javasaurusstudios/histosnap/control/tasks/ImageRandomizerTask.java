@@ -8,7 +8,6 @@ import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
 import java.io.File;
 import java.util.ArrayList;
-import static java.util.EnumSet.range;
 import java.util.List;
 import java.util.Random;
 import javax.swing.ImageIcon;
@@ -16,8 +15,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import static javax.swing.Spring.scale;
-import static org.apache.commons.math3.stat.StatUtils.mode;
 
 /**
  * This class represents a task to extract an image given a mz range

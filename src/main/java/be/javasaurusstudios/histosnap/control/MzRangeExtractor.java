@@ -1,6 +1,6 @@
 package be.javasaurusstudios.histosnap.control;
 
-import be.javasaurusstudios.histosnap.control.cache.HistoSnapFile;
+import be.javasaurusstudios.histosnap.control.cache.HistoSnapDBFile;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
@@ -150,7 +150,7 @@ public class MzRangeExtractor {
         }
 
         progressBar.setText("Reading HistoSnap database file...");
-        HistoSnapFile file = new HistoSnapFile(dbFile);
+        HistoSnapDBFile file = new HistoSnapDBFile(dbFile);
         UILogger.Log("Processing between " + mzMin + " and " + mzMax, UILogger.Level.INFO);
         MSiImage image = file.getImage(mzMin, mzMax);
 
@@ -212,6 +212,7 @@ public class MzRangeExtractor {
         process.waitFor();
 
         MSiFrame frame = new SpectralDataImporter().ReadFile(new File(out));
+        frame.setParentFile(in);
         UILogger.Log("Processing between " + frame.getMinMz() + " and " + frame.getMaxMz(), UILogger.Level.INFO);
         MSiImage image = new MSiImage(frame);
 

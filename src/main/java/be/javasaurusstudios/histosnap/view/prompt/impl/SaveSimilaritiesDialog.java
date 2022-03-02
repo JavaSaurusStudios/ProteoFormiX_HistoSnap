@@ -1,5 +1,6 @@
 package be.javasaurusstudios.histosnap.view.prompt.impl;
 
+import be.javasaurusstudios.histosnap.control.MSiImageCache;
 import static be.javasaurusstudios.histosnap.control.similarities.SimilarityCalculator.DoSimilarities;
 import be.javasaurusstudios.histosnap.control.tasks.WorkingTaskPostProcess;
 import be.javasaurusstudios.histosnap.control.util.ImageUtils;
@@ -21,14 +22,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
@@ -42,12 +41,14 @@ import javax.swing.filechooser.FileFilter;
  */
 public class SaveSimilaritiesDialog implements UserPrompt {
 
-    private final List<MSiImage> selectedImages;
+    private final List<String> selectedImageNames;
     private final ImageLabel imgLabel;
+    private final MSiImageCache cache;
 
-    public SaveSimilaritiesDialog(ImageLabel imgLabel, List<MSiImage> selectedImages) {
-        this.selectedImages = selectedImages;
+    public SaveSimilaritiesDialog(ImageLabel imgLabel, List<String> selectedImageNames,MSiImageCache cache) {
+        this.selectedImageNames = selectedImageNames;
         this.imgLabel = imgLabel;
+        this.cache=cache;
     }
 
     @Override
@@ -63,7 +64,8 @@ public class SaveSimilaritiesDialog implements UserPrompt {
             }
         });
 
-        MSiImage[] images = selectedImages.toArray(new MSiImage[selectedImages.size()]);
+        ArrayList<MSiImage> imageList = cache.GetCachedImages(selectedImageNames);
+        MSiImage[] images = imageList.toArray(new MSiImage[selectedImageNames.size()]);
         JComboBox selectedImageBox = new JComboBox(images);
 
         JTextField outputFile = new JTextField();
@@ -124,7 +126,7 @@ public class SaveSimilaritiesDialog implements UserPrompt {
         selectedImage.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
         BufferedImage refImage = selectedImage.getScaledImage(MSImagizer.instance.getCurrentScale());
         String refName = selectedImage.getName();
-
+        ArrayList<MSiImage> selectedImages = cache.GetCachedImages(selectedImageNames);
         final BufferedImage[] images = new BufferedImage[selectedImages.size()];
         final String[] names = new String[selectedImages.size()];
 

@@ -46,7 +46,7 @@ public class ImageLabel extends JLabel {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        if (CACHE.getImageList().size() > 0) {
+        if (CACHE.size() > 0) {
             g.setColor(Color.red);
             if (startingPoint != null && endingPoint != null) {
 

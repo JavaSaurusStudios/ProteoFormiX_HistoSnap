@@ -5,10 +5,13 @@ import be.javasaurusstudios.histosnap.control.tasks.WorkingThread;
 import be.javasaurusstudios.histosnap.control.MSiImageCache;
 import be.javasaurusstudios.histosnap.control.tasks.ImageExtractionTask;
 import be.javasaurusstudios.histosnap.control.tasks.ImageRandomizerTask;
+import be.javasaurusstudios.histosnap.control.tasks.SessionLoadingTask;
+import be.javasaurusstudios.histosnap.control.tasks.SessionSavingTask;
 import be.javasaurusstudios.histosnap.model.MSScanAdduct;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.control.util.color.ColorRange;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
+import be.javasaurusstudios.histosnap.model.task.WorkingTask;
 import be.javasaurusstudios.histosnap.view.listeners.impl.ImageHighlightProvider;
 import be.javasaurusstudios.histosnap.view.listeners.impl.ListActionPopupProvider;
 import be.javasaurusstudios.histosnap.view.listeners.impl.ListSavePopupProvider;
@@ -70,6 +73,9 @@ public class MSImagizer extends javax.swing.JFrame {
     private MSiImage.ImageMode currentMode = MSiImage.ImageMode.MEAN;
     //Boolean indicating if this machine has enough memory or not
     private boolean useHighMemory = false;
+
+    ///list of buttons with checkboxes attached to select modes
+    private List<JCheckBoxMenuItem> modeButtons;
 
     /**
      * Creates new form MSImagizer
@@ -134,10 +140,13 @@ public class MSImagizer extends javax.swing.JFrame {
         lbImage = new be.javasaurusstudios.histosnap.view.component.ImageLabel();
         jScrollPane5 = new javax.swing.JScrollPane();
         logArea = new javax.swing.JList<>();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
         jMenuBar1 = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
         btnLoad = new javax.swing.JMenuItem();
         btnSave = new javax.swing.JMenuItem();
+        btnLoadSession = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
         btnExit = new javax.swing.JMenuItem();
         menuExtract = new javax.swing.JMenu();
         btnExtractRandomly = new javax.swing.JMenuItem();
@@ -158,6 +167,7 @@ public class MSImagizer extends javax.swing.JFrame {
         btnX8 = new javax.swing.JCheckBoxMenuItem();
         btnX16 = new javax.swing.JCheckBoxMenuItem();
         btnIntensityMode = new javax.swing.JMenu();
+        btnTIC = new javax.swing.JCheckBoxMenuItem();
         btnMean = new javax.swing.JCheckBoxMenuItem();
         btnMedian = new javax.swing.JCheckBoxMenuItem();
         btnMin = new javax.swing.JCheckBoxMenuItem();
@@ -269,6 +279,17 @@ public class MSImagizer extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        javax.swing.GroupLayout jLayeredPane1Layout = new javax.swing.GroupLayout(jLayeredPane1);
+        jLayeredPane1.setLayout(jLayeredPane1Layout);
+        jLayeredPane1Layout.setHorizontalGroup(
+            jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        jLayeredPane1Layout.setVerticalGroup(
+            jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+
         menuFile.setText("File");
 
         btnLoad.setText("Load...");
@@ -286,6 +307,22 @@ public class MSImagizer extends javax.swing.JFrame {
             }
         });
         menuFile.add(btnSave);
+
+        btnLoadSession.setText("Load Session...");
+        btnLoadSession.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLoadSessionActionPerformed(evt);
+            }
+        });
+        menuFile.add(btnLoadSession);
+
+        jMenuItem1.setText("Save Session...");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        menuFile.add(jMenuItem1);
 
         btnExit.setText("Exit");
         btnExit.addActionListener(new java.awt.event.ActionListener() {
@@ -429,6 +466,15 @@ public class MSImagizer extends javax.swing.JFrame {
         menuOptions.add(btnScale);
 
         btnIntensityMode.setText("Intensity Mode");
+
+        btnTIC.setSelected(true);
+        btnTIC.setText("Total Ion Current");
+        btnTIC.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTICActionPerformed(evt);
+            }
+        });
+        btnIntensityMode.add(btnTIC);
 
         btnMean.setSelected(true);
         btnMean.setText("Mean");
@@ -875,135 +921,63 @@ public class MSImagizer extends javax.swing.JFrame {
     }//GEN-LAST:event_btnX16ActionPerformed
 
     private void btnMeanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMeanActionPerformed
-        btnMean.setSelected(true);
-        btnMedian.setSelected(false);
-        btnMin.setSelected(false);
-        btnMax.setSelected(false);
-        btnQ1.setSelected(false);
-        btnQ2.setSelected(false);
-        btn90th.setSelected(false);
-        btn95th.setSelected(false);
-        btn99th.setSelected(false);
+        SetIntensityMode(btnMean);
         currentMode = MSiImage.ImageMode.MEAN;
         UILogger.Log("Set pixel scale to " + currentMode, UILogger.Level.INFO);
         UpdateImage();
     }//GEN-LAST:event_btnMeanActionPerformed
 
     private void btnMedianActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMedianActionPerformed
-        btnMean.setSelected(false);
-        btnMedian.setSelected(true);
-        btnMin.setSelected(false);
-        btnMax.setSelected(false);
-        btnQ1.setSelected(false);
-        btnQ2.setSelected(false);
-        btn90th.setSelected(false);
-        btn95th.setSelected(false);
-        btn99th.setSelected(false);
+        SetIntensityMode(btnMedian);
         currentMode = MSiImage.ImageMode.MEDIAN;
         UILogger.Log("Set pixel scale to " + currentMode, UILogger.Level.INFO);
         UpdateImage();
     }//GEN-LAST:event_btnMedianActionPerformed
 
     private void btnMinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMinActionPerformed
-        btnMean.setSelected(false);
-        btnMedian.setSelected(false);
-        btnMin.setSelected(true);
-        btnMax.setSelected(false);
-        btnQ1.setSelected(false);
-        btnQ2.setSelected(false);
-        btn90th.setSelected(false);
-        btn95th.setSelected(false);
-        btn99th.setSelected(false);
+        SetIntensityMode(btnMin);
         currentMode = MSiImage.ImageMode.MIN;
         UILogger.Log("Set pixel scale to " + currentMode, UILogger.Level.INFO);
         UpdateImage();
     }//GEN-LAST:event_btnMinActionPerformed
 
     private void btnMaxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMaxActionPerformed
-        btnMean.setSelected(false);
-        btnMedian.setSelected(false);
-        btnMin.setSelected(false);
-        btnMax.setSelected(true);
-        btnQ1.setSelected(false);
-        btnQ2.setSelected(false);
-        btn90th.setSelected(false);
-        btn95th.setSelected(false);
-        btn99th.setSelected(false);
+        SetIntensityMode(btnMax);
         currentMode = MSiImage.ImageMode.MAX;
         UILogger.Log("Set pixel scale to " + currentMode, UILogger.Level.INFO);
         UpdateImage();
     }//GEN-LAST:event_btnMaxActionPerformed
 
     private void btnQ1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQ1ActionPerformed
-        btnMean.setSelected(false);
-        btnMedian.setSelected(false);
-        btnMin.setSelected(false);
-        btnMax.setSelected(false);
-        btnQ1.setSelected(true);
-        btnQ2.setSelected(false);
-        btn90th.setSelected(false);
-        btn95th.setSelected(false);
-        btn99th.setSelected(false);
+        SetIntensityMode(btnQ1);
         currentMode = MSiImage.ImageMode.Q1;
         UILogger.Log("Set pixel scale to " + currentMode, UILogger.Level.INFO);
         UpdateImage();
     }//GEN-LAST:event_btnQ1ActionPerformed
 
     private void btnQ2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQ2ActionPerformed
-        btnMean.setSelected(false);
-        btnMedian.setSelected(false);
-        btnMin.setSelected(false);
-        btnMax.setSelected(false);
-        btnQ1.setSelected(false);
-        btnQ2.setSelected(true);
-        btn90th.setSelected(false);
-        btn95th.setSelected(false);
-        btn99th.setSelected(false);
+        SetIntensityMode(btnQ2);
         currentMode = MSiImage.ImageMode.Q3;
         UILogger.Log("Set pixel scale to " + currentMode, UILogger.Level.INFO);
         UpdateImage();
     }//GEN-LAST:event_btnQ2ActionPerformed
 
     private void btn90thActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn90thActionPerformed
-        btnMean.setSelected(false);
-        btnMedian.setSelected(false);
-        btnMin.setSelected(false);
-        btnMax.setSelected(false);
-        btnQ1.setSelected(false);
-        btnQ2.setSelected(false);
-        btn90th.setSelected(true);
-        btn95th.setSelected(false);
-        btn99th.setSelected(false);
+        SetIntensityMode(btn90th);
         currentMode = MSiImage.ImageMode.Q90;
         UILogger.Log("Set pixel scale to " + currentMode, UILogger.Level.INFO);
         UpdateImage();
     }//GEN-LAST:event_btn90thActionPerformed
 
     private void btn95thActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn95thActionPerformed
-        btnMean.setSelected(false);
-        btnMedian.setSelected(false);
-        btnMin.setSelected(false);
-        btnMax.setSelected(false);
-        btnQ1.setSelected(false);
-        btnQ2.setSelected(false);
-        btn90th.setSelected(false);
-        btn95th.setSelected(true);
-        btn99th.setSelected(false);
+        SetIntensityMode(btn95th);
         currentMode = MSiImage.ImageMode.Q95;
         UILogger.Log("Set pixel scale to " + currentMode, UILogger.Level.INFO);
         UpdateImage();
     }//GEN-LAST:event_btn95thActionPerformed
 
     private void btn99thActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn99thActionPerformed
-        btnMean.setSelected(false);
-        btnMedian.setSelected(false);
-        btnMin.setSelected(false);
-        btnMax.setSelected(false);
-        btnQ1.setSelected(false);
-        btnQ2.setSelected(false);
-        btn90th.setSelected(false);
-        btn95th.setSelected(false);
-        btn99th.setSelected(true);
+        SetIntensityMode(btn99th);
         currentMode = MSiImage.ImageMode.Q99;
         UILogger.Log("Set pixel scale to " + currentMode, UILogger.Level.INFO);
         UpdateImage();
@@ -1313,6 +1287,44 @@ public class MSImagizer extends javax.swing.JFrame {
         UILogger.Log("HistoSnap is now running in " + (useHighMemory ? "High Memory Mode" : "Low Memory Mode"), UILogger.Level.INFO);
     }//GEN-LAST:event_btnHighMemoryActionPerformed
 
+    private void btnTICActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTICActionPerformed
+        SetIntensityMode(btnTIC);
+        currentMode = MSiImage.ImageMode.TOTAL_ION_CURRENT;
+        UILogger.Log("Set pixel scale to " + currentMode, UILogger.Level.INFO);
+        UpdateImage();
+    }//GEN-LAST:event_btnTICActionPerformed
+
+    private void btnLoadSessionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadSessionActionPerformed
+        JFileChooser fc = new JFileChooser();
+        fc.setCurrentDirectory(new java.io.File(".")); // start at application current directory
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File yourFolder = fc.getSelectedFile();
+            UILogger.Log("Changing sessions...", UILogger.Level.INFO);
+
+            progressFrame.setVisible(true);
+            WorkingTask task = new SessionLoadingTask(progressFrame, yourFolder, tfInput);
+            new WorkingThread(this, task).execute();
+        }
+
+    }//GEN-LAST:event_btnLoadSessionActionPerformed
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        JFileChooser fc = new JFileChooser();
+        fc.setCurrentDirectory(new java.io.File(".")); // start at application current directory
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = fc.showSaveDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File yourFolder = fc.getSelectedFile();
+            UILogger.Log("Saving sessions...", UILogger.Level.INFO);
+            progressFrame.setVisible(true);
+            WorkingTask task = new SessionSavingTask(progressFrame, yourFolder, false);
+            new WorkingThread(this, task).execute();
+
+        }
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
     /**
      * Adds a new image into the cache
      *
@@ -1320,7 +1332,7 @@ public class MSImagizer extends javax.swing.JFrame {
      */
     public static void AddToCache(MSiImage image) {
         MSI_IMAGE = image;
-        CACHE.Add(image);
+        CACHE.add(image);
         UpdateCacheUI();
     }
 
@@ -1330,7 +1342,7 @@ public class MSImagizer extends javax.swing.JFrame {
     public static void UpdateCacheUI() {
         if (imageCacheList != null) {
             DefaultListModel model = new DefaultListModel();
-            for (MSiImage cachedImage : CACHE.getImageList()) {
+            for (String cachedImage : CACHE) {
                 model.addElement(cachedImage);
             }
             imageCacheList.setModel(model);
@@ -1352,15 +1364,30 @@ public class MSImagizer extends javax.swing.JFrame {
         btnX8.setSelected(false);
         btnX16.setSelected(false);
         //mode
-        btnMean.setSelected(true);
-        btnMedian.setSelected(false);
-        btnMin.setSelected(false);
-        btnMax.setSelected(false);
-        btnQ1.setSelected(false);
-        btnQ2.setSelected(false);
-        btn90th.setSelected(false);
-        btn95th.setSelected(false);
-        btn99th.setSelected(false);
+        currentMode = MSiImage.ImageMode.TOTAL_ION_CURRENT;
+        modeButtons = new ArrayList<>();
+        modeButtons.add(btnTIC);
+        modeButtons.add(btnMean);
+        modeButtons.add(btnMedian);
+        modeButtons.add(btnMin);
+        modeButtons.add(btnMax);
+        modeButtons.add(btnQ1);
+        modeButtons.add(btnQ2);
+        modeButtons.add(btn90th);
+        modeButtons.add(btn95th);
+        modeButtons.add(btn99th);
+
+        modeButtons.get(0).setSelected(true);
+        for (int i = 1; i < modeButtons.size(); i++) {
+            modeButtons.get(i).setSelected(false);
+        }
+
+    }
+
+    private void SetIntensityMode(JCheckBoxMenuItem item) {
+        for (int i = 0; i < modeButtons.size(); i++) {
+            modeButtons.get(i).setSelected(modeButtons.get(i).equals(item));
+        }
     }
 
     private void InitAdducts() {
@@ -1404,7 +1431,7 @@ public class MSImagizer extends javax.swing.JFrame {
      */
     public void UpdateImage() {
         ImageIcon icon = null;
-        if (!CACHE.getImageList().isEmpty()) {
+        if (!CACHE.isEmpty()) {
             MSImagizer.MSI_IMAGE.CreateImage(currentMode, currentRange.getColors());
             MSImagizer.CURRENT_IMAGE = MSImagizer.MSI_IMAGE.getScaledImage(currentScale);
             icon = new ImageIcon(MSImagizer.CURRENT_IMAGE);
@@ -1491,7 +1518,7 @@ public class MSImagizer extends javax.swing.JFrame {
             File selectedFile = fileChooser.getSelectedFile();
             tfInput.setText(selectedFile.getAbsolutePath());
             lastDirectory = selectedFile.getParentFile();
-            if(selectedFile.exists()){
+            if (selectedFile.exists()) {
                 tfInput.setBackground(Color.green);
             }
         }
@@ -1556,6 +1583,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem btnHighMemory;
     private javax.swing.JMenu btnIntensityMode;
     private javax.swing.JMenuItem btnLoad;
+    private javax.swing.JMenuItem btnLoadSession;
     private javax.swing.JCheckBoxMenuItem btnMax;
     private javax.swing.JCheckBoxMenuItem btnMean;
     private javax.swing.JCheckBoxMenuItem btnMedian;
@@ -1566,6 +1594,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JMenuItem btnRedBlue;
     private javax.swing.JMenuItem btnSave;
     private javax.swing.JMenu btnScale;
+    private javax.swing.JCheckBoxMenuItem btnTIC;
     private javax.swing.JCheckBoxMenuItem btnX1;
     private javax.swing.JCheckBoxMenuItem btnX16;
     private javax.swing.JCheckBoxMenuItem btnX2;
@@ -1573,10 +1602,12 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem btnX8;
     private javax.swing.JList<String> imageList;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

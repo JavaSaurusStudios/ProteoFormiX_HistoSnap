@@ -7,6 +7,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
@@ -17,18 +18,18 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
-public class MSiImage extends BufferedImage {
+public class MSiImage extends BufferedImage implements Serializable {
 
     /**
      * Enum containing the options for reference variable to determine the
      * color/brightness for a pixel
      */
     public enum ImageMode {
-        MIN, MAX, MEAN, MEDIAN, Q1, Q3, Q90, Q95, Q99
+        TOTAL_ION_CURRENT, MIN, MAX, MEAN, MEDIAN, Q1, Q3, Q90, Q95, Q99
     }
 
     //The MSiFrame
-    private final MSiFrame frame;
+    private MSiFrame frame;
     //The name for this frame (for example based on the mz-range)
     private String name;
 
@@ -38,10 +39,15 @@ public class MSiImage extends BufferedImage {
      * @param frame the input frame
      */
     public MSiImage(MSiFrame frame) {
-        super(frame.getWidth() , frame.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        super(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_INT_ARGB);
         this.frame = frame;
-        this.name = "Default - " + System.currentTimeMillis();
+        this.name = this.frame.getName();
+        if (this.name == null || this.name.isEmpty()) {
+            this.name = "Default - " + System.currentTimeMillis();
+            this.frame.setName(this.name);
+        }
     }
+
 
     /**
      * Clamps the intensity
@@ -88,6 +94,7 @@ public class MSiImage extends BufferedImage {
 
     public void setName(String name) {
         this.name = name;
+        this.frame.setName(name);
     }
 
     public MSiFrame getFrame() {
@@ -103,15 +110,15 @@ public class MSiImage extends BufferedImage {
     public void CreateImage(ImageMode mode, Color... range) {
 
         //clear background
-        for (int i = 1; i < getWidth(); i++) {
-            for (int j = 1; j < getHeight(); j++) {
-                setRGB(i, j, range[0].getRGB());
+        for (int i = 1; i < this.getWidth(); i++) {
+            for (int j = 1; j < this.getHeight(); j++) {
+                this.setRGB(i, j, range[0].getRGB());
             }
         }
 
         DescriptiveStatistics stat = new DescriptiveStatistics();
         for (MSiPixel pixel : frame.getPixels()) {
-            double frameValue = pixel.getStat().getMax();
+            double frameValue = (mode == ImageMode.TOTAL_ION_CURRENT) ? pixel.getStat().getSum() : pixel.getStat().getMax();
             if (!Double.isNaN(frameValue)) {
                 stat.addValue(frameValue);
             }
@@ -123,8 +130,8 @@ public class MSiImage extends BufferedImage {
             double check = getStat(mode, pixel.getStat());
             double rel = Math.min(1, Math.max(0, check / reference));
             Color color = rel == 0 ? range[0] : ColorUtils.getHeatMapColor(rel, range);
-            if (pixel.getX() > 0 && pixel.getX() < getWidth() && pixel.getY() > 0 && pixel.getY() < getHeight()) {
-                setRGB(pixel.getX(), pixel.getY(), color.getRGB());
+            if (pixel.getX() > 0 && pixel.getX() < this.getWidth() && pixel.getY() > 0 && pixel.getY() < this.getHeight()) {
+                this.setRGB(pixel.getX(), pixel.getY(), color.getRGB());
             }
         }
 
@@ -156,12 +163,12 @@ public class MSiImage extends BufferedImage {
      */
     private double getStat(ImageMode mode, DescriptiveStatistics stat) {
         switch (mode) {
+            case TOTAL_ION_CURRENT:
+                return stat.getSum();
             case MEAN:
                 return stat.getMean();
-
             case MAX:
                 return stat.getMax();
-
             case MIN:
                 return stat.getMin();
             case MEDIAN:
@@ -184,7 +191,6 @@ public class MSiImage extends BufferedImage {
     public String toString() {
         return getName();
     }
-
 
     public static MSiImage CreateCombinedImage(List<MSiImage> images) {
 
@@ -219,7 +225,7 @@ public class MSiImage extends BufferedImage {
                 double threshold = iStats.getPercentile(50);
                 for (int i = mz.size() - 1; i > 0; i--) {
                     if (intensity.get(i) > threshold) {
-                         newPixel.addDataPoint(mz.get(i),intensity.get(i));
+                        newPixel.addDataPoint(mz.get(i), intensity.get(i));
                     }
                 }
 

@@ -1,5 +1,6 @@
 package be.javasaurusstudios.histosnap.model.image;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
@@ -8,12 +9,16 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
-public class MSiPixel implements Comparable {
+public class MSiPixel implements Comparable, Serializable {
 
-    private final int x;
-    private final int y;
+    private int x;
+    private int y;
     private LinkedList<Double> mz;
     private LinkedList<Double> i;
+
+    public MSiPixel() {
+
+    }
 
     public MSiPixel(int x, int y) {
         this.x = x;
@@ -29,6 +34,24 @@ public class MSiPixel implements Comparable {
     public int getY() {
         return y;
     }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public void setMz(LinkedList<Double> mz) {
+        this.mz = mz;
+    }
+
+    public void setI(LinkedList<Double> i) {
+        this.i = i;
+    }
+    
+    
 
     public LinkedList<Double> getMz() {
         return mz;

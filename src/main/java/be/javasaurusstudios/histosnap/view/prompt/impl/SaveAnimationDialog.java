@@ -5,10 +5,12 @@
  */
 package be.javasaurusstudios.histosnap.view.prompt.impl;
 
+import be.javasaurusstudios.histosnap.control.MSiImageCache;
 import be.javasaurusstudios.histosnap.control.util.AnimationExporter;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
+import static be.javasaurusstudios.histosnap.view.MSImagizer.CACHE;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.lastDirectory;
 import be.javasaurusstudios.histosnap.view.prompt.UserPrompt;
 import java.awt.event.ActionEvent;
@@ -31,10 +33,12 @@ import javax.swing.filechooser.FileFilter;
  */
 public class SaveAnimationDialog implements UserPrompt {
 
-    private final List<MSiImage> selectedImages;
+    private final List<String> selectedImageNames;
+    private final MSiImageCache cache;
 
-    public SaveAnimationDialog(List<MSiImage> selectedImages) {
-        this.selectedImages = selectedImages;
+    public SaveAnimationDialog(List<String> selectedImageNames, MSiImageCache cache) {
+        this.selectedImageNames = selectedImageNames;
+        this.cache = cache;
     }
 
     @Override
@@ -100,6 +104,8 @@ public class SaveAnimationDialog implements UserPrompt {
 
             try {
                 int ms = Integer.parseInt(timeBetweenFrames.getText());
+                UILogger.Log("Reading images from session...", UILogger.Level.INFO);
+                List<MSiImage> selectedImages = CACHE.GetCachedImages(selectedImageNames);
 
                 BufferedImage[] images = new BufferedImage[selectedImages.size()];
                 for (int i = 0; i < images.length; i++) {

@@ -1,6 +1,5 @@
 package be.javasaurusstudios.histosnap.view.listeners.impl;
 
-import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.view.listeners.ListenerProvider;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.MSI_IMAGE;
@@ -25,7 +24,7 @@ public class ListSelectionUpdateProvider implements ListenerProvider {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (imageCacheList.getSelectedValuesList().size() == 1) {
-                    MSI_IMAGE = (MSiImage) imageCacheList.getSelectedValue();
+                    MSI_IMAGE = MSImagizer.CACHE.getImage((String) imageCacheList.getSelectedValue());
                     main.UpdateImage();
                 }
             }

@@ -5,6 +5,7 @@
  */
 package be.javasaurusstudios.histosnap.view.prompt.impl;
 
+import be.javasaurusstudios.histosnap.control.MSiImageCache;
 import be.javasaurusstudios.histosnap.control.util.AnimationExporter;
 import be.javasaurusstudios.histosnap.control.util.ImageUtils;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
@@ -33,10 +34,12 @@ import javax.swing.filechooser.FileFilter;
  */
 public class SaveFramesDialog implements UserPrompt {
 
-    private final List<MSiImage> selectedImages;
+    private final List<String> selectedImageNames;
+    private final MSiImageCache cache;
 
-    public SaveFramesDialog(List<MSiImage> selectedImages) {
-        this.selectedImages = selectedImages;
+    public SaveFramesDialog(List<String> selectedImages, MSiImageCache cache) {
+        this.selectedImageNames = selectedImages;
+        this.cache = cache;
     }
 
     @Override
@@ -87,14 +90,15 @@ public class SaveFramesDialog implements UserPrompt {
 
             try {
 
-                for (int i = 0; i < selectedImages.size(); i++) {
-                    selectedImages.get(i).CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
-                    File fileToSave = new File(fileToStore, selectedImages.get(i).getName() + ".png");
-                    BufferedImage bImage = ImageUtils.SetImageTitle(selectedImages.get(i).getScaledImage(MSImagizer.instance.getCurrentScale()), selectedImages.get(i).getName());
+                for (int i = 0; i < selectedImageNames.size(); i++) {
+                    MSiImage tmp = cache.getImage(selectedImageNames.get(i));
+                    tmp.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
+                    File fileToSave = new File(fileToStore, selectedImageNames.get(i) + ".png");
+                    BufferedImage bImage = ImageUtils.SetImageTitle(tmp.getScaledImage(MSImagizer.instance.getCurrentScale()), selectedImageNames.get(i));
                     ImageIO.write(bImage, "png", fileToSave);
                 }
-                UILogger.Log("Exported " + selectedImages.size() + " frames to " + fileToStore.getAbsolutePath(), UILogger.Level.INFO);
-                JOptionPane.showMessageDialog(parent, "Exported " + selectedImages.size() + " frames to " + fileToStore.getAbsolutePath());
+                UILogger.Log("Exported " + selectedImageNames.size() + " frames to " + fileToStore.getAbsolutePath(), UILogger.Level.INFO);
+                JOptionPane.showMessageDialog(parent, "Exported " + selectedImageNames.size() + " frames to " + fileToStore.getAbsolutePath());
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(parent,
                         "Could not save this file : " + ex.getMessage(),

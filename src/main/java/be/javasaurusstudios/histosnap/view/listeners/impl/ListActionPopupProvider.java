@@ -16,6 +16,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
+import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -53,15 +54,14 @@ public class ListActionPopupProvider implements ListenerProvider {
         deleteItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
-                CACHE.getImageList().removeAll(selectedImages);
-                UILogger.Log("Deleted " + selectedImages.size() + " image(s)", UILogger.Level.INFO);
+                List<String> selectedImageNames = imageCacheList.getSelectedValuesList();
+                CACHE.removeImagesFromCacheByName(selectedImageNames);
+                UILogger.Log("Deleted " + selectedImageNames.size() + " image(s)", UILogger.Level.INFO);
                 MSImagizer.UpdateCacheUI();
-                if (CACHE.getImageList().size() > 0) {
-                    MSI_IMAGE = CACHE.getImageList().get(0);
+                if (!CACHE.isEmpty()) {
+                    MSI_IMAGE = CACHE.getFirst();
                     imageCacheList.setSelectedIndex(0);
                 }
-
                 parent.UpdateImage();
             }
         });
@@ -72,15 +72,15 @@ public class ListActionPopupProvider implements ListenerProvider {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
+                List<String> selectedImages = imageCacheList.getSelectedValuesList();
                 if (selectedImages.size() > 1 || selectedImages.isEmpty()) {
                     System.out.println("Only works on single selections");
                     return;
                 }
-                MSI_IMAGE = selectedImages.get(0);
-                String tmpName = MSI_IMAGE.getName();
+                String tmpName = selectedImages.get(0);
                 String newName = JOptionPane.showInputDialog(parent, "Enter a new name", MSI_IMAGE.getName());
-                MSI_IMAGE.setName(newName);
+                CACHE.UpdateImageName(tmpName, newName);
+                ((DefaultListModel) imageCacheList.getModel()).setElementAt(newName, 0);
                 UILogger.Log("Updated " + tmpName + " to " + newName, UILogger.Level.INFO);
                 parent.UpdateImage();
             }
@@ -91,18 +91,20 @@ public class ListActionPopupProvider implements ListenerProvider {
         generateCombinedImage.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
-                if (selectedImages.size() <= 1) {
+                List<String> selectedImageNames = imageCacheList.getSelectedValuesList();
+                if (selectedImageNames.size() <= 1) {
                     return;
                 }
                 try {
-                    UILogger.Log("Creating combined image for " + selectedImages.size() + " images...", UILogger.Level.INFO);
+                    UILogger.Log("Creating combined image for " + selectedImageNames.size() + " images...", UILogger.Level.INFO);
+
                     MSImagizer.instance.getProgressFrame().setVisible(true);
+
                     MSImagizer.instance.getProgressFrame().setText("Generating combined image...");
-                    MSiImage image = MSiImage.CreateCombinedImage(selectedImages);
-                        
+                    MSiImage image = MSiImage.CreateCombinedImage(CACHE.GetCachedImages(selectedImageNames));
+
                     MSImagizer.AddToCache(image);
-                    
+
                     MSImagizer.MSI_IMAGE = image;
                     MSImagizer.instance.getProgressFrame().setText("Removing hotspots");
                     MSImagizer.MSI_IMAGE.RemoveHotSpots(99);
@@ -120,11 +122,11 @@ public class ListActionPopupProvider implements ListenerProvider {
         saveAnimationItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
-                if (selectedImages.size() <= 1) {
+                List<String> selectedImageNames = imageCacheList.getSelectedValuesList();
+                if (selectedImageNames.size() <= 1) {
                     return;
                 }
-                new SaveAnimationDialog(selectedImages).Show();
+                new SaveAnimationDialog(selectedImageNames, CACHE).Show();
             }
         });
 
@@ -133,8 +135,8 @@ public class ListActionPopupProvider implements ListenerProvider {
         saveFrameItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
-                new SaveFramesDialog(selectedImages).Show();
+                List<String> selectedImagesNames = imageCacheList.getSelectedValuesList();
+                new SaveFramesDialog(selectedImagesNames, CACHE).Show();
             }
         });
 
@@ -143,8 +145,8 @@ public class ListActionPopupProvider implements ListenerProvider {
         similarityItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                List<MSiImage> selectedImages = imageCacheList.getSelectedValuesList();
-                new SaveSimilaritiesDialog(imgLabel, selectedImages).Show();
+                List<String> selectedImageNames = imageCacheList.getSelectedValuesList();
+                new SaveSimilaritiesDialog(imgLabel, selectedImageNames,CACHE).Show();
             }
         });
 
