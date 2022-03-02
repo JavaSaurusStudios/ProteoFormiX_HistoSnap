@@ -47,6 +47,24 @@ public class ColorUtils {
     }
 
     /**
+     * Creates a inverted color based on a bin of colors and a value
+     *
+     * @param f the linear movement (between 0 and 1)
+     * @param colors the range of provided colors
+     * @return the color bin the f value is contained within
+     */
+    public static Color getHeatMapColorInverse(double f, Color... colors) {
+        double binSize = 1.0 / colors.length;
+
+        for (int bin = colors.length - 1; bin >= 0; bin--) {
+            if (f <= (binSize * bin)) {
+                return colors[bin];
+            }
+        }
+        return colors[colors.length - 1];
+    }
+
+    /**
      * Creates a multi gradient
      *
      * @param numSteps amount of steps in a gradient

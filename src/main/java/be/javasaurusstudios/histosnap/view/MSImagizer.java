@@ -143,8 +143,10 @@ public class MSImagizer extends javax.swing.JFrame {
         jLayeredPane1 = new javax.swing.JLayeredPane();
         jMenuBar1 = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
+        fileMenu = new javax.swing.JMenu();
         btnLoad = new javax.swing.JMenuItem();
         btnSave = new javax.swing.JMenuItem();
+        sessionsMenu = new javax.swing.JMenu();
         btnLoadSession = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
         btnExit = new javax.swing.JMenuItem();
@@ -292,13 +294,15 @@ public class MSImagizer extends javax.swing.JFrame {
 
         menuFile.setText("File");
 
+        fileMenu.setText("File");
+
         btnLoad.setText("Load...");
         btnLoad.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnLoadActionPerformed(evt);
             }
         });
-        menuFile.add(btnLoad);
+        fileMenu.add(btnLoad);
 
         btnSave.setText("Save...");
         btnSave.addActionListener(new java.awt.event.ActionListener() {
@@ -306,7 +310,11 @@ public class MSImagizer extends javax.swing.JFrame {
                 btnSaveActionPerformed(evt);
             }
         });
-        menuFile.add(btnSave);
+        fileMenu.add(btnSave);
+
+        menuFile.add(fileMenu);
+
+        sessionsMenu.setText("Session");
 
         btnLoadSession.setText("Load Session...");
         btnLoadSession.addActionListener(new java.awt.event.ActionListener() {
@@ -314,7 +322,7 @@ public class MSImagizer extends javax.swing.JFrame {
                 btnLoadSessionActionPerformed(evt);
             }
         });
-        menuFile.add(btnLoadSession);
+        sessionsMenu.add(btnLoadSession);
 
         jMenuItem1.setText("Save Session...");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -322,7 +330,9 @@ public class MSImagizer extends javax.swing.JFrame {
                 jMenuItem1ActionPerformed(evt);
             }
         });
-        menuFile.add(jMenuItem1);
+        sessionsMenu.add(jMenuItem1);
+
+        menuFile.add(sessionsMenu);
 
         btnExit.setText("Exit");
         btnExit.addActionListener(new java.awt.event.ActionListener() {
@@ -1290,7 +1300,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private void btnTICActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTICActionPerformed
         SetIntensityMode(btnTIC);
         currentMode = MSiImage.ImageMode.TOTAL_ION_CURRENT;
-        UILogger.Log("Set pixel scale to " + currentMode, UILogger.Level.INFO);
+        UILogger.Log("Set image mode to " + currentMode, UILogger.Level.INFO);
         UpdateImage();
     }//GEN-LAST:event_btnTICActionPerformed
 
@@ -1600,6 +1610,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem btnX2;
     private javax.swing.JCheckBoxMenuItem btnX4;
     private javax.swing.JCheckBoxMenuItem btnX8;
+    private javax.swing.JMenu fileMenu;
     private javax.swing.JList<String> imageList;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLayeredPane jLayeredPane1;
@@ -1619,6 +1630,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JMenu menuExtract;
     private javax.swing.JMenu menuFile;
     private javax.swing.JMenu menuOptions;
+    private javax.swing.JMenu sessionsMenu;
     private javax.swing.JTextField tfInput;
     // End of variables declaration//GEN-END:variables
 

@@ -48,7 +48,6 @@ public class MSiImage extends BufferedImage implements Serializable {
         }
     }
 
-
     /**
      * Clamps the intensity
      *
@@ -124,12 +123,19 @@ public class MSiImage extends BufferedImage implements Serializable {
             }
         }
 
-        double reference = getStat(mode, stat);
+        double reference = (mode == ImageMode.TOTAL_ION_CURRENT) ? stat.getMean() : getStat(mode, stat);
 
         for (MSiPixel pixel : frame.getPixels()) {
             double check = getStat(mode, pixel.getStat());
             double rel = Math.min(1, Math.max(0, check / reference));
-            Color color = rel == 0 ? range[0] : ColorUtils.getHeatMapColor(rel, range);
+           
+            Color color;
+            if (mode == ImageMode.TOTAL_ION_CURRENT) {
+                color = rel == 0 ? range[0] : ColorUtils.getHeatMapColor(rel, range);
+            } else {
+                color = rel == 0 ? range[range.length - 1] : ColorUtils.getHeatMapColorInverse(rel, range);
+            }
+
             if (pixel.getX() > 0 && pixel.getX() < this.getWidth() && pixel.getY() > 0 && pixel.getY() < this.getHeight()) {
                 this.setRGB(pixel.getX(), pixel.getY(), color.getRGB());
             }
