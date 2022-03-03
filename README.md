@@ -1,5 +1,5 @@
 <p align="center"> 
-  <img src="https://github.com/JavaSaurusStudios/ProteoFormiX_HistoSnap/blob/main/src/main/resources/Logo.png" />
+  <img src="https://github.com/JavaSaurusStudios/ProteoFormiX_HistoSnap/blob/main/src/main/resources/Banner.PNG" />
 </p>
 
 # Welcome to HistoSnap
