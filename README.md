@@ -1,5 +1,5 @@
 <p align="center"> 
-  <img src="https://github.com/proteoformix-software/HistoSnap/blob/main/src/main/resources/Banner.PNG" />
+  <img src="https://raw.githubusercontent.com/proteoformix-software/HistoSnap/main/src/main/resources/Banner.PNG" />
 </p>
 
 # Welcome to HistoSnap
