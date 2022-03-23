@@ -26,7 +26,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -1016,7 +1019,7 @@ public class MSImagizer extends javax.swing.JFrame {
         final JFrame parent = this;
 
         JTextArea textArea = new JTextArea();
-        textArea.setColumns(30);
+        textArea.setColumns(100);
         textArea.setRows(15);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
@@ -1051,14 +1054,21 @@ public class MSImagizer extends javax.swing.JFrame {
             }
 
             String[] lines = textArea.getText().split("\\n");
-            List<Float> mzValues = new ArrayList<>();
+            HashMap<String, Float> mzValues = new HashMap<>();
+
+            ArrayList<WorkingTask> tasks = new ArrayList<>();
+
             for (String line : lines) {
+
+                String[] parts = line.split("\t");
+                String name = parts.length >= 1 ? parts[1] : parts[0];
+
                 try {
-                    float mz = Float.parseFloat(line.replace(",", "."));
+                    float mz = Float.parseFloat(parts[0].replace(",", "."));
                     if (mz <= 0) {
                         throw new NullPointerException();
                     }
-                    mzValues.add(mz);
+                    mzValues.put(name, mz);
                 } catch (NumberFormatException e) {
                     JOptionPane.showMessageDialog(this,
                             line + " is an invalid entry. The mz values a real value > 0",
@@ -1069,26 +1079,37 @@ public class MSImagizer extends javax.swing.JFrame {
                 }
             }
 
-            for (float mz : mzValues) {
-
+            progressFrame.setVisible(true);
+            progressFrame.setText("Starting extraction process...");
+            for (Entry<String, Float> entry : mzValues.entrySet()) {
+                progressFrame.setVisible(true);
                 ImageExtractionTask task = new ImageExtractionTask(
                         this,
                         progressFrame,
                         tfInput,
-                        mz - (float) toleranceValue,
-                        mz + (float) toleranceValue,
+                        entry.getValue() - (float) toleranceValue,
+                        entry.getValue() + (float) toleranceValue,
                         1,
                         lbImage,
                         currentScale,
                         currentMode,
                         currentRange,
                         false);
+
+                task.setImageName(entry.getKey());
                 task.setNotifyWhenRead(false);
-                new WorkingThread(this, task.mute()).execute();
+
+                tasks.add(task.mute());
 
             }
 
-            JOptionPane.showMessageDialog(parent, "Finished extracting mz values");
+            tasks.get(0).setNotifyWhenRead(true);
+            WorkingThread worker = new WorkingThread(this, true, tasks.toArray(new WorkingTask[tasks.size()]));
+            worker.execute();
+
+            progressFrame.setVisible(false);
+            //  JOptionPane.showMessageDialog(parent, "Finished extracting mz values");
+            //  UILogger.Log("Finished extracting", UILogger.Level.INFO);
         }
     }//GEN-LAST:event_btnExtractMzActionPerformed
 

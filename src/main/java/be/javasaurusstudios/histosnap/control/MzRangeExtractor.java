@@ -149,7 +149,7 @@ public class MzRangeExtractor {
             process.waitFor();
         }
 
-        progressBar.setText("Reading HistoSnap database file...");
+ 
         HistoSnapDBFile file = new HistoSnapDBFile(dbFile);
         UILogger.Log("Processing between " + mzMin + " and " + mzMax, UILogger.Level.INFO);
         MSiImage image = file.getImage(mzMin, mzMax);
@@ -212,7 +212,13 @@ public class MzRangeExtractor {
         process.waitFor();
 
         MSiFrame frame = new SpectralDataImporter().ReadFile(new File(out));
+        
+        if(frame.getWidth()<=0||frame.getHeight()<=0){
+            return null;
+        }
+        
         frame.setParentFile(in);
+        
         UILogger.Log("Processing between " + frame.getMinMz() + " and " + frame.getMaxMz(), UILogger.Level.INFO);
         MSiImage image = new MSiImage(frame);
 

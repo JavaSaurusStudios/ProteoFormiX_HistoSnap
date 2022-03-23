@@ -130,8 +130,9 @@ public class MSiImageCache extends ArrayList<String> {
      * @param images
      * @return
      */
-    public boolean removeImagesFromCacheByName(Collection<String> images) {
-        for (String image : images) {
+    public boolean removeImagesFromCacheByName(List<String> images) {
+        for (int i = images.size() - 1; i >= 0; i--) {
+            String image = images.get(i);
             session.RemoveFromSession(image);
             images.remove(image);
             if (!remove(image)) {
@@ -139,6 +140,7 @@ public class MSiImageCache extends ArrayList<String> {
             }
         }
         return true;
+
     }
 
     /**

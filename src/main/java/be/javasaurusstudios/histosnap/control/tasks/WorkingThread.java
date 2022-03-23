@@ -20,20 +20,34 @@ public class WorkingThread extends SwingWorker {
     //The progress bar to update
     private final ProgressBarFrame progressFrame;
     // The current task to run
-    private final WorkingTask task;
-//boolean indicating if this thread is busy
+    private final WorkingTask[] tasks;
+    //boolean indicating if this thread is busy
     private boolean working = false;
 
     /**
      * Constructor
      *
      * @param parent the parent frame
-     * @param task the task to run
+     * @param tasks the tasks to run
      */
-    public WorkingThread(JFrame parent, WorkingTask task) {
+    public WorkingThread(JFrame parent, WorkingTask... tasks) {
         this.parent = parent;
-        this.progressFrame = task.getProgressBar();
-        this.task = task;
+        this.progressFrame = tasks[0].getProgressBar();
+        this.tasks = tasks;
+    }
+
+    /**
+     * Constructor
+     *
+     * @param parent the parent frame
+     * @param tasks the tasks to run
+     * @param hotStart (enter in active status)
+     */
+    public WorkingThread(JFrame parent, boolean hotStart, WorkingTask... tasks) {
+        this.parent = parent;
+        this.progressFrame = tasks[0].getProgressBar();
+        this.tasks = tasks;
+        this.working = hotStart;
     }
 
     /**
@@ -64,9 +78,11 @@ public class WorkingThread extends SwingWorker {
         movingThread.start();
         progressFrame.setLocationRelativeTo(parent);
         progressFrame.setVisible(true);
-        Object call = task.call();
-        task.Finish(call);
-        return call;
+        for (int i = 0; i < tasks.length; i++) {
+            Object call = tasks[i].call();
+            tasks[i].Finish(call);
+        }
+        return true;
     }
 
     /**
@@ -77,10 +93,15 @@ public class WorkingThread extends SwingWorker {
         progressFrame.setVisible(false);
         working = false;
         movingThread.interrupt();
-        UILogger.Log(task.getFinishMessage(),UILogger.Level.INFO);
-        UILogger.Log("-----------------------------",UILogger.Level.NONE);
-        if (task.isNotifyWhenReady()) {
-            JOptionPane.showMessageDialog(parent, task.getFinishMessage());
+        UILogger.Log(tasks[0].getFinishMessage(), UILogger.Level.INFO);
+        UILogger.Log("-----------------------------", UILogger.Level.NONE);
+        if (tasks[0].isNotifyWhenReady()) {
+            JOptionPane.showMessageDialog(parent, tasks[0].getFinishMessage());
         }
     }
+
+    public boolean isWorking() {
+        return working;
+    }
+
 }

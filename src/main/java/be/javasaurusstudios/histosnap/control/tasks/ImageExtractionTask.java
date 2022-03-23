@@ -48,6 +48,8 @@ public class ImageExtractionTask extends WorkingTask {
     private float stepCount = -1;
     //The calculated interval
     private float interval = -1;
+    //The name for this image
+    private String imageName = "";
 
     /**
      *
@@ -86,7 +88,7 @@ public class ImageExtractionTask extends WorkingTask {
                     "The minimal MZ value should be a real number >=0",
                     "Invalid mass to charge range",
                     JOptionPane.ERROR_MESSAGE);
-            UILogger.Log("Invalid mass to charge range was provided.",UILogger.Level.ERROR);
+            UILogger.Log("Invalid mass to charge range was provided.", UILogger.Level.ERROR);
         }
         try {
             maxMZ = (float) (Float.parseFloat((maxMZField.getText().replace(",", "."))));
@@ -100,7 +102,7 @@ public class ImageExtractionTask extends WorkingTask {
                     "The maximal MZ value should be a real number >0",
                     "Invalid mass to charge range",
                     JOptionPane.ERROR_MESSAGE);
-            UILogger.Log("Invalid mass to charge range was provided.",UILogger.Level.ERROR);
+            UILogger.Log("Invalid mass to charge range was provided.", UILogger.Level.ERROR);
         }
 
         if (stepsField == null) {
@@ -121,7 +123,7 @@ public class ImageExtractionTask extends WorkingTask {
                         "The step count >=1",
                         "Invalid step size",
                         JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Invalid step size was provided.",UILogger.Level.ERROR);
+                UILogger.Log("Invalid step size was provided.", UILogger.Level.ERROR);
             }
         }
 
@@ -179,6 +181,10 @@ public class ImageExtractionTask extends WorkingTask {
      */
     protected void Process(JTextField tfInput, JLabel imageIcon, int scale, ColorRange range, boolean autoSave) throws Exception {
 
+        if (!imageName.isEmpty()) {
+            progressBar.setText("Extracting " + imageName);
+        }
+
         if (minMZ == -1 || maxMZ == -1) {
             throw new Exception("Please check the mz range...");
         }
@@ -194,7 +200,7 @@ public class ImageExtractionTask extends WorkingTask {
                         "Please specify an input imzml file",
                         "Invalid input file",
                         JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Invalid input file",UILogger.Level.ERROR);
+                UILogger.Log("Invalid input file", UILogger.Level.ERROR);
                 return;
             }
 
@@ -205,18 +211,20 @@ public class ImageExtractionTask extends WorkingTask {
                         "The corresponding ibd file could not be found in the provided file directory./nPlease verify that an idb file exist with the EXACT same name as the provided imzml.",
                         "Invalid input file",
                         JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Invalid input file",UILogger.Level.ERROR);
+                UILogger.Log("Invalid input file", UILogger.Level.ERROR);
                 return;
             }
 
-            ExecuteImage(in, scale, "", range, 0, autoSave);
+            ExecuteImage(in, scale, imageName, range, 0, autoSave);
 
             for (MSScanAdduct.ADDUCTS adduct : MSScanAdduct.ENABLED_ADDUCTS) {
-                ExecuteImage(in, scale, adduct.toString(), range, adduct.getMassDeficit(), autoSave);
+                ExecuteImage(in, scale, imageName + "_" + adduct.toString(), range, adduct.getMassDeficit(), autoSave);
             }
 
         } catch (Exception ex) {
-            progressBar.setVisible(false);
+            if (!imageName.isEmpty()) {
+                progressBar.setText(imageName + " extraction has failed. Please verify if the requested mass range is present in the input data");
+            }
             ex.printStackTrace();
         }
     }
@@ -263,6 +271,10 @@ public class ImageExtractionTask extends WorkingTask {
             }
 
         }
+    }
+
+    public void setImageName(String name) {
+        this.imageName = name;
     }
 
     @Override
