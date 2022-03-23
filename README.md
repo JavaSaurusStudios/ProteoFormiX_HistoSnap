@@ -129,13 +129,13 @@ The intensity mode represents the statistic which will be applied as a reference
 
 ![alt text](https://github.com/proteoformix-software/HistoSnap/blob/main/src/main/resources/screenshots/histosnap_options_3.png?raw=true, "Anion adducts")
 
-![alt text](https://github.com/proteoformix-software/HistoSnap/blob/main/src/main/resources/screenshots/histosnap_options_4.png?raw=true, "Cation adducts")
+![alt text](https://github.com/proteoformix-software/HistoSnap/blob/main/src/main/resources/screenshots/histosnap_options_5.png?raw=true, "Cation adducts")
 
 Adducts can be selected (both cations and anions) to be considered. These additional masses will be scanned seperately from the input mass to charge value.
 
 ### System and Memory options
 
-![alt text](https://github.com/proteoformix-software/HistoSnap/blob/main/src/main/resources/screenshots/histosnap_options_5.png?raw=true, "Memory options")
+![alt text](https://github.com/proteoformix-software/HistoSnap/blob/main/src/main/resources/screenshots/histosnap_options_4.png?raw=true, "Memory options")
 
 Processing imagine data requires a large amount of memory. To combat this, HistoSnap has two modes : Low Memory and High Memory. 
 
