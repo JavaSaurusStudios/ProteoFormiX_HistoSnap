@@ -6,7 +6,7 @@
   
 HistoSnap is a graphical user interface designed to rapidly extract an image from complex, large mass spectrometry based imaging. If you want to learn more about HistoSnap, please read the following tutorial ! We encourage you to download the latest release and play around.
 
-[Download Here](https://github.com/JavaSaurusStudios/ProteoFormiX_HistoSnap/releases/download/V0.2-beta/HistoSnap-0.1.zip)
+[Download Here](https://github.com/proteoformix-software/HistoSnap/files/8334735/HistoSnap-0.2.jar.zip)
 
 # Introduction
 
