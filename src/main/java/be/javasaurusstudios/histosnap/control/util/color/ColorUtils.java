@@ -57,7 +57,7 @@ public class ColorUtils {
         double binSize = 1.0 / colors.length;
 
         for (int bin = colors.length - 1; bin >= 0; bin--) {
-            if (f <= (binSize * bin)) {
+            if (f >= (binSize * bin)) {
                 return colors[bin];
             }
         }

@@ -91,7 +91,7 @@ public class MSImagizer extends javax.swing.JFrame {
         instance = this;
 
         try {
-            Image i = ImageIO.read(getClass().getResource("/icon.PNG"));
+            Image i = ImageIO.read(getClass().getResource("/icon.png"));
             super.setIconImage(i);
         } catch (IOException ex) {
             Logger.getLogger(MSImagizer.class.getName()).log(Level.SEVERE, null, ex);
@@ -1061,7 +1061,7 @@ public class MSImagizer extends javax.swing.JFrame {
             for (String line : lines) {
 
                 String[] parts = line.split("\t");
-                String name = parts.length >= 1 ? parts[1] : parts[0];
+                String name = parts.length > 1 ? parts[1] : parts[0];
 
                 try {
                     float mz = Float.parseFloat(parts[0].replace(",", "."));

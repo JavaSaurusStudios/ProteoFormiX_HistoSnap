@@ -2,6 +2,7 @@ package be.javasaurusstudios.histosnap.control.util;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -25,9 +26,13 @@ public class ImageUtils {
 
         Graphics2D graph = framedImage.createGraphics();
         graph.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
-        graph.setColor(Color.white);
-        graph.setFont(new Font("Courier New", 1, 17));
-        graph.drawString(title, 1, 1);
+        graph.setPaint(Color.white);
+        graph.setFont(new Font("Monospaced", Font.BOLD, 20));
+        FontMetrics fm = graph.getFontMetrics();
+        int x = framedImage.getWidth() - fm.stringWidth(title) - 5;
+        int y = (framedImage.getHeight() - fm.getHeight()) / 2;//fm.getHeight();
+        graph.drawString(title, x, y);
+        graph.dispose();
 
         return framedImage;
     }

@@ -2,6 +2,9 @@ package be.javasaurusstudios.histosnap.model.image;
 
 import be.javasaurusstudios.histosnap.control.util.color.ColorUtils;
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -128,10 +131,11 @@ public class MSiImage extends BufferedImage implements Serializable {
         for (MSiPixel pixel : frame.getPixels()) {
             double check = getStat(mode, pixel.getStat());
             double rel = Math.min(1, Math.max(0, check / reference));
-           
+
             Color color;
             if (mode == ImageMode.TOTAL_ION_CURRENT) {
-                color = rel == 0 ? range[0] : ColorUtils.getHeatMapColor(rel, range);
+                //TODO check if TIC is inverted as a special case or everything has to be inverted
+                color = rel == 0 ? range[0] : ColorUtils.getHeatMapColor(1 - rel, range);
             } else {
                 color = rel == 0 ? range[range.length - 1] : ColorUtils.getHeatMapColorInverse(rel, range);
             }
@@ -159,6 +163,8 @@ public class MSiImage extends BufferedImage implements Serializable {
         AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
         return scaleOp.filter(before, after);
     }
+
+ 
 
     /**
      * Returns the statistics in a certain mode

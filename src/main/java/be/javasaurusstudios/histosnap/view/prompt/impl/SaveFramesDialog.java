@@ -94,7 +94,11 @@ public class SaveFramesDialog implements UserPrompt {
                     MSiImage tmp = cache.getImage(selectedImageNames.get(i));
                     tmp.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
                     File fileToSave = new File(fileToStore, selectedImageNames.get(i) + ".png");
-                    BufferedImage bImage = ImageUtils.SetImageTitle(tmp.getScaledImage(MSImagizer.instance.getCurrentScale()), selectedImageNames.get(i));
+                    BufferedImage bImage = ImageUtils.SetImageTitle(
+                            
+                            tmp.getScaledImage(MSImagizer.instance.getCurrentScale()), selectedImageNames.get(i)
+                    
+                    );
                     ImageIO.write(bImage, "png", fileToSave);
                 }
                 UILogger.Log("Exported " + selectedImageNames.size() + " frames to " + fileToStore.getAbsolutePath(), UILogger.Level.INFO);

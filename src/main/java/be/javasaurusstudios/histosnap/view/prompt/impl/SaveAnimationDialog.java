@@ -7,6 +7,7 @@ package be.javasaurusstudios.histosnap.view.prompt.impl;
 
 import be.javasaurusstudios.histosnap.control.MSiImageCache;
 import be.javasaurusstudios.histosnap.control.util.AnimationExporter;
+import be.javasaurusstudios.histosnap.control.util.ImageUtils;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
@@ -112,7 +113,10 @@ public class SaveAnimationDialog implements UserPrompt {
                     selectedImages.get(i).CreateImage(
                             MSImagizer.instance.getCurrentMode(),
                             MSImagizer.instance.getCurrentRange().getColors());
-                    images[i] = selectedImages.get(i).getScaledImage(MSImagizer.instance.getCurrentScale());
+                    images[i] = ImageUtils.SetImageTitle(
+                            selectedImages.get(i).getScaledImage(MSImagizer.instance.getCurrentScale()),
+                            selectedImageNames.get(i)
+                            );
                 }
 
                 AnimationExporter.Save(images, fileToStore, ms, true);
