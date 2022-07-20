@@ -45,10 +45,10 @@ public class SaveSimilaritiesDialog implements UserPrompt {
     private final ImageLabel imgLabel;
     private final MSiImageCache cache;
 
-    public SaveSimilaritiesDialog(ImageLabel imgLabel, List<String> selectedImageNames,MSiImageCache cache) {
+    public SaveSimilaritiesDialog(ImageLabel imgLabel, List<String> selectedImageNames, MSiImageCache cache) {
         this.selectedImageNames = selectedImageNames;
         this.imgLabel = imgLabel;
-        this.cache=cache;
+        this.cache = cache;
     }
 
     @Override
@@ -121,8 +121,8 @@ public class SaveSimilaritiesDialog implements UserPrompt {
 
     public void Process(File outputFolder, double threshold, MSiImage selectedImage) {
 
-        UILogger.Log("Calculating similarities based on "+selectedImage.getName(), UILogger.Level.NONE);
-        
+        UILogger.Log("Calculating similarities based on " + selectedImage.getName(), UILogger.Level.NONE);
+
         selectedImage.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
         BufferedImage refImage = selectedImage.getScaledImage(MSImagizer.instance.getExportScale());
         String refName = selectedImage.getName();
@@ -157,7 +157,7 @@ public class SaveSimilaritiesDialog implements UserPrompt {
                     for (SimilarityResult sr : results) {
                         if (sr.getSimilarity() >= threshold) {
                             BufferedImage bImage = drawHighlight ? ImageUtils.HighlightZone(sr.getOriginal(), minX, maxX, minY, maxY) : sr.getOriginal();
-                            bImage = ImageUtils.SetImageTitle(bImage, sr.getName());
+                            // bImage = ImageUtils.SetImageTitle(bImage, sr.getName());
                             ImageIO.write(bImage, "png", new File(outputFolder, sr.getName().replaceAll(" ", "_") + ".png"));
                         }
                     }

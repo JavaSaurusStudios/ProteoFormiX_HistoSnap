@@ -68,26 +68,22 @@ public class ListActionPopupProvider implements ListenerProvider {
 
         renameItem = new JMenuItem("Rename...");
         menu.add(renameItem);
-        renameItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                List<String> selectedImages = imageCacheList.getSelectedValuesList();
-                if (selectedImages.size() > 1 || selectedImages.isEmpty()) {
-                    System.out.println("Only works on single selections");
-                    return;
-                }
-                String tmpName = selectedImages.get(0);
-                String newName = JOptionPane.showInputDialog(parent, "Enter a new name", MSI_IMAGE.getName());
-                CACHE.UpdateImageName(tmpName, newName);
-                ((DefaultListModel) imageCacheList.getModel()).setElementAt(newName, 0);
-                UILogger.Log("Updated " + tmpName + " to " + newName, UILogger.Level.INFO);
-                parent.UpdateImage();
+        renameItem.addActionListener((ActionEvent e) -> {
+            List<String> selectedImages = imageCacheList.getSelectedValuesList();
+            if (selectedImages.size() > 1 || selectedImages.isEmpty()) {
+                System.out.println("Only works on single selections");
+                return;
             }
+            String tmpName = selectedImages.get(0);
+            String newName = JOptionPane.showInputDialog(parent, "Enter a new name", MSI_IMAGE.getName());
+            CACHE.UpdateImageName(tmpName, newName);
+            ((DefaultListModel) imageCacheList.getModel()).setElementAt(newName, 0);
+            UILogger.Log("Updated " + tmpName + " to " + newName, UILogger.Level.INFO);
+            parent.UpdateImage();
         });
 
         generateCombinedImage = new JMenuItem("Combine...");
-        menu.add(generateCombinedImage);
+    //    menu.add(generateCombinedImage);
         generateCombinedImage.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

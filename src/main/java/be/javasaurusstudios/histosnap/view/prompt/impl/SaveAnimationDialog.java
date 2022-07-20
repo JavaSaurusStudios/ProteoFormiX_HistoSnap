@@ -7,9 +7,10 @@ package be.javasaurusstudios.histosnap.view.prompt.impl;
 
 import be.javasaurusstudios.histosnap.control.MSiImageCache;
 import be.javasaurusstudios.histosnap.control.util.AnimationExporter;
-import be.javasaurusstudios.histosnap.control.util.ImageUtils;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
+import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
+import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.CACHE;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.lastDirectory;
@@ -18,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -33,15 +35,15 @@ import javax.swing.filechooser.FileFilter;
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public class SaveAnimationDialog implements UserPrompt {
-
+    
     private final List<String> selectedImageNames;
     private final MSiImageCache cache;
-
+    
     public SaveAnimationDialog(List<String> selectedImageNames, MSiImageCache cache) {
         this.selectedImageNames = selectedImageNames;
         this.cache = cache;
     }
-
+    
     @Override
     public void Show() {
         final JFrame parent = MSImagizer.instance;
@@ -49,7 +51,7 @@ public class SaveAnimationDialog implements UserPrompt {
         JTextField outputFile = new JTextField();
         JButton saveAnimationLocationButton = new JButton("...");
         timeBetweenFrames.setText("" + 1000 / 60);
-
+        
         saveAnimationLocationButton.addActionListener(
                 new ActionListener() {
             @Override
@@ -63,21 +65,21 @@ public class SaveAnimationDialog implements UserPrompt {
                     public boolean accept(File f) {
                         return f.isDirectory() || f.getAbsolutePath().toLowerCase().endsWith(".gif");
                     }
-
+                    
                     @Override
                     public String getDescription() {
                         return "Output gif animation";
                     }
                 });
                 int userSelection = fileChooser.showSaveDialog(parent);
-
+                
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                     outputFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
                 }
             }
         }
         );
-
+        
         final JComponent[] inputs = new JComponent[]{
             new JLabel("Time Between Frames (milliseconds)"),
             timeBetweenFrames,
@@ -85,15 +87,15 @@ public class SaveAnimationDialog implements UserPrompt {
             new JLabel("Output File"),
             outputFile,
             saveAnimationLocationButton,};
-
+        
         int result = JOptionPane.showConfirmDialog(parent, inputs, "Save animation...", JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
             File fileToStore = new File(outputFile.getText());
-
+            
             if (!fileToStore.getAbsolutePath().toLowerCase().endsWith(".gif")) {
                 fileToStore = new File(fileToStore.getAbsolutePath() + ".gif");
             }
-
+            
             if (fileToStore.exists()) {
                 int response = JOptionPane.showConfirmDialog(parent, "File already exists. Override?", "Saving...",
                         JOptionPane.YES_NO_OPTION,
@@ -102,23 +104,38 @@ public class SaveAnimationDialog implements UserPrompt {
                     return;
                 }
             }
-
+            
             try {
                 int ms = Integer.parseInt(timeBetweenFrames.getText());
                 UILogger.Log("Reading images from session...", UILogger.Level.INFO);
-                List<MSiImage> selectedImages = CACHE.GetCachedImages(selectedImageNames);
+                
+                BufferedImage[] images;
+                MSiImage currentImage = MSImagizer.MSI_IMAGE;
+                
+                if (currentImage instanceof MultiMSiImage) {
+                    MultiMSiImage img = (MultiMSiImage) currentImage;
+                    images = new BufferedImage[img.getFrames().size()];
+                    for (int i = 0; i < images.length; i++) {
+                        images[i] = img.CreateSingleImage(i, 
+                                MSImagizer.instance.getCurrentMode(),
+                                MSImagizer.instance.getCurrentRange().getColors());
+                    }
+                } else {
+                    List<MSiImage> selectedImages = CACHE.GetCachedImages(selectedImageNames);
+                    selectedImages = CACHE.GetCachedImages(selectedImageNames);
+                    if (selectedImages.isEmpty()) {
+                        return;
+                    }
+                    images = new BufferedImage[selectedImages.size()];
+                    for (int i = 0; i < images.length; i++) {
+                        selectedImages.get(i).CreateImage(
+                                MSImagizer.instance.getCurrentMode(),
+                                MSImagizer.instance.getCurrentRange().getColors());
+                    }
 
-                BufferedImage[] images = new BufferedImage[selectedImages.size()];
-                for (int i = 0; i < images.length; i++) {
-                    selectedImages.get(i).CreateImage(
-                            MSImagizer.instance.getCurrentMode(),
-                            MSImagizer.instance.getCurrentRange().getColors());
-                    images[i] = ImageUtils.SetImageTitle(
-                            selectedImages.get(i).getScaledImage(MSImagizer.instance.getExportScale()),
-                            selectedImageNames.get(i)
-                            );
+             
                 }
-
+                
                 AnimationExporter.Save(images, fileToStore, ms, true);
                 UILogger.Log("Exported animation to " + fileToStore.getAbsolutePath(), UILogger.Level.INFO);
                 JOptionPane.showMessageDialog(parent, "Exported animation to " + fileToStore.getAbsolutePath());
@@ -132,5 +149,5 @@ public class SaveAnimationDialog implements UserPrompt {
             }
         }
     }
-
+    
 }

@@ -258,6 +258,7 @@ public class ImageExtractionTask extends WorkingTask {
                 ImageIcon icon = new ImageIcon(MSImagizer.CURRENT_IMAGE);
                 imageIcon.setIcon(icon);
                 imageIcon.setText("");
+                imageIcon.setSize(MSImagizer.CURRENT_IMAGE.getWidth() + 2, MSImagizer.CURRENT_IMAGE.getHeight() + 2);
             }
             parent.repaint();
 

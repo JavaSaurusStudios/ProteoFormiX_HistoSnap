@@ -1,10 +1,10 @@
 package be.javasaurusstudios.histosnap.model.image;
 
+import be.javasaurusstudios.histosnap.control.util.ImageUtils;
 import be.javasaurusstudios.histosnap.control.util.color.ColorUtils;
+import be.javasaurusstudios.histosnap.view.MSImagizer;
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -63,6 +63,23 @@ public class MSiImage extends BufferedImage implements Serializable {
         if (this.name == null || this.name.isEmpty()) {
             this.name = "Default - " + System.currentTimeMillis();
             this.activeFrame.setName(this.name);
+        }
+    }
+
+    protected void annotateFrame(MSiFrame frame, int fontSize, int xOffset, int yOffset) {
+        if (MSImagizer.instance.isDrawTitle()) {
+            int titleX = xOffset + (int) Math.ceil(frame.getWidth() / 2);
+            int titleY = yOffset + frame.getHeight() - 5;
+            BufferedImage tmp = ImageUtils.SetImageSubTitle(
+                    this,
+                    frame.getName(),
+                    (int) (Math.max(fontSize, Math.ceil((double) fontSize / MSImagizer.instance.getCurrentScale()))),
+                    titleX,
+                    titleY);
+            Graphics g = getGraphics();
+            g.clearRect(0, 0, getWidth(), getHeight());
+            g.drawImage(tmp, 0, 0, null);
+            g.dispose();
         }
     }
 
@@ -160,6 +177,8 @@ public class MSiImage extends BufferedImage implements Serializable {
             }
         }
 
+        DrawGrid(getWidth(), getHeight(), 1, 1);
+        annotateFrame(activeFrame, 12, 0, 0);
     }
 
     /**
@@ -215,6 +234,43 @@ public class MSiImage extends BufferedImage implements Serializable {
     @Override
     public String toString() {
         return getName();
+    }
+
+    protected void DrawGrid(int singleWidth, int singleHeight, int cols, int rows) {
+        //draw grid on top
+        if (MSImagizer.instance.isDrawGrid()) {
+            for (int i = 0; i <= cols; i++) {
+                int startingX = i * singleWidth;
+                for (int j = startingX - 1; j < startingX + 1; j++) {
+                    DrawVertical(j);
+                }
+            }
+
+            for (int i = 0; i <= rows; i++) {
+                int startingY = i * singleHeight;
+                for (int j = startingY - 1; j < startingY + 1; j++) {
+                    DrawHorizontal(j);
+                }
+            }
+        }
+    }
+
+    private void DrawHorizontal(int y) {
+        for (int j = 0; j < getWidth(); j++) {
+            int h = y;
+            if (h >= 0 && h < getHeight()) {
+                this.setRGB(j, h, Color.white.getRGB());
+            }
+        }
+    }
+
+    private void DrawVertical(int x) {
+        for (int j = 0; j < getHeight(); j++) {
+            int w = x;
+            if (w >= 0 && w < getWidth()) {
+                this.setRGB(w, j, Color.white.getRGB());
+            }
+        }
     }
 
     public static MSiImage CreateCombinedImage(List<MSiImage> images) {

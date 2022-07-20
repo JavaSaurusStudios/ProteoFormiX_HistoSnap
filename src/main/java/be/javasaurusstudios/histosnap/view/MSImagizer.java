@@ -80,6 +80,10 @@ public class MSImagizer extends javax.swing.JFrame {
     private MSiImage.ImageMode currentMode = MSiImage.ImageMode.MEAN;
     //Boolean indicating if this machine has enough memory or not
     private boolean useHighMemory = false;
+    //Boolean indicating if grid has to be drawn
+    private boolean drawGrid = true;
+    //Boolean indicating if title has to be drawn
+    private boolean drawTitle = true;
 
     ///list of buttons with checkboxes attached to select modes
     private List<JCheckBoxMenuItem> modeButtons;
@@ -93,8 +97,8 @@ public class MSImagizer extends javax.swing.JFrame {
         super.setLocationRelativeTo(null);
 
         instance = this;
-        currentScale=exportScale;
-        
+        currentScale = exportScale;
+
         try {
             Image i = ImageIO.read(getClass().getResource("/icon.png"));
             super.setIconImage(i);
@@ -177,13 +181,13 @@ public class MSImagizer extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         btnExit = new javax.swing.JMenuItem();
         menuExtract = new javax.swing.JMenu();
-        jMenu3 = new javax.swing.JMenu();
-        btnExtractRandomly = new javax.swing.JMenuItem();
-        btnExtractDHBMatrix = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
         btnGenerateImage = new javax.swing.JMenuItem();
         btnGenerateSequence = new javax.swing.JMenuItem();
         btnExtractMz = new javax.swing.JMenuItem();
+        jMenu3 = new javax.swing.JMenu();
+        btnExtractRandomly = new javax.swing.JMenuItem();
+        btnExtractDHBMatrix = new javax.swing.JMenuItem();
         jMenu6 = new javax.swing.JMenu();
         btnIntensityMode = new javax.swing.JMenu();
         btnTIC = new javax.swing.JCheckBoxMenuItem();
@@ -209,6 +213,9 @@ public class MSImagizer extends javax.swing.JFrame {
         btnX4 = new javax.swing.JCheckBoxMenuItem();
         btnX8 = new javax.swing.JCheckBoxMenuItem();
         btnX16 = new javax.swing.JCheckBoxMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+        btnShowOutline = new javax.swing.JCheckBoxMenuItem();
+        btnShowTitle = new javax.swing.JCheckBoxMenuItem();
         btnAdducts = new javax.swing.JMenu();
         btnCations = new javax.swing.JMenu();
         BtnAllCations = new javax.swing.JCheckBoxMenuItem();
@@ -375,26 +382,6 @@ public class MSImagizer extends javax.swing.JFrame {
 
         menuExtract.setText("Extract");
 
-        jMenu3.setText("Background");
-
-        btnExtractRandomly.setText("Random Background");
-        btnExtractRandomly.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnExtractRandomlyActionPerformed(evt);
-            }
-        });
-        jMenu3.add(btnExtractRandomly);
-
-        btnExtractDHBMatrix.setText("DHB Background");
-        btnExtractDHBMatrix.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnExtractDHBMatrixActionPerformed(evt);
-            }
-        });
-        jMenu3.add(btnExtractDHBMatrix);
-
-        menuExtract.add(jMenu3);
-
         jMenu5.setText("Image");
 
         btnGenerateImage.setText("From value");
@@ -422,6 +409,26 @@ public class MSImagizer extends javax.swing.JFrame {
         jMenu5.add(btnExtractMz);
 
         menuExtract.add(jMenu5);
+
+        jMenu3.setText("Background");
+
+        btnExtractRandomly.setText("Random Background");
+        btnExtractRandomly.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExtractRandomlyActionPerformed(evt);
+            }
+        });
+        jMenu3.add(btnExtractRandomly);
+
+        btnExtractDHBMatrix.setText("DHB Background");
+        btnExtractDHBMatrix.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExtractDHBMatrixActionPerformed(evt);
+            }
+        });
+        jMenu3.add(btnExtractDHBMatrix);
+
+        menuExtract.add(jMenu3);
 
         jMenuBar1.add(menuExtract);
 
@@ -617,6 +624,28 @@ public class MSImagizer extends javax.swing.JFrame {
         btnScale.add(btnX16);
 
         jMenu6.add(btnScale);
+
+        jMenu2.setText("Annotation");
+
+        btnShowOutline.setSelected(true);
+        btnShowOutline.setText("Show Outline");
+        btnShowOutline.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowOutlineActionPerformed(evt);
+            }
+        });
+        jMenu2.add(btnShowOutline);
+
+        btnShowTitle.setSelected(true);
+        btnShowTitle.setText("Show Title");
+        btnShowTitle.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowTitleActionPerformed(evt);
+            }
+        });
+        jMenu2.add(btnShowTitle);
+
+        jMenu6.add(jMenu2);
 
         jMenuBar1.add(jMenu6);
 
@@ -1322,13 +1351,23 @@ public class MSImagizer extends javax.swing.JFrame {
         new DHBBackgroundExtractionHandler(this, progressFrame, tfInput, lbImage, currentScale, currentRange, currentMode).Show(false);
     }//GEN-LAST:event_btnExtractDHBMatrixActionPerformed
 
+    private void btnShowOutlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowOutlineActionPerformed
+        drawGrid = btnShowOutline.isSelected();
+        UpdateImage();
+    }//GEN-LAST:event_btnShowOutlineActionPerformed
+
+    private void btnShowTitleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowTitleActionPerformed
+        drawTitle = btnShowTitle.isSelected();
+        UpdateImage();
+    }//GEN-LAST:event_btnShowTitleActionPerformed
+
     /**
      * Adds a new image into the cache
      *
      * @param image the new image
      */
     public static void AddToCache(MSiImage image) {
-        MSI_IMAGE=(image);
+        MSI_IMAGE = (image);
         CACHE.add(image);
         UpdateCacheUI();
     }
@@ -1528,10 +1567,10 @@ public class MSImagizer extends javax.swing.JFrame {
         return exportScale;
     }
 
-    public int getCurrentScale(){
+    public int getCurrentScale() {
         return currentScale;
     }
-    
+
     public ColorRange getCurrentRange() {
         return currentRange;
     }
@@ -1542,6 +1581,22 @@ public class MSImagizer extends javax.swing.JFrame {
 
     public ProgressBarFrame getProgressFrame() {
         return progressFrame;
+    }
+
+    public boolean isDrawGrid() {
+        return drawGrid;
+    }
+
+    public void setDrawGrid(boolean drawGrid) {
+        this.drawGrid = drawGrid;
+    }
+
+    public boolean isDrawTitle() {
+        return drawTitle;
+    }
+
+    public void setDrawTitle(boolean drawTitle) {
+        this.drawTitle = drawTitle;
     }
 
     @Override
@@ -1599,6 +1654,8 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JMenuItem btnRedBlue;
     private javax.swing.JMenuItem btnSave;
     private javax.swing.JMenu btnScale;
+    private javax.swing.JCheckBoxMenuItem btnShowOutline;
+    private javax.swing.JCheckBoxMenuItem btnShowTitle;
     private javax.swing.JCheckBoxMenuItem btnTIC;
     private javax.swing.JCheckBoxMenuItem btnX1;
     private javax.swing.JCheckBoxMenuItem btnX16;
@@ -1610,6 +1667,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenu jMenu5;

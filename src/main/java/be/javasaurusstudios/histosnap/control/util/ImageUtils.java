@@ -19,19 +19,34 @@ public class ImageUtils {
      *
      * @param image the input image
      * @param title the title to put on the image
+     * @param fontSize
      * @return the buffered image with a title
      */
-    public static BufferedImage SetImageTitle(BufferedImage image, String title) {
+    public static BufferedImage SetImageTitle(BufferedImage image, String title, int fontSize) {
+        return SetImageSubTitle(image, title, fontSize, 0, 0);
+    }
+
+    /**
+     * Adds a title to a buffered image
+     *
+     * @param image the input image
+     * @param title the title to put on the image
+     * @param fontSize
+     * @param x
+     *  * @param y
+     * @param y
+     * @return the buffered image with a title
+     */
+    public static BufferedImage SetImageSubTitle(BufferedImage image, String title, int fontSize, int x, int y) {
         BufferedImage framedImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
 
         Graphics2D graph = framedImage.createGraphics();
         graph.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
         graph.setPaint(Color.white);
-        graph.setFont(new Font("Monospaced", Font.BOLD, 20));
-        FontMetrics fm = graph.getFontMetrics();
-        int x = framedImage.getWidth() - fm.stringWidth(title) - 5;
-        int y = /*(framedImage.getHeight() - fm.getHeight()) / 2;*/ fm.getHeight();
-        graph.drawString(title, x, y);
+        Font font = new Font("Monospaced", Font.BOLD, fontSize);
+        graph.setFont(font);
+        FontMetrics fontMetrics = graph.getFontMetrics(font);
+        graph.drawString(title, (int) (x - (fontMetrics.getStringBounds(title, graph).getWidth() / 2)), y);
         graph.dispose();
 
         return framedImage;
