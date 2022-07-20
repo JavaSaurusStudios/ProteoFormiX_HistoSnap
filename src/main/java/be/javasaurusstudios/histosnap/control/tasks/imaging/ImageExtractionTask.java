@@ -8,7 +8,11 @@ import be.javasaurusstudios.histosnap.view.MSImagizer;
 import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
 import be.javasaurusstudios.histosnap.control.util.color.ColorRange;
+import be.javasaurusstudios.histosnap.model.image.MSiFrame;
+import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -230,28 +234,41 @@ public class ImageExtractionTask extends WorkingTask {
     }
 
     private void ExecuteImage(String in, int scale, String extractionName, ColorRange range, float massOffset, boolean autoSave) throws Exception {
+
+        if (minMZ >= maxMZ) {
+            JOptionPane.showConfirmDialog(MSImagizer.instance, "The minimal mz values should be less than the maximal mz value");
+            return;
+        }
+
+        List<float[]> ranges = new ArrayList<>();
+
         for (int i = 0; i < stepCount; i++) {
 
             float minMzTmp = Math.max(minMZ, minMZ + (i * interval));
             float minMzStep = minMzTmp + massOffset;
             float maxMzTmp = Math.min(maxMZ, minMZ + ((i + 1) * interval));
             float maxMzStep = maxMzTmp + massOffset;
+            ranges.add(new float[]{minMzStep, maxMzStep});
+        }
 
-            progressBar.setText("Processing from " + minMzStep + " to " + maxMzStep);
+        for (float[] aRange : ranges) {
+            System.out.println("Examining between " + aRange[0] + " and " + aRange[1]);
+        }
 
-            String tmp = in + minMzStep + "to" + maxMzStep + ".tmp.txt";
-            MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
+        String tmp = in + minMZ + "to" + maxMZ + ".tmp.txt";
+        MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
 
-            MSiImage image = extractor.ExtractImage(minMzStep, maxMzStep, progressBar);
+        MultiMSiImage image = extractor.extractImageRange(ranges, progressBar);
 
-            image.setName(minMzTmp + " - " + maxMzTmp + ((extractionName == null || extractionName.isEmpty()) ? "" : "_" + extractionName));
+        image.setName(minMZ + " - " + maxMZ + ((extractionName == null || extractionName.isEmpty()) ? "" : "_" + extractionName));
 
-            MSImagizer.AddToCache(image);
+        for (MSiFrame frame : image.getFrames()) {
+
+            MSImagizer.AddToCache(new MSiImage(frame));
             progressBar.setText("Removing hotspots");
             MSImagizer.MSI_IMAGE.RemoveHotSpots(99);
             progressBar.setText("Generating heatmap...");
             MSImagizer.MSI_IMAGE.CreateImage(mode, range.getColors());
-
             MSImagizer.CURRENT_IMAGE = MSImagizer.MSI_IMAGE.getScaledImage(scale);
 
             if (imageIcon != null) {
@@ -260,18 +277,18 @@ public class ImageExtractionTask extends WorkingTask {
                 imageIcon.setText("");
                 imageIcon.setSize(MSImagizer.CURRENT_IMAGE.getWidth() + 2, MSImagizer.CURRENT_IMAGE.getHeight() + 2);
             }
-            parent.repaint();
-
-            if (autoSave) {
-                File outputDir = new File(new File(tmp).getParentFile(), minMZ + "-to-" + maxMZ);
-                File tmpFile = new File(tmp);
-                outputDir.mkdirs();
-                File outputFile = new File(outputDir, tmpFile.getName().replace(".tmp.txt", ".png"));
-                progressBar.setText("Saving to " + outputFile);
-                ImageIO.write(MSImagizer.CURRENT_IMAGE, "png", outputFile);
-            }
-
         }
+        parent.repaint();
+
+        if (autoSave) {
+            File outputDir = new File(new File(tmp).getParentFile(), minMZ + "-to-" + maxMZ);
+            File tmpFile = new File(tmp);
+            outputDir.mkdirs();
+            File outputFile = new File(outputDir, tmpFile.getName().replace(".tmp.txt", ".png"));
+            progressBar.setText("Saving to " + outputFile);
+            ImageIO.write(MSImagizer.CURRENT_IMAGE, "png", outputFile);
+        }
+
     }
 
     public void setImageName(String name) {

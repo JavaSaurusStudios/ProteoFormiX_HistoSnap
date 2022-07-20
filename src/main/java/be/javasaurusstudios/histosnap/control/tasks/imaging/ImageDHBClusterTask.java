@@ -118,7 +118,7 @@ public class ImageDHBClusterTask extends WorkingTask {
                 float mZ = DHBMatrixMass.getMonoIsotopicMass();
                 String tmp = in + "." + DHBMatrixMass + ".tmp.txt";
                 MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
-                MSiImage image = extractor.ExtractImage(mZ - tolerance, mZ + tolerance, progressBar);
+                MSiImage image = extractor.extractSingleImage(mZ - tolerance, mZ + tolerance, progressBar);
                 if (image == null) {
                     return;
                 }

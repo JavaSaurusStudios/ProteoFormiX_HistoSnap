@@ -119,7 +119,7 @@ public class ImageRandomizerTask extends WorkingTask {
             float mZ = minMZ + (rnd.nextFloat() * (maxMZ - minMZ));
             String tmp = in + mZ + ".tmp.txt";
             MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
-            MSiImage image = extractor.ExtractImage(mZ - tolerance, mZ + tolerance, progressBar);
+            MSiImage image = extractor.extractSingleImage(mZ - tolerance, mZ + tolerance, progressBar);
             rndImages.add(image);
             if (image == null) {
                 return;

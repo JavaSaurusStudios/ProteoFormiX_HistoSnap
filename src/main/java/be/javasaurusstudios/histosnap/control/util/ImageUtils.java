@@ -38,6 +38,9 @@ public class ImageUtils {
      * @return the buffered image with a title
      */
     public static BufferedImage SetImageSubTitle(BufferedImage image, String title, int fontSize, int x, int y) {
+        if (title == null) {
+            title = "";
+        }
         BufferedImage framedImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
 
         Graphics2D graph = framedImage.createGraphics();

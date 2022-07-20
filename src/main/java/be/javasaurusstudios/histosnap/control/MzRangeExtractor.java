@@ -7,6 +7,7 @@ import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.control.util.PythonExtractor;
 import be.javasaurusstudios.histosnap.control.util.SystemUtils;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
+import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -54,16 +57,16 @@ public class MzRangeExtractor {
      * @throws URISyntaxException
      * @throws Exception
      */
-    public MSiImage ExtractImage(float mzMin, float mzMax, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
+    public MSiImage extractSingleImage(float mzMin, float mzMax, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
 
-        if (MSImagizer.instance==null||MSImagizer.instance.isHighMemory()) {
+        if (MSImagizer.instance == null || MSImagizer.instance.isHighMemory()) {
             SystemUtils.MemoryState memoryState = SystemUtils.getMemoryState();
             DecimalFormat df = new DecimalFormat("#.##");
             String memory = df.format(SystemUtils.getMaxMemory());
             int dialogResult;
             switch (memoryState) {
                 case HIGH:
-                    return ExtractImageInMemory(mzMin, mzMax, progressBar);
+                    return extractImageMem(mzMin, mzMax, progressBar);
                 case MEDIUM:
                     dialogResult = JOptionPane.showConfirmDialog(
                             progressBar,
@@ -71,7 +74,7 @@ public class MzRangeExtractor {
                             "Memory Settings",
                             JOptionPane.YES_NO_OPTION);
                     if (dialogResult == JOptionPane.YES_OPTION) {
-                        return ExtractImageInMemory(mzMin, mzMax, progressBar);
+                        return extractImageMem(mzMin, mzMax, progressBar);
                     } else {
                         return null;
                     }
@@ -82,7 +85,7 @@ public class MzRangeExtractor {
                             "Memory Settings",
                             JOptionPane.YES_NO_OPTION);
                     if (dialogResult == JOptionPane.YES_OPTION) {
-                        return ExtractImageInMemory(mzMin, mzMax, progressBar);
+                        return extractImageMem(mzMin, mzMax, progressBar);
                     } else {
                         return null;
                     }
@@ -96,8 +99,134 @@ public class MzRangeExtractor {
             }
         } else {
 
-            return ExtractImageDatabase(mzMin, mzMax, progressBar);
+            return extractImageDb(mzMin, mzMax, progressBar);
         }
+    }
+
+    /**
+     * Extracts spectra into an MSiImage object using the python library (see
+     * docs for more inf)
+     *
+     * @param ranges
+     * @param mzMin The minimal MZ to consider
+     * @param mzMax The maximal MZ to consider
+     * @param progressBar The progressbar to indicate progress (can be null)
+     * @return the extracted image
+     * @throws IOException
+     * @throws URISyntaxException
+     * @throws Exception
+     */
+    public MultiMSiImage extractImageRange(List<float[]> ranges, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
+
+        if (MSImagizer.instance == null || MSImagizer.instance.isHighMemory()) {
+            SystemUtils.MemoryState memoryState = SystemUtils.getMemoryState();
+            DecimalFormat df = new DecimalFormat("#.##");
+            String memory = df.format(SystemUtils.getMaxMemory());
+            int dialogResult;
+            switch (memoryState) {
+                case HIGH:
+                    return extractImageRangeMem(ranges, progressBar);
+                case MEDIUM:
+                    dialogResult = JOptionPane.showConfirmDialog(
+                            progressBar,
+                            memory + " GB available memory was detected. This might be insufficient. Please consider System Settings > Low Memory Mode if the process times out. Do you wish to continue?",
+                            "Memory Settings",
+                            JOptionPane.YES_NO_OPTION);
+                    if (dialogResult == JOptionPane.YES_OPTION) {
+                        return extractImageRangeMem(ranges, progressBar);
+                    } else {
+                        return null;
+                    }
+                case LOW:
+                    dialogResult = JOptionPane.showConfirmDialog(
+                            progressBar,
+                            memory + " GB available memory was detected. This will likely be insufficient, even for small projects. Please use System Settings > Low Memory Mode if the process times out. Do you wish to continue (not recommended)?",
+                            "Memory Settings",
+                            JOptionPane.YES_NO_OPTION);
+                    if (dialogResult == JOptionPane.YES_OPTION) {
+                        return extractImageRangeMem(ranges, progressBar);
+                    } else {
+                        return null;
+                    }
+                default:
+                    JOptionPane.showMessageDialog(
+                            progressBar,
+                            "Insufficient memory (" + memory + " GB) available. Please enable System Settings > Low Memory Mode",
+                            "Memory Settings",
+                            JOptionPane.PLAIN_MESSAGE);
+                    return null;
+            }
+        } else {
+
+            return extractImageRangeDb(ranges, progressBar);
+        }
+    }
+
+    ////DATABASE
+    private MultiMSiImage extractImageRangeDb(List<float[]> ranges, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
+
+        UILogger.Log("Extracting image from hard drive...", UILogger.Level.INFO);
+
+        float minMz = Float.MAX_VALUE;
+        float maxMz = Float.MIN_VALUE;
+        for (float[] range : ranges) {
+            minMz = Math.min(range[0], minMz);
+            maxMz = Math.max(range[1], maxMz);
+        }
+
+        long time = System.currentTimeMillis();
+
+        File dbFile = new File(in + ".db");
+        if (!dbFile.exists()) {
+            progressBar.setText("Generating database file...");
+            UILogger.Log("Creating database, this may take a while...", UILogger.Level.INFO);
+            String pythonFile = PythonExtractor.getPythonScript("CreateDB.py").getAbsolutePath();
+
+            String[] cmds = new String[]{"python", pythonFile, "--input", in};
+            ProcessBuilder builder = new ProcessBuilder(cmds);
+            Process process = builder.start();
+
+            if (progressBar != null) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                            String line = null;
+                            while ((line = reader.readLine()) != null) {
+                                progressBar.setText(line);
+                                //                        UILogger.Log(line);
+                            }
+                        } catch (IOException ex) {
+                            Logger.getLogger(MzRangeExtractor.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }).start();
+            }
+
+            process.waitFor();
+        }
+
+        HistoSnapDBFile file = new HistoSnapDBFile(dbFile);
+        UILogger.Log("Processing between " + minMz + " and " + maxMz, UILogger.Level.INFO);
+
+        MSiFrame frame = file.getImage(minMz, maxMz).getFrame();
+
+        System.out.println("Completed loading file in " + ((System.currentTimeMillis() - time) / 1000) + " seconds");
+
+        List<MSiFrame> frames = new ArrayList<>();
+        for (float[] range : ranges) {
+            MSiFrame subFrame = frame.CreateSubFrame(range[0], range[1]);
+            subFrame.setName(range[0] + " - " + range[1]);
+            frames.add(subFrame);
+        }
+        System.out.println("Completed loading file in " + ((System.currentTimeMillis() - time) / 1000) + " seconds");
+
+        File tmp = new File(out);
+        if (tmp.exists()) {
+            tmp.delete();
+        }
+        return MultiMSiImage.Generate(frames);
     }
 
     /**
@@ -112,7 +241,7 @@ public class MzRangeExtractor {
      * @throws URISyntaxException
      * @throws Exception
      */
-    public MSiImage ExtractImageDatabase(float mzMin, float mzMax, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
+    private MSiImage extractImageDb(float mzMin, float mzMax, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
 
         UILogger.Log("Extracting image from hard drive...", UILogger.Level.INFO);
 
@@ -149,7 +278,6 @@ public class MzRangeExtractor {
             process.waitFor();
         }
 
- 
         HistoSnapDBFile file = new HistoSnapDBFile(dbFile);
         UILogger.Log("Processing between " + mzMin + " and " + mzMax, UILogger.Level.INFO);
         MSiImage image = file.getImage(mzMin, mzMax);
@@ -161,6 +289,73 @@ public class MzRangeExtractor {
             tmp.delete();
         }
         return image;
+    }
+
+    ////MEMORY
+    private MultiMSiImage extractImageRangeMem(List<float[]> ranges, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
+
+        UILogger.Log("Extracting image from memory...", UILogger.Level.INFO);
+
+        long time = System.currentTimeMillis();
+
+        float minMz = Float.MAX_VALUE;
+        float maxMz = Float.MIN_VALUE;
+        for (float[] range : ranges) {
+            minMz = Math.min(range[0], minMz);
+            maxMz = Math.max(range[1], maxMz);
+        }
+
+        String pythonFile = PythonExtractor.getPythonScript("Extract.py").getAbsolutePath();
+
+        String[] cmds = new String[]{"python", pythonFile, "--mzMin", "" + minMz, "--mzMax", "" + maxMz, "--input", in, "--output", out};
+
+        ProcessBuilder builder = new ProcessBuilder(cmds);
+        //  builder.inheritIO();
+        Process process = builder.start();
+
+        if (progressBar != null) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                        String line = null;
+                        while ((line = reader.readLine()) != null) {
+                            progressBar.setText(line);
+                            //                        UILogger.Log(line);
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(MzRangeExtractor.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }).start();
+        }
+
+        process.waitFor();
+
+        MSiFrame frame = new SpectralDataImporter().ReadFile(new File(out));
+
+        if (frame.getWidth() <= 0 || frame.getHeight() <= 0) {
+            return null;
+        }
+
+        frame.setParentFile(in);
+
+        UILogger.Log("Processing between " + frame.getMinMz() + " and " + frame.getMaxMz(), UILogger.Level.INFO);
+
+        List<MSiFrame> frames = new ArrayList<>();
+        for (float[] range : ranges) {
+            MSiFrame subFrame = frame.CreateSubFrame(range[0], range[1]);
+            subFrame.setName(range[0] + " - " + range[1]);
+            frames.add(subFrame);
+        }
+        System.out.println("Completed loading file in " + ((System.currentTimeMillis() - time) / 1000) + " seconds");
+
+        File tmp = new File(out);
+        if (tmp.exists()) {
+            tmp.delete();
+        }
+        return MultiMSiImage.Generate(frames);
     }
 
     /**
@@ -175,15 +370,13 @@ public class MzRangeExtractor {
      * @throws URISyntaxException
      * @throws Exception
      */
-    public MSiImage ExtractImageInMemory(float mzMin, float mzMax, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
+    private MSiImage extractImageMem(float mzMin, float mzMax, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
 
         UILogger.Log("Extracting image from memory...", UILogger.Level.INFO);
 
         long time = System.currentTimeMillis();
 
-
         String pythonFile = PythonExtractor.getPythonScript("Extract.py").getAbsolutePath();
-
 
         String[] cmds = new String[]{"python", pythonFile, "--mzMin", "" + mzMin, "--mzMax", "" + mzMax, "--input", in, "--output", out};
 
@@ -212,13 +405,13 @@ public class MzRangeExtractor {
         process.waitFor();
 
         MSiFrame frame = new SpectralDataImporter().ReadFile(new File(out));
-        
-        if(frame.getWidth()<=0||frame.getHeight()<=0){
+
+        if (frame.getWidth() <= 0 || frame.getHeight() <= 0) {
             return null;
         }
-        
+
         frame.setParentFile(in);
-        
+
         UILogger.Log("Processing between " + frame.getMinMz() + " and " + frame.getMaxMz(), UILogger.Level.INFO);
         MSiImage image = new MSiImage(frame);
 
@@ -240,7 +433,7 @@ public class MzRangeExtractor {
      * @throws Exception
      */
     public MSiImage ExtractFull() throws IOException, URISyntaxException, Exception {
-        return ExtractImage(-1, Float.MAX_VALUE, null);
+        return extractSingleImage(-1, Float.MAX_VALUE, null);
     }
 
 }
