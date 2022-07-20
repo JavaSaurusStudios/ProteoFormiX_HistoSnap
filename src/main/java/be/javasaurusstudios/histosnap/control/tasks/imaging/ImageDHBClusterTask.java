@@ -3,12 +3,15 @@ package be.javasaurusstudios.histosnap.control.tasks.imaging;
 import be.javasaurusstudios.histosnap.control.MzRangeExtractor;
 import be.javasaurusstudios.histosnap.control.filter.DHBMatrixClusterMasses;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
+import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
+import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -40,20 +43,20 @@ public class ImageDHBClusterTask extends WorkingTask {
     private float minMZ = -1;
     //Boolean indicating if the images should be combined
     private boolean generateBackground;
-    
-    public ImageDHBClusterTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, ProgressBarFrame progressBar,boolean generateBackground) {
+
+    public ImageDHBClusterTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, ProgressBarFrame progressBar, boolean generateBackground) {
         super(progressBar);
         this.parent = parent;
         this.tfInput = tfInput;
         this.imageIcon = imageIcon;
         this.minMZ = minMz;
         this.maxMZ = maxMz;
-        this.generateBackground=generateBackground;
+        this.generateBackground = generateBackground;
     }
 
     @Override
     public Object call() throws Exception {
-        Process(tfInput, imageIcon,generateBackground);
+        Process(tfInput, imageIcon, generateBackground);
         return "Done.";
     }
 
@@ -110,49 +113,38 @@ public class ImageDHBClusterTask extends WorkingTask {
 
     private void ExecuteImage(String in, String extractionName, boolean generateBackground) throws Exception {
 
-        List<MSiImage> DHBMatrixImages = new ArrayList<>();
+        List<float[]> ranges = new LinkedList<>();
+        List<DHBMatrixClusterMasses> masses = new LinkedList<>();
 
         for (DHBMatrixClusterMasses DHBMatrixMass : DHBMatrixClusterMasses.values()) {
             if (DHBMatrixMass.getMonoIsotopicMass() >= minMZ && DHBMatrixMass.getMonoIsotopicMass() <= maxMZ) {
-
                 float mZ = DHBMatrixMass.getMonoIsotopicMass();
-                String tmp = in + "." + DHBMatrixMass + ".tmp.txt";
-                MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
-                MSiImage image = extractor.extractSingleImage(mZ - tolerance, mZ + tolerance, progressBar);
-                if (image == null) {
-                    return;
-                }
-                DHBMatrixImages.add(image);
-                image.setName("" + DHBMatrixMass + "(" + mZ + ")");
-                image.RemoveHotSpots(99);
-                MSImagizer.AddToCache(image);
+                ranges.add(new float[]{mZ - tolerance, mZ + tolerance});
+                masses.add(DHBMatrixMass);
             }
+        }
+
+        String tmp = in + ".DHB.tmp.txt";
+        MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
+        MultiMSiImage extractImageRange = extractor.extractImageRange(ranges, progressBar);
+
+        for (int i = 0; i < ranges.size(); i++) {
+            String name = masses.get(i) + "(" + masses.get(i).getMonoIsotopicMass() + ")";
+            MSiFrame frame = extractImageRange.getFrames().get(i);
+            frame.setName(name);
+            MSiImage image = new MSiImage(frame);
+            image.setName(name);
+            image.RemoveHotSpots(99);
+            MSImagizer.AddToCache(image);
         }
 
         MSiImage displayImage;
         if (generateBackground) {
-            displayImage = MSiImage.CreateCombinedImage(DHBMatrixImages);
+            displayImage = MSiImage.CreateCombinedImage(extractImageRange);
 
             displayImage.setName(extractionName);
             displayImage.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
 
-        } else {
-            if (DHBMatrixImages.isEmpty()) {
-                displayImage = null;
-            } else {
-                displayImage = DHBMatrixImages.get(DHBMatrixImages.size() - 1);
-            }
-
-        }
-
-        if (displayImage != null) {
-            MSImagizer.AddToCache(displayImage);
-            MSImagizer.CURRENT_IMAGE = displayImage.getScaledImage(MSImagizer.instance.getExportScale());
-            if (imageIcon != null) {
-                ImageIcon icon = new ImageIcon(displayImage);
-                imageIcon.setIcon(icon);
-                imageIcon.setText("");
-            }
         }
 
         parent.repaint();

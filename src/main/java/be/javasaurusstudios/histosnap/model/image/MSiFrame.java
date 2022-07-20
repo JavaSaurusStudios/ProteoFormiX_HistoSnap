@@ -17,7 +17,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
-public class MSiFrame  implements Serializable{
+public class MSiFrame implements Serializable {
 
     /**
      * The collection of pixels in this frame
@@ -46,16 +46,14 @@ public class MSiFrame  implements Serializable{
     /**
      * The name of the frame
      */
-    
+
     private String name;
-    
+
     /**
      * A helper object to keep track of frame statistics
      */
     private final DescriptiveStatistics stat;
 
-    
-    
     /**
      * Constructor
      */
@@ -134,8 +132,6 @@ public class MSiFrame  implements Serializable{
         this.parentFile = parentFile;
     }
 
-    
-    
     public MSiPixel getPixel(int x, int y) {
         List<MSiPixel> results = pixels.stream().filter(p -> p.getX() == x && p.getY() == y).collect(Collectors.toList());
         return results == null || results.isEmpty() ? new MSiPixel(x, y) : results.get(0);
@@ -148,7 +144,7 @@ public class MSiFrame  implements Serializable{
      */
     public void RemoveHotSpots(int percentile) {
 
-        UILogger.Log("Postprocessing image...", UILogger.Level.INFO);
+        UILogger.Log("Postprocessing " + getName() + "...", UILogger.Level.INFO);
 
         int threads = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
         ExecutorService executor = Executors.newFixedThreadPool(threads);
@@ -182,8 +178,6 @@ public class MSiFrame  implements Serializable{
             Logger.getLogger(MSiFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        UILogger.Log("Done !", UILogger.Level.INFO);
-        UILogger.Log("-----------------------------", UILogger.Level.INFO);
     }
 
     /**

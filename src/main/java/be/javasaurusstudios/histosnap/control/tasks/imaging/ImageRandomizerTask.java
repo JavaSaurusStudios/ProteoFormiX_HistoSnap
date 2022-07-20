@@ -113,6 +113,8 @@ public class ImageRandomizerTask extends WorkingTask {
 
     private void ExecuteImage(String in, String extractionName) throws Exception {
 
+        //TODO further subdivide this to create multiple, smaller tasks
+        
         List<MSiImage> rndImages = new ArrayList<>();
 
         for (int i = 0; i < samples; i++) {

@@ -273,6 +273,14 @@ public class MSiImage extends BufferedImage implements Serializable {
         }
     }
 
+    public static MSiImage CreateCombinedImage(MultiMSiImage img) {
+        List<MSiImage> images = new ArrayList<>();
+        for (MSiFrame frame : img.getFrames()) {
+            images.add(new MSiImage(frame));
+        }
+        return CreateCombinedImage(images);
+    }
+
     public static MSiImage CreateCombinedImage(List<MSiImage> images) {
 
         MSiFrame frame = new MSiFrame();

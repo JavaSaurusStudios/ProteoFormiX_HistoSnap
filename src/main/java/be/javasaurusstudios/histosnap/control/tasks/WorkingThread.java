@@ -94,7 +94,6 @@ public class WorkingThread extends SwingWorker {
         working = false;
         movingThread.interrupt();
         UILogger.Log(tasks[0].getFinishMessage(), UILogger.Level.INFO);
-        UILogger.Log("-----------------------------", UILogger.Level.NONE);
         if (tasks[0].isNotifyWhenReady()) {
             JOptionPane.showMessageDialog(parent, tasks[0].getFinishMessage());
         }
