@@ -32,9 +32,9 @@ public class MSiImage extends BufferedImage implements Serializable {
     }
 
     //The MSiFrame
-    private MSiFrame frame;
+    protected MSiFrame activeFrame;
     //The name for this frame (for example based on the mz-range)
-    private String name;
+    protected String name;
 
     /**
      * Constructor
@@ -43,11 +43,26 @@ public class MSiImage extends BufferedImage implements Serializable {
      */
     public MSiImage(MSiFrame frame) {
         super(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        this.frame = frame;
-        this.name = this.frame.getName();
+        this.activeFrame = frame;
+        this.name = this.activeFrame.getName();
         if (this.name == null || this.name.isEmpty()) {
             this.name = "Default - " + System.currentTimeMillis();
-            this.frame.setName(this.name);
+            this.activeFrame.setName(this.name);
+        }
+        InitFrame(frame);
+    }
+
+    public MSiImage(MSiFrame frame, int width, int height) {
+        super(width, height, BufferedImage.TYPE_INT_ARGB);
+        InitFrame(frame);
+    }
+
+    protected void InitFrame(MSiFrame frame) {
+        this.activeFrame = frame;
+        this.name = this.activeFrame.getName();
+        if (this.name == null || this.name.isEmpty()) {
+            this.name = "Default - " + System.currentTimeMillis();
+            this.activeFrame.setName(this.name);
         }
     }
 
@@ -57,7 +72,7 @@ public class MSiImage extends BufferedImage implements Serializable {
      * @param intensity the maximal intensity
      */
     public void LimitIntensity(double intensity) {
-        this.frame.clampIntensity(intensity);
+        this.activeFrame.clampIntensity(intensity);
     }
 
     /**
@@ -66,7 +81,7 @@ public class MSiImage extends BufferedImage implements Serializable {
      * @param bgPercentile the percentile to clamp to
      */
     public void RemoveHotSpots(int bgPercentile) {
-        this.frame.RemoveHotSpots(bgPercentile);
+        this.activeFrame.RemoveHotSpots(bgPercentile);
     }
 
     /**
@@ -96,11 +111,11 @@ public class MSiImage extends BufferedImage implements Serializable {
 
     public void setName(String name) {
         this.name = name;
-        this.frame.setName(name);
+        this.activeFrame.setName(name);
     }
 
     public MSiFrame getFrame() {
-        return frame;
+        return activeFrame;
     }
 
     /**
@@ -119,7 +134,7 @@ public class MSiImage extends BufferedImage implements Serializable {
         }
 
         DescriptiveStatistics stat = new DescriptiveStatistics();
-        for (MSiPixel pixel : frame.getPixels()) {
+        for (MSiPixel pixel : activeFrame.getPixels()) {
             double frameValue = (mode == ImageMode.TOTAL_ION_CURRENT) ? pixel.getStat().getSum() : pixel.getStat().getMax();
             if (!Double.isNaN(frameValue)) {
                 stat.addValue(frameValue);
@@ -128,7 +143,7 @@ public class MSiImage extends BufferedImage implements Serializable {
 
         double reference = (mode == ImageMode.TOTAL_ION_CURRENT) ? stat.getMean() : getStat(mode, stat);
 
-        for (MSiPixel pixel : frame.getPixels()) {
+        for (MSiPixel pixel : activeFrame.getPixels()) {
             double check = getStat(mode, pixel.getStat());
             double rel = Math.min(1, Math.max(0, check / reference));
 
@@ -164,8 +179,6 @@ public class MSiImage extends BufferedImage implements Serializable {
         return scaleOp.filter(before, after);
     }
 
- 
-
     /**
      * Returns the statistics in a certain mode
      *
@@ -173,7 +186,7 @@ public class MSiImage extends BufferedImage implements Serializable {
      * @param stat the Input statistics object
      * @return the parameter that is applicable for the selected reference mode
      */
-    private double getStat(ImageMode mode, DescriptiveStatistics stat) {
+    protected double getStat(ImageMode mode, DescriptiveStatistics stat) {
         switch (mode) {
             case TOTAL_ION_CURRENT:
                 return stat.getSum();

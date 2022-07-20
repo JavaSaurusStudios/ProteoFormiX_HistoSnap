@@ -1,4 +1,4 @@
-package be.javasaurusstudios.histosnap.view.listeners;
+package be.javasaurusstudios.histosnap.view.listeners.imagelist;
 
 import javax.swing.JComponent;
 

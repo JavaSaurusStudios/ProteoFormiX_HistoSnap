@@ -1,6 +1,7 @@
-package be.javasaurusstudios.histosnap.control.tasks;
+package be.javasaurusstudios.histosnap.control.tasks.imaging;
 
 import be.javasaurusstudios.histosnap.control.MzRangeExtractor;
+import be.javasaurusstudios.histosnap.control.filter.DHBMatrixClusterMasses;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
@@ -9,7 +10,6 @@ import be.javasaurusstudios.histosnap.model.task.WorkingTask;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -21,7 +21,7 @@ import javax.swing.JTextField;
  *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
-public class ImageRandomizerTask extends WorkingTask {
+public class ImageDHBClusterTask extends WorkingTask {
 
     ///Java Swing UI elements  
     //The parent JFrame 
@@ -38,25 +38,22 @@ public class ImageRandomizerTask extends WorkingTask {
     private float maxMZ = -1;
     //The minimal mz value to consider
     private float minMZ = -1;
-    //the amount of samples
-    private float samples;
-    //the random
-    private final Random rnd;
-
-    public ImageRandomizerTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, int samples, ProgressBarFrame progressBar) {
+    //Boolean indicating if the images should be combined
+    private boolean generateBackground;
+    
+    public ImageDHBClusterTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, ProgressBarFrame progressBar,boolean generateBackground) {
         super(progressBar);
         this.parent = parent;
         this.tfInput = tfInput;
         this.imageIcon = imageIcon;
         this.minMZ = minMz;
         this.maxMZ = maxMz;
-        this.samples = samples;
-        this.rnd = new Random();
+        this.generateBackground=generateBackground;
     }
 
     @Override
     public Object call() throws Exception {
-        Process(tfInput, imageIcon);
+        Process(tfInput, imageIcon,generateBackground);
         return "Done.";
     }
 
@@ -71,7 +68,7 @@ public class ImageRandomizerTask extends WorkingTask {
      * intermediate
      * @throws Exception
      */
-    private void Process(JTextField tfInput, JLabel imageIcon) throws Exception {
+    private void Process(JTextField tfInput, JLabel imageIcon, boolean makeBackground) throws Exception {
 
         if (minMZ == -1 || maxMZ == -1) {
             throw new Exception("Please check the mz range...");
@@ -103,7 +100,7 @@ public class ImageRandomizerTask extends WorkingTask {
                 return;
             }
 
-            ExecuteImage(in, "Background");
+            ExecuteImage(in, "Background", makeBackground);
 
         } catch (Exception ex) {
             progressBar.setVisible(false);
@@ -111,33 +108,53 @@ public class ImageRandomizerTask extends WorkingTask {
         }
     }
 
-    private void ExecuteImage(String in, String extractionName) throws Exception {
+    private void ExecuteImage(String in, String extractionName, boolean generateBackground) throws Exception {
 
-        List<MSiImage> rndImages = new ArrayList<>();
+        List<MSiImage> DHBMatrixImages = new ArrayList<>();
 
-        for (int i = 0; i < samples; i++) {
-            float mZ = minMZ + (rnd.nextFloat() * (maxMZ - minMZ));
-            String tmp = in + mZ + ".tmp.txt";
-            MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
-            MSiImage image = extractor.ExtractImage(mZ - tolerance, mZ + tolerance, progressBar);
-            rndImages.add(image);
-            if (image == null) {
-                return;
+        for (DHBMatrixClusterMasses DHBMatrixMass : DHBMatrixClusterMasses.values()) {
+            if (DHBMatrixMass.getMonoIsotopicMass() >= minMZ && DHBMatrixMass.getMonoIsotopicMass() <= maxMZ) {
+
+                float mZ = DHBMatrixMass.getMonoIsotopicMass();
+                String tmp = in + "." + DHBMatrixMass + ".tmp.txt";
+                MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
+                MSiImage image = extractor.ExtractImage(mZ - tolerance, mZ + tolerance, progressBar);
+                if (image == null) {
+                    return;
+                }
+                DHBMatrixImages.add(image);
+                image.setName("" + DHBMatrixMass + "(" + mZ + ")");
+                image.RemoveHotSpots(99);
+                MSImagizer.AddToCache(image);
             }
-            image.setName("" + mZ);
-            image.RemoveHotSpots(99);
         }
 
-        MSiImage compiledImage = MSiImage.CreateCombinedImage(rndImages);
-        MSImagizer.AddToCache(compiledImage);
-        compiledImage.setName(extractionName);
-        compiledImage.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
-        MSImagizer.CURRENT_IMAGE = compiledImage.getScaledImage(MSImagizer.instance.getCurrentScale());
-        if (imageIcon != null) {
-            ImageIcon icon = new ImageIcon(compiledImage);
-            imageIcon.setIcon(icon);
-            imageIcon.setText("");
+        MSiImage displayImage;
+        if (generateBackground) {
+            displayImage = MSiImage.CreateCombinedImage(DHBMatrixImages);
+
+            displayImage.setName(extractionName);
+            displayImage.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
+
+        } else {
+            if (DHBMatrixImages.isEmpty()) {
+                displayImage = null;
+            } else {
+                displayImage = DHBMatrixImages.get(DHBMatrixImages.size() - 1);
+            }
+
         }
+
+        if (displayImage != null) {
+            MSImagizer.AddToCache(displayImage);
+            MSImagizer.CURRENT_IMAGE = displayImage.getScaledImage(MSImagizer.instance.getExportScale());
+            if (imageIcon != null) {
+                ImageIcon icon = new ImageIcon(displayImage);
+                imageIcon.setIcon(icon);
+                imageIcon.setText("");
+            }
+        }
+
         parent.repaint();
 
     }

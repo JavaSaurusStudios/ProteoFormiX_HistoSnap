@@ -96,7 +96,7 @@ public class SaveFramesDialog implements UserPrompt {
                     File fileToSave = new File(fileToStore, selectedImageNames.get(i) + ".png");
                     BufferedImage bImage = ImageUtils.SetImageTitle(
                             
-                            tmp.getScaledImage(MSImagizer.instance.getCurrentScale()), selectedImageNames.get(i)
+                            tmp.getScaledImage(MSImagizer.instance.getExportScale()), selectedImageNames.get(i)
                     
                     );
                     ImageIO.write(bImage, "png", fileToSave);

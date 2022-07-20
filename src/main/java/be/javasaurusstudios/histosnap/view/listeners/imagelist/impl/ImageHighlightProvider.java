@@ -1,8 +1,8 @@
-package be.javasaurusstudios.histosnap.view.listeners.impl;
+package be.javasaurusstudios.histosnap.view.listeners.imagelist.impl;
 
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import be.javasaurusstudios.histosnap.view.component.ImageLabel;
-import be.javasaurusstudios.histosnap.view.listeners.ListenerProvider;
+import be.javasaurusstudios.histosnap.view.listeners.imagelist.ListenerProvider;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;

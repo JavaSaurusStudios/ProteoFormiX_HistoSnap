@@ -1,4 +1,4 @@
-package be.javasaurusstudios.histosnap.control.tasks;
+package be.javasaurusstudios.histosnap.control.tasks.imaging;
 
 import be.javasaurusstudios.histosnap.control.MzRangeExtractor;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
@@ -132,7 +132,7 @@ public class ImageRandomizerTask extends WorkingTask {
         MSImagizer.AddToCache(compiledImage);
         compiledImage.setName(extractionName);
         compiledImage.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
-        MSImagizer.CURRENT_IMAGE = compiledImage.getScaledImage(MSImagizer.instance.getCurrentScale());
+        MSImagizer.CURRENT_IMAGE = compiledImage.getScaledImage(MSImagizer.instance.getExportScale());
         if (imageIcon != null) {
             ImageIcon icon = new ImageIcon(compiledImage);
             imageIcon.setIcon(icon);

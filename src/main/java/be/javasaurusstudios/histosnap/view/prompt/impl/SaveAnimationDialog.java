@@ -114,7 +114,7 @@ public class SaveAnimationDialog implements UserPrompt {
                             MSImagizer.instance.getCurrentMode(),
                             MSImagizer.instance.getCurrentRange().getColors());
                     images[i] = ImageUtils.SetImageTitle(
-                            selectedImages.get(i).getScaledImage(MSImagizer.instance.getCurrentScale()),
+                            selectedImages.get(i).getScaledImage(MSImagizer.instance.getExportScale()),
                             selectedImageNames.get(i)
                             );
                 }

@@ -124,7 +124,7 @@ public class SaveSimilaritiesDialog implements UserPrompt {
         UILogger.Log("Calculating similarities based on "+selectedImage.getName(), UILogger.Level.NONE);
         
         selectedImage.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
-        BufferedImage refImage = selectedImage.getScaledImage(MSImagizer.instance.getCurrentScale());
+        BufferedImage refImage = selectedImage.getScaledImage(MSImagizer.instance.getExportScale());
         String refName = selectedImage.getName();
         ArrayList<MSiImage> selectedImages = cache.GetCachedImages(selectedImageNames);
         final BufferedImage[] images = new BufferedImage[selectedImages.size()];
@@ -181,7 +181,7 @@ public class SaveSimilaritiesDialog implements UserPrompt {
 
         for (int i = 0; i < selectedImages.size(); i++) {
             selectedImages.get(i).CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
-            images[i] = selectedImages.get(i).getScaledImage(MSImagizer.instance.getCurrentScale());
+            images[i] = selectedImages.get(i).getScaledImage(MSImagizer.instance.getExportScale());
             names[i] = selectedImages.get(i).getName();
         }
 

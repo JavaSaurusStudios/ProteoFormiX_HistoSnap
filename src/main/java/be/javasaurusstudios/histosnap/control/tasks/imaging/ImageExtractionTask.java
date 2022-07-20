@@ -1,4 +1,4 @@
-package be.javasaurusstudios.histosnap.control.tasks;
+package be.javasaurusstudios.histosnap.control.tasks.imaging;
 
 import be.javasaurusstudios.histosnap.control.MzRangeExtractor;
 import be.javasaurusstudios.histosnap.control.util.UILogger;

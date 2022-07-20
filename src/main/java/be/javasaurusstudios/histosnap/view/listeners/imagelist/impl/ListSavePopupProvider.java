@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package be.javasaurusstudios.histosnap.view.listeners.impl;
+package be.javasaurusstudios.histosnap.view.listeners.imagelist.impl;
 
-import be.javasaurusstudios.histosnap.view.listeners.ListenerProvider;
+import be.javasaurusstudios.histosnap.view.listeners.imagelist.ListenerProvider;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

@@ -30,7 +30,7 @@ public class ImageUtils {
         graph.setFont(new Font("Monospaced", Font.BOLD, 20));
         FontMetrics fm = graph.getFontMetrics();
         int x = framedImage.getWidth() - fm.stringWidth(title) - 5;
-        int y = (framedImage.getHeight() - fm.getHeight()) / 2;//fm.getHeight();
+        int y = /*(framedImage.getHeight() - fm.getHeight()) / 2;*/ fm.getHeight();
         graph.drawString(title, x, y);
         graph.dispose();
 

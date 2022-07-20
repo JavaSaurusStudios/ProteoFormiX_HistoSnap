@@ -1,6 +1,6 @@
-package be.javasaurusstudios.histosnap.view.listeners.impl;
+package be.javasaurusstudios.histosnap.view.listeners.imagelist.impl;
 
-import be.javasaurusstudios.histosnap.view.listeners.ListenerProvider;
+import be.javasaurusstudios.histosnap.view.listeners.imagelist.ListenerProvider;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.MSI_IMAGE;
 import javax.swing.JComponent;

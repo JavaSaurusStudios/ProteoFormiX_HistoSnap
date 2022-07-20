@@ -56,7 +56,7 @@ public class MzRangeExtractor {
      */
     public MSiImage ExtractImage(float mzMin, float mzMax, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
 
-        if (MSImagizer.instance.isHighMemory()) {
+        if (MSImagizer.instance==null||MSImagizer.instance.isHighMemory()) {
             SystemUtils.MemoryState memoryState = SystemUtils.getMemoryState();
             DecimalFormat df = new DecimalFormat("#.##");
             String memory = df.format(SystemUtils.getMaxMemory());

@@ -1,4 +1,4 @@
-package be.javasaurusstudios.histosnap.control.tasks;
+package be.javasaurusstudios.histosnap.control.tasks.housekeeping;
 
 import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;

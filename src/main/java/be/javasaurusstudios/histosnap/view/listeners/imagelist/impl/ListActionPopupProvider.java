@@ -1,8 +1,8 @@
-package be.javasaurusstudios.histosnap.view.listeners.impl;
+package be.javasaurusstudios.histosnap.view.listeners.imagelist.impl;
 
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
-import be.javasaurusstudios.histosnap.view.listeners.ListenerProvider;
+import be.javasaurusstudios.histosnap.view.listeners.imagelist.ListenerProvider;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.CACHE;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.MSI_IMAGE;

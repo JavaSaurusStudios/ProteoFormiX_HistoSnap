@@ -1,6 +1,6 @@
 package be.javasaurusstudios.histosnap.control.similarities;
 
-import be.javasaurusstudios.histosnap.control.tasks.SimilarityCalculationTask;
+import be.javasaurusstudios.histosnap.control.tasks.housekeeping.SimilarityCalculationTask;
 import be.javasaurusstudios.histosnap.control.tasks.WorkingTaskPostProcess;
 import be.javasaurusstudios.histosnap.control.tasks.WorkingThread;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
