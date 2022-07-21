@@ -11,9 +11,6 @@ import java.util.concurrent.Callable;
  */
 public abstract class WorkingTask implements Callable {
 
-    // The progressbar to report to
-    protected ProgressBar progressBar;
-
     // A list of postprocessing tasks that'll run once the result is available
     private final ArrayList<WorkingTaskPostProcess> postprocessing = new ArrayList<>();
 
@@ -22,10 +19,9 @@ public abstract class WorkingTask implements Callable {
 
     /**
      * Constructor
-     * @param progressBar the progress bar (can be null) 
      */
-    public WorkingTask(ProgressBar progressBar) {
-        this.progressBar = progressBar;
+    public WorkingTask() {
+
     }
 
     /**
@@ -47,16 +43,7 @@ public abstract class WorkingTask implements Callable {
             event.SetResult(result).run();
         }
     }
-
-    /**
-     * Returns the progress bar
-     * @return 
-     */
-    public ProgressBar getProgressBar() {
-        return progressBar;
-    }
-
-    
+  
     
     /**
      * Return a message to be displayed when the task has completed

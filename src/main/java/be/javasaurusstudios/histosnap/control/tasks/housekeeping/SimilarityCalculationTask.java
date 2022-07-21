@@ -3,6 +3,7 @@ package be.javasaurusstudios.histosnap.control.tasks.housekeeping;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.SimilarityResult;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
+import be.javasaurusstudios.histosnap.view.MSImagizer;
 import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -36,7 +37,6 @@ public class SimilarityCalculationTask extends WorkingTask {
     /**
      * Constructor
      *
-     * @param progessBar The progress bar that needs updating (can be null)
      * @param minX The minimum X value of the frame that needs to be checked
      * @param maxX The maximum X value of the frame that needs to be checked
      * @param minY The minimum Y value of the frame that needs to be checked
@@ -47,8 +47,8 @@ public class SimilarityCalculationTask extends WorkingTask {
      * @param referenceName The name of the reference image
      * @param percentage the allowed similarity tolerance
      */
-    public SimilarityCalculationTask(ProgressBar progessBar, int minX, int maxX, int minY, int maxY, BufferedImage[] images, String[] names, BufferedImage reference, String referenceName, double percentage) {
-        super(progessBar);
+    public SimilarityCalculationTask( int minX, int maxX, int minY, int maxY, BufferedImage[] images, String[] names, BufferedImage reference, String referenceName, double percentage) {
+        super();
         this.names = names;
         this.refImage = createSubImage(reference, minX, maxX, minY, maxY);
         this.threshold = percentage;
@@ -63,15 +63,14 @@ public class SimilarityCalculationTask extends WorkingTask {
     /**
      * Constructor
      *
-     * @param progessBar The progress bar that needs updating (can be null)
      * @param images The collection of images that will be considered
      * @param names The names of the images that need be considered
      * @param reference The reference image
      * @param referenceName The name of the reference image
      * @param percentage the allowed similarity tolerance
      */
-    public SimilarityCalculationTask(ProgressBar progessBar, BufferedImage[] images, String[] names, BufferedImage reference, String referenceName, double percentage) {
-        super(progessBar);
+    public SimilarityCalculationTask( BufferedImage[] images, String[] names, BufferedImage reference, String referenceName, double percentage) {
+        super();
         this.names = names;
         this.refImage = reference;
         this.threshold = percentage;
@@ -141,7 +140,7 @@ public class SimilarityCalculationTask extends WorkingTask {
         List<SimilarityResult> results = new ArrayList<>();
         for (int i = 0; i < images.length - 1; i++) {
             if (!referenceName.equalsIgnoreCase(names[i])) {
-                progressBar.setText("Calculating similarities (" + i + "/" + images.length + ")");
+                 MSImagizer.instance.getProgressBar().setText("Calculating similarities (" + i + "/" + images.length + ")");
                 double percentage = Compare(refImage == null ? images[0] : refImage, images[i + 1]);
                 if (percentage >= threshold) {
                     stats.addValue(percentage);

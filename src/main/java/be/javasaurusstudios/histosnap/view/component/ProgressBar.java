@@ -27,6 +27,16 @@ public class ProgressBar {
         label.setText(txt);
     }
 
+    public void setValue(float value, boolean indeterminate) {
+        bar.setValue((int) (Math.max(0, Math.min(100, (value * 100)))));
+        bar.setIndeterminate(indeterminate);
+    }
+
+    public void setValueText(float value, String txt, boolean indeterminate) {
+        setValue(value, indeterminate);
+        setText(txt);
+    }
+
     public void setVisible(boolean visible) {
         bar.setVisible(visible);
         label.setVisible(visible);

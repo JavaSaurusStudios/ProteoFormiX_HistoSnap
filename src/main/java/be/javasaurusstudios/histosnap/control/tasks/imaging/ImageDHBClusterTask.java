@@ -1,7 +1,7 @@
 package be.javasaurusstudios.histosnap.control.tasks.imaging;
 
 import be.javasaurusstudios.histosnap.control.MzRangeExtractor;
-import be.javasaurusstudios.histosnap.control.filter.DHBMatrixClusterMasses;
+import be.javasaurusstudios.histosnap.control.masses.DHBMatrixClusterMasses;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
@@ -42,8 +42,8 @@ public class ImageDHBClusterTask extends WorkingTask {
     //Boolean indicating if the images should be combined
     private boolean generateBackground;
 
-    public ImageDHBClusterTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, ProgressBar progressBar, boolean generateBackground) {
-        super(progressBar);
+    public ImageDHBClusterTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, boolean generateBackground) {
+        super();
         this.parent = parent;
         this.tfInput = tfInput;
         this.imageIcon = imageIcon;
@@ -81,7 +81,7 @@ public class ImageDHBClusterTask extends WorkingTask {
 
             File inFile = new File(in);
             if (!inFile.exists()) {
-                progressBar.setVisible(false);
+                 MSImagizer.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "Please specify an input imzml file",
                         "Invalid input file",
@@ -92,7 +92,7 @@ public class ImageDHBClusterTask extends WorkingTask {
 
             File idbFile = new File(inFile.getAbsolutePath().replace(".imzml", ".ibd"));
             if (!idbFile.exists()) {
-                progressBar.setVisible(false);
+                 MSImagizer.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "The corresponding ibd file could not be found in the provided file directory./nPlease verify that an idb file exist with the EXACT same name as the provided imzml.",
                         "Invalid input file",
@@ -104,7 +104,7 @@ public class ImageDHBClusterTask extends WorkingTask {
             ExecuteImage(in, "Background", makeBackground);
 
         } catch (Exception ex) {
-            progressBar.setVisible(false);
+             MSImagizer.instance.getProgressBar().setVisible(false);
             ex.printStackTrace();
         }
     }
@@ -122,9 +122,14 @@ public class ImageDHBClusterTask extends WorkingTask {
             }
         }
 
+        if (ranges.isEmpty()) {
+            JOptionPane.showMessageDialog(parent, "The specified range (" + minMZ + " - " + maxMZ + ") does not contain DHB matrix molecules");
+            return;
+        }
+
         String tmp = in + ".DHB.tmp.txt";
         MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
-        MultiMSiImage extractImageRange = extractor.extractImageRange(ranges, progressBar);
+        MultiMSiImage extractImageRange = extractor.extractImageRange(ranges);
 
         for (int i = 0; i < ranges.size(); i++) {
             String name = masses.get(i) + "(" + masses.get(i).getMonoIsotopicMass() + ")";

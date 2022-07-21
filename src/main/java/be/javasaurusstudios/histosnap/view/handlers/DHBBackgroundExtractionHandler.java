@@ -45,7 +45,6 @@ public class DHBBackgroundExtractionHandler extends BackgroundExtractionHandler 
                 lbImage,
                 lowerMzBoundary,
                 upperMzBoundary,
-                progressFrame,
                 autoCombine
         );
         task.setNotifyWhenRead(false);

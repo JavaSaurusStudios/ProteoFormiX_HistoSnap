@@ -20,6 +20,10 @@ public class UILogger {
     public static JList LOGGING_AREA;
     public static int cacheSize = 100;
 
+    public static void Log(String msg) {
+        Log(msg, Level.INFO);
+    }
+
     public static void Log(String msg, Level lv) {
         String logMessage = formatter.format(LocalDateTime.now()) + " : " + (lv == Level.NONE ? "" : "[" + lv + "] : ") + msg;
 

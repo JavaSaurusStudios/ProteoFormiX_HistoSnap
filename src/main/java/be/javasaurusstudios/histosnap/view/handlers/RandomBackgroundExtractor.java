@@ -44,8 +44,7 @@ public class RandomBackgroundExtractor extends BackgroundExtractionHandler {
                 lbImage,
                 lowerMzBoundary,
                 upperMzBoundary,
-                sampleCount,
-                progressFrame
+                sampleCount
         );
         task.setNotifyWhenRead(false);
         new WorkingThread(parent, task).execute();

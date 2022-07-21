@@ -3,6 +3,7 @@ package be.javasaurusstudios.histosnap.control;
 import be.javasaurusstudios.histosnap.control.cache.HistoSnapImageSession;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
+import be.javasaurusstudios.histosnap.view.MSImagizer;
 import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,18 +40,16 @@ public class MSiImageCache extends ArrayList<String> {
      * @param session the session
      * @param progessBar the progress bar
      */
-    public void setSession(HistoSnapImageSession session, ProgressBar progessBar) {
+    public void setSession(HistoSnapImageSession session) {
         if (this.session != null && !overrideSession) {
-            this.session.SaveSession(progessBar);
+            this.session.SaveSession();
         }
 
         this.session = session;
-        session.RestoreSession(progessBar);
+        session.RestoreSession();
         Clear();
         for (MSiFrame frame : session) {
-            if (progessBar != null) {
-                progessBar.setText("Loading " + frame.getName());
-            }
+            MSImagizer.instance.getProgressBar().setText("Loading " + frame.getName());
             add(frame.getName());
             images.put(frame.getName(), new MSiImage(frame));
         }

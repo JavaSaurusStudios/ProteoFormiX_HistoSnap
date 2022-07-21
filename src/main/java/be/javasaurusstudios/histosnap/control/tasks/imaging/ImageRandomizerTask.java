@@ -43,8 +43,8 @@ public class ImageRandomizerTask extends WorkingTask {
     //the random
     private final Random rnd;
 
-    public ImageRandomizerTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, int samples, ProgressBar progressBar) {
-        super(progressBar);
+    public ImageRandomizerTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, int samples) {
+        super();
         this.parent = parent;
         this.tfInput = tfInput;
         this.imageIcon = imageIcon;
@@ -83,7 +83,7 @@ public class ImageRandomizerTask extends WorkingTask {
 
             File inFile = new File(in);
             if (!inFile.exists()) {
-                progressBar.setVisible(false);
+                 MSImagizer.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "Please specify an input imzml file",
                         "Invalid input file",
@@ -94,7 +94,7 @@ public class ImageRandomizerTask extends WorkingTask {
 
             File idbFile = new File(inFile.getAbsolutePath().replace(".imzml", ".ibd"));
             if (!idbFile.exists()) {
-                progressBar.setVisible(false);
+                 MSImagizer.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "The corresponding ibd file could not be found in the provided file directory./nPlease verify that an idb file exist with the EXACT same name as the provided imzml.",
                         "Invalid input file",
@@ -106,7 +106,7 @@ public class ImageRandomizerTask extends WorkingTask {
             ExecuteImage(in, "Background");
 
         } catch (Exception ex) {
-            progressBar.setVisible(false);
+             MSImagizer.instance.getProgressBar().setVisible(false);
             ex.printStackTrace();
         }
     }
@@ -121,7 +121,7 @@ public class ImageRandomizerTask extends WorkingTask {
             float mZ = minMZ + (rnd.nextFloat() * (maxMZ - minMZ));
             String tmp = in + mZ + ".tmp.txt";
             MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
-            MSiImage image = extractor.extractSingleImage(mZ - tolerance, mZ + tolerance, progressBar);
+            MSiImage image = extractor.extractSingleImage(mZ - tolerance, mZ + tolerance);
             rndImages.add(image);
             if (image == null) {
                 return;

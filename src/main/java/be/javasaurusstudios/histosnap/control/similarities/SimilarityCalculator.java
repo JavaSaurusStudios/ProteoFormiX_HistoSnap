@@ -28,7 +28,6 @@ public class SimilarityCalculator {
     public static void DoSimilarities(double percentage, BufferedImage[] images, String[] names, BufferedImage refImage, String refName, WorkingTaskPostProcess... postProcessing) {
         try {
             SimilarityCalculationTask task = new SimilarityCalculationTask(
-                    MSImagizer.instance.getProgressFrame(),
                     images,
                     names,
                     refImage,
@@ -65,7 +64,6 @@ public class SimilarityCalculator {
     public static void DoSimilarities(double percentage, int minX, int maxX, int minY, int maxY, BufferedImage[] images, String[] names, BufferedImage refImage, String refName, WorkingTaskPostProcess... postProcessing) {
         try {
             SimilarityCalculationTask task = new SimilarityCalculationTask(
-                    MSImagizer.instance.getProgressFrame(),
                     minX,
                     maxX,
                     minY,

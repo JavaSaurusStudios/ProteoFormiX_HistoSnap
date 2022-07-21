@@ -1,6 +1,7 @@
 package be.javasaurusstudios.histosnap.control.tasks.housekeeping;
 
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
+import be.javasaurusstudios.histosnap.view.MSImagizer;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.CACHE;
 import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.io.File;
@@ -18,12 +19,11 @@ public class SessionSavingTask extends WorkingTask {
 
     /***
      * Constructor for a session storing task
-     * @param progessBar the progress bar
      * @param outputFolder the folder to store the images at
      * @param silent boolean indicating if this should be stored silently
      */
-    public SessionSavingTask(ProgressBar progessBar, File outputFolder, boolean silent) {
-        super(progessBar);
+    public SessionSavingTask(File outputFolder, boolean silent) {
+        super();
         this.outputFolder = outputFolder;
         this.silent = silent;
     }
@@ -31,13 +31,13 @@ public class SessionSavingTask extends WorkingTask {
     @Override
     public Object call() throws Exception {
         if (!silent) {
-            progressBar.setText("Saving session...");
+             MSImagizer.instance.getProgressBar().setText("Saving session...");
         }
         if (CACHE.getFirst() != null) {
             CACHE.getSession().setSessionFolder(outputFolder);
-            CACHE.getSession().SaveSession(silent ? null : progressBar);
+            CACHE.getSession().SaveSession();
         }
-        progressBar.setVisible(false);
+         MSImagizer.instance.getProgressBar().setVisible(false);
         return true;
     }
 

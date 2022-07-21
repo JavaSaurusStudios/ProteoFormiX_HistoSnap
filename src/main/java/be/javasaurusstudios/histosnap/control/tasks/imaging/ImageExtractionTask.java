@@ -58,7 +58,7 @@ public class ImageExtractionTask extends WorkingTask {
     /**
      *
      * @param parent The parent JFrame
-     * @param progressBar The progressbar to report to
+
      * @param tfInput the input file
      * @param minMZField the text field for the minimal mz
      * @param maxMZField the text for the maximal mz
@@ -70,8 +70,8 @@ public class ImageExtractionTask extends WorkingTask {
      * @param saveIntermediate boolean indicating if this image has to be auto
      * saved
      */
-    public ImageExtractionTask(JFrame parent, ProgressBar progressBar, JTextField tfInput, JTextField minMZField, JTextField maxMZField, JTextField stepsField, JLabel imageIcon, int scale, MSiImage.ImageMode mode, ColorRange range, boolean saveIntermediate) {
-        super(progressBar);
+    public ImageExtractionTask(JFrame parent,  JTextField tfInput, JTextField minMZField, JTextField maxMZField, JTextField stepsField, JLabel imageIcon, int scale, MSiImage.ImageMode mode, ColorRange range, boolean saveIntermediate) {
+        super();
         this.parent = parent;
         this.tfInput = tfInput;
         this.imageIcon = imageIcon;
@@ -87,7 +87,7 @@ public class ImageExtractionTask extends WorkingTask {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            progressBar.setVisible(false);
+             MSImagizer.instance.getProgressBar().setVisible(false);
             JOptionPane.showMessageDialog(parent,
                     "The minimal MZ value should be a real number >=0",
                     "Invalid mass to charge range",
@@ -101,7 +101,7 @@ public class ImageExtractionTask extends WorkingTask {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            progressBar.setVisible(false);
+             MSImagizer.instance.getProgressBar().setVisible(false);
             JOptionPane.showMessageDialog(parent,
                     "The maximal MZ value should be a real number >0",
                     "Invalid mass to charge range",
@@ -122,7 +122,7 @@ public class ImageExtractionTask extends WorkingTask {
                 interval = (maxMZ - minMZ) / stepCount;
 
             } catch (NumberFormatException e) {
-                progressBar.setVisible(false);
+                 MSImagizer.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "The step count >=1",
                         "Invalid step size",
@@ -136,7 +136,7 @@ public class ImageExtractionTask extends WorkingTask {
     /**
      *
      * @param parent The parent JFrame
-     * @param progressBar The progressbar to report to
+
      * @param tfInput the input file
      * @param minMz the minimal mz
      * @param maxMz the maximal mz
@@ -148,8 +148,8 @@ public class ImageExtractionTask extends WorkingTask {
      * @param saveIntermediate boolean indicating if this image has to be auto
      * saved
      */
-    public ImageExtractionTask(JFrame parent, ProgressBar progressBar, JTextField tfInput, float minMz, float maxMz, int steps, JLabel imageIcon, int scale, MSiImage.ImageMode mode, ColorRange range, boolean saveIntermediate) {
-        super(progressBar);
+    public ImageExtractionTask(JFrame parent,  JTextField tfInput, float minMz, float maxMz, int steps, JLabel imageIcon, int scale, MSiImage.ImageMode mode, ColorRange range, boolean saveIntermediate) {
+        super();
         this.parent = parent;
         this.tfInput = tfInput;
 
@@ -186,7 +186,7 @@ public class ImageExtractionTask extends WorkingTask {
     protected void Process(JTextField tfInput, JLabel imageIcon, int scale, ColorRange range, boolean autoSave) throws Exception {
 
         if (!imageName.isEmpty()) {
-            progressBar.setText("Extracting " + imageName);
+             MSImagizer.instance.getProgressBar().setText("Extracting " + imageName);
         }
 
         if (minMZ == -1 || maxMZ == -1) {
@@ -199,7 +199,7 @@ public class ImageExtractionTask extends WorkingTask {
 
             File inFile = new File(in);
             if (!inFile.exists()) {
-                progressBar.setVisible(false);
+                 MSImagizer.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "Please specify an input imzml file",
                         "Invalid input file",
@@ -210,7 +210,7 @@ public class ImageExtractionTask extends WorkingTask {
 
             File idbFile = new File(inFile.getAbsolutePath().replace(".imzml", ".ibd"));
             if (!idbFile.exists()) {
-                progressBar.setVisible(false);
+                 MSImagizer.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "The corresponding ibd file could not be found in the provided file directory./nPlease verify that an idb file exist with the EXACT same name as the provided imzml.",
                         "Invalid input file",
@@ -219,15 +219,19 @@ public class ImageExtractionTask extends WorkingTask {
                 return;
             }
 
+            UILogger.Log("Start image extraction ...", UILogger.Level.INFO);
             ExecuteImage(in, scale, imageName, range, 0, autoSave);
 
-            for (MSScanAdduct.ADDUCTS adduct : MSScanAdduct.ENABLED_ADDUCTS) {
-                ExecuteImage(in, scale, imageName + "_" + adduct.toString(), range, adduct.getMassDeficit(), autoSave);
+            if (!MSScanAdduct.ENABLED_ADDUCTS.isEmpty()) {
+                UILogger.Log("Extracting additional adducts...", UILogger.Level.INFO);
+                for (MSScanAdduct.ADDUCTS adduct : MSScanAdduct.ENABLED_ADDUCTS) {
+                    ExecuteImage(in, scale, imageName + "_" + adduct.toString(), range, adduct.getMassDeficit(), autoSave);
+                }
             }
 
         } catch (Exception ex) {
             if (!imageName.isEmpty()) {
-                progressBar.setText(imageName + " extraction has failed. Please verify if the requested mass range is present in the input data");
+                 MSImagizer.instance.getProgressBar().setText(imageName + " extraction has failed. Please verify if the requested mass range is present in the input data");
             }
             ex.printStackTrace();
         }
@@ -242,6 +246,7 @@ public class ImageExtractionTask extends WorkingTask {
 
         List<float[]> ranges = new ArrayList<>();
 
+        UILogger.Log("Calculating mass ranges");
         for (int i = 0; i < stepCount; i++) {
 
             float minMzTmp = Math.max(minMZ, minMZ + (i * interval));
@@ -251,23 +256,19 @@ public class ImageExtractionTask extends WorkingTask {
             ranges.add(new float[]{minMzStep, maxMzStep});
         }
 
-        for (float[] aRange : ranges) {
-            System.out.println("Examining between " + aRange[0] + " and " + aRange[1]);
-        }
-
         String tmp = in + minMZ + "to" + maxMZ + ".tmp.txt";
         MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
 
-        MultiMSiImage image = extractor.extractImageRange(ranges, progressBar);
+        MultiMSiImage image = extractor.extractImageRange(ranges);
 
         image.setName(minMZ + " - " + maxMZ + ((extractionName == null || extractionName.isEmpty()) ? "" : "_" + extractionName));
 
         for (MSiFrame frame : image.getFrames()) {
 
             MSImagizer.AddToCache(new MSiImage(frame));
-            progressBar.setText("Removing hotspots");
+             MSImagizer.instance.getProgressBar().setText("Removing hotspots");
             MSImagizer.MSI_IMAGE.RemoveHotSpots(99);
-            progressBar.setText("Generating heatmap...");
+             MSImagizer.instance.getProgressBar().setText("Generating heatmap...");
             MSImagizer.MSI_IMAGE.CreateImage(mode, range.getColors());
             MSImagizer.CURRENT_IMAGE = MSImagizer.MSI_IMAGE.getScaledImage(scale);
 
@@ -285,7 +286,7 @@ public class ImageExtractionTask extends WorkingTask {
             File tmpFile = new File(tmp);
             outputDir.mkdirs();
             File outputFile = new File(outputDir, tmpFile.getName().replace(".tmp.txt", ".png"));
-            progressBar.setText("Saving to " + outputFile);
+             MSImagizer.instance.getProgressBar().setText("Saving to " + outputFile);
             ImageIO.write(MSImagizer.CURRENT_IMAGE, "png", outputFile);
         }
 

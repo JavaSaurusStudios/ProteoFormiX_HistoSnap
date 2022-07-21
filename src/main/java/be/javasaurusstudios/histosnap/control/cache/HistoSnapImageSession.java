@@ -65,7 +65,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
     public void RenameImage(String oldName, String newName) {
         if (IsInSession(oldName)) {
             if (IsInSession(newName)) {
-                
+
             } else {
                 MSiFrame tmp = GetFromSession(oldName);
                 tmp.setName(newName);
@@ -78,11 +78,9 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
     /**
      * Saves the session into the specified folder
      */
-    public void SaveSession(ProgressBar progressBar) {
+    public void SaveSession() {
         for (MSiFrame frame : this) {
-            if (progressBar != null) {
-                progressBar.setText("Saving " + frame.getName() + " ...");
-            }
+            MSImagizer.instance.getProgressBar().setText("Saving " + frame.getName() + " ...");
             StoreInSession(frame);
         }
     }
@@ -90,22 +88,20 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
     /**
      * Restores a saved session
      */
-    public void RestoreSession(ProgressBar progressBar) {
+    public void RestoreSession() {
         File[] files = sessionFolder.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 return name.endsWith(".hsi");
             }
         });
-        
+
         for (File file : files) {
-            if (progressBar != null) {
-                progressBar.setText("Loading " + file.getName());
-            }
+            MSImagizer.instance.getProgressBar().setText("Loading " + file.getName());
             MSiFrame tmp = GetFromSession(file.getName());
             add(tmp);
         }
-        
+
     }
 
     /**
@@ -171,13 +167,13 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
         }
         return readCase;
     }
-    
+
     public File getSessionFolder() {
         return sessionFolder;
     }
-    
+
     public void setSessionFolder(File sessionFolder) {
         this.sessionFolder = sessionFolder;
     }
-    
+
 }

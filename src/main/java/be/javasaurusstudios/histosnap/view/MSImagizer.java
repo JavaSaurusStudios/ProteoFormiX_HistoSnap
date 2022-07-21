@@ -21,6 +21,7 @@ import be.javasaurusstudios.histosnap.view.listeners.imagelist.impl.ListSelectio
 import be.javasaurusstudios.histosnap.view.listeners.mouse.ScaleScrollListener;
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -148,6 +149,10 @@ public class MSImagizer extends javax.swing.JFrame {
             this.currentScale /= 2;
             UpdateImage();
         }
+    }
+
+    public ProgressBar getProgressBar() {
+        return progressFrame;
     }
 
     /**
@@ -902,8 +907,8 @@ public class MSImagizer extends javax.swing.JFrame {
         JTextField minMZ = new JTextField();
         JTextField maxMz = new JTextField();
 
-        minMZ.setText("953");
-        maxMz.setText("954");
+        minMZ.setText("Min");
+        maxMz.setText("Max");
 
         final JComponent[] inputs = new JComponent[]{
             new JLabel("Minimal MZ"),
@@ -920,7 +925,6 @@ public class MSImagizer extends javax.swing.JFrame {
 
             ImageExtractionTask task = new ImageExtractionTask(
                     this,
-                    progressFrame,
                     tfInput,
                     minMZ,
                     maxMz,
@@ -958,7 +962,6 @@ public class MSImagizer extends javax.swing.JFrame {
 
             ImageExtractionTask task = new ImageExtractionTask(
                     this,
-                    progressFrame,
                     tfInput,
                     minMZ,
                     maxMz,
@@ -1196,7 +1199,6 @@ public class MSImagizer extends javax.swing.JFrame {
                 progressFrame.setVisible(true);
                 ImageExtractionTask task = new ImageExtractionTask(
                         this,
-                        progressFrame,
                         tfInput,
                         entry.getValue() - (float) toleranceValue,
                         entry.getValue() + (float) toleranceValue,
@@ -1376,7 +1378,7 @@ public class MSImagizer extends javax.swing.JFrame {
             File yourFolder = fc.getSelectedFile();
             UILogger.Log("Saving sessions...", UILogger.Level.INFO);
             progressFrame.setVisible(true);
-            WorkingTask task = new SessionSavingTask(progressFrame, yourFolder, false);
+            WorkingTask task = new SessionSavingTask(yourFolder, false);
             new WorkingThread(this, task).execute();
 
         }
@@ -1415,7 +1417,9 @@ public class MSImagizer extends javax.swing.JFrame {
 
     private void btnShowLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowLogActionPerformed
         logPanel.setVisible(btnShowLog.isSelected());
+        Dimension dimension = this.getSize();
         this.pack();
+        this.setSize(dimension);
     }//GEN-LAST:event_btnShowLogActionPerformed
 
     /**

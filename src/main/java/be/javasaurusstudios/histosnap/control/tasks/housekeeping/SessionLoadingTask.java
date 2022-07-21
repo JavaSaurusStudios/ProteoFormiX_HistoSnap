@@ -25,20 +25,21 @@ public class SessionLoadingTask extends WorkingTask {
 
     /**
      * Constructor for a task to load a session
+     *
      * @param progessBar The progressbar
      * @param inputFolder the session folder
      * @param tfInput textfield for the session folder
      */
     public SessionLoadingTask(ProgressBar progessBar, File inputFolder, JTextField tfInput) {
-        super(progessBar);
+        super();
         this.inputFolder = inputFolder;
         this.tfInput = tfInput;
     }
 
     @Override
     public Object call() throws Exception {
-        progressBar.setText("Changing sessions...");
-        CACHE.setSession(new HistoSnapImageSession(inputFolder.getAbsolutePath()), progressBar);
+        MSImagizer.instance.getProgressBar().setText("Changing sessions...");
+        CACHE.setSession(new HistoSnapImageSession(inputFolder.getAbsolutePath()));
         MSImagizer.MSI_IMAGE = CACHE.getFirst();
         MSImagizer.instance.UpdateCacheUI();
         MSImagizer.instance.UpdateImage();
@@ -57,7 +58,7 @@ public class SessionLoadingTask extends WorkingTask {
                         JOptionPane.ERROR_MESSAGE);
             }
         }
-        progressBar.setVisible(false);
+        MSImagizer.instance.getProgressBar().setVisible(false);
 
         return true;
     }
