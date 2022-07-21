@@ -816,10 +816,10 @@ public class MSImagizer extends javax.swing.JFrame {
 
         menuOptions.setText("Options");
 
-        jMenu1.setText("File Import Mode");
+        jMenu1.setText("Memory Mode");
 
         BtnLowMemory.setSelected(true);
-        BtnLowMemory.setText("Db Mode (slow)");
+        BtnLowMemory.setText("Low (Slow)");
         BtnLowMemory.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnLowMemoryActionPerformed(evt);
@@ -828,7 +828,7 @@ public class MSImagizer extends javax.swing.JFrame {
         jMenu1.add(BtnLowMemory);
 
         btnHighMemory.setSelected(true);
-        btnHighMemory.setText("Memory Mode");
+        btnHighMemory.setText("High");
         btnHighMemory.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnHighMemoryActionPerformed(evt);

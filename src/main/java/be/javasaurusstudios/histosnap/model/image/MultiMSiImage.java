@@ -2,6 +2,7 @@ package be.javasaurusstudios.histosnap.model.image;
 
 import be.javasaurusstudios.histosnap.control.util.color.ColorUtils;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -70,6 +71,10 @@ public class MultiMSiImage extends MSiImage {
     @Override
     public void CreateImage(ImageMode mode, Color... range) {
 
+        ProgressBar bar = MSImagizer.instance.getProgressBar();
+
+        bar.setValueText(0, "Generating image...", true);
+
         Graphics graphics = getGraphics();
         graphics.setColor(Color.LIGHT_GRAY);
         graphics.setFont(new Font("Arial Black", Font.BOLD, 20));
@@ -86,7 +91,11 @@ public class MultiMSiImage extends MSiImage {
         int xCoordinate = 0;
         int yCoordinate = 0;
 
+        float value = 0;
         for (int z = 0; z < frames.size(); z++) {
+            value++;
+            bar.setValueText(value / frames.size(), "Generating image :" + 100 * value / frames.size() + "%", false);
+
             MSiFrame frame = frames.get(z);
             int xOffset = xCoordinate * singleWidth;
             int yOffset = yCoordinate * singleHeight;
@@ -136,6 +145,8 @@ public class MultiMSiImage extends MSiImage {
 
         xCoordinate = 0;
         yCoordinate = 0;
+
+        bar.setValueText(0, "Annotating frames...", true);
 
         for (int z = 0; z < frames.size(); z++) {
             annotateFrame(frames.get(z), 12, xCoordinate * singleWidth, yCoordinate * singleHeight);

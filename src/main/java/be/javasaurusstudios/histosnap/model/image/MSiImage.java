@@ -3,6 +3,7 @@ package be.javasaurusstudios.histosnap.model.image;
 import be.javasaurusstudios.histosnap.control.util.ImageUtils;
 import be.javasaurusstudios.histosnap.control.util.color.ColorUtils;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.geom.AffineTransform;
@@ -143,6 +144,9 @@ public class MSiImage extends BufferedImage implements Serializable {
      */
     public void CreateImage(ImageMode mode, Color... range) {
 
+        ProgressBar progressBar = MSImagizer.instance.getProgressBar();
+
+        progressBar.setValueText(0, "Generating image...", true);
         //clear background
         for (int i = 1; i < this.getWidth(); i++) {
             for (int j = 1; j < this.getHeight(); j++) {
@@ -151,7 +155,13 @@ public class MSiImage extends BufferedImage implements Serializable {
         }
 
         DescriptiveStatistics stat = new DescriptiveStatistics();
+
+        progressBar.setValueText(0, "Generating statistics...", true);
+        float i = 0;
         for (MSiPixel pixel : activeFrame.getPixels()) {
+            i++;
+            float value = i / activeFrame.getPixels().size();
+            progressBar.setValueText(value, "Generating image : " + (100 * value) + "%", false);
             double frameValue = (mode == ImageMode.TOTAL_ION_CURRENT) ? pixel.getStat().getSum() : pixel.getStat().getMax();
             if (!Double.isNaN(frameValue)) {
                 stat.addValue(frameValue);
@@ -160,7 +170,13 @@ public class MSiImage extends BufferedImage implements Serializable {
 
         double reference = (mode == ImageMode.TOTAL_ION_CURRENT) ? stat.getMean() : getStat(mode, stat);
 
+        progressBar.setValueText(0, "Converting to color...", true);
+
+        i = 0;
         for (MSiPixel pixel : activeFrame.getPixels()) {
+            i++;
+            float value = i / activeFrame.getPixels().size();
+            progressBar.setValueText(value, "Converting to color : " + (100 * value) + "%", false);
             double check = getStat(mode, pixel.getStat());
             double rel = Math.min(1, Math.max(0, check / reference));
 
@@ -188,6 +204,9 @@ public class MSiImage extends BufferedImage implements Serializable {
      * @return a new scaled image
      */
     public BufferedImage getScaledImage(int scale) {
+        ProgressBar progressBar = MSImagizer.instance.getProgressBar();
+        progressBar.setValueText(0, "Applying scale...", true);
+
         BufferedImage before = this;
         int w = before.getWidth();
         int h = before.getHeight();
@@ -195,6 +214,7 @@ public class MSiImage extends BufferedImage implements Serializable {
         AffineTransform at = new AffineTransform();
         at.scale(scale, scale);
         AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        progressBar.setValueText(0, "Done !...", true);
         return scaleOp.filter(before, after);
     }
 
@@ -275,6 +295,7 @@ public class MSiImage extends BufferedImage implements Serializable {
 
     public static MSiImage CreateCombinedImage(MultiMSiImage img) {
         List<MSiImage> images = new ArrayList<>();
+
         for (MSiFrame frame : img.getFrames()) {
             images.add(new MSiImage(frame));
         }
@@ -287,8 +308,19 @@ public class MSiImage extends BufferedImage implements Serializable {
         frame.setWidth(images.get(0).getFrame().getWidth());
         frame.setHeight(images.get(0).getFrame().getHeight());
 
+        ProgressBar progressBar = MSImagizer.instance.getProgressBar();
+
+        progressBar.setValueText(0, "Combining images...", true);
+
+        float value = 0;
+        float max = frame.getWidth() * frame.getHeight();
+
         for (int x = 0; x < frame.getWidth(); x++) {
             for (int y = 0; y < frame.getHeight(); y++) {
+
+                value++;
+
+                progressBar.setValueText(value / max, "Combining images :" + Math.round((100 * value / max)) + "%", true);
 
                 MSiPixel newPixel = new MSiPixel(x, y);
 

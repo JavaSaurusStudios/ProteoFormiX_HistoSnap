@@ -523,13 +523,13 @@
           <SubComponents>
             <Menu class="javax.swing.JMenu" name="jMenu1">
               <Properties>
-                <Property name="text" type="java.lang.String" value="File Import Mode"/>
+                <Property name="text" type="java.lang.String" value="Memory Mode"/>
               </Properties>
               <SubComponents>
                 <MenuItem class="javax.swing.JCheckBoxMenuItem" name="BtnLowMemory">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Db Mode (slow)"/>
+                    <Property name="text" type="java.lang.String" value="Low (Slow)"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="BtnLowMemoryActionPerformed"/>
@@ -538,7 +538,7 @@
                 <MenuItem class="javax.swing.JCheckBoxMenuItem" name="btnHighMemory">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Memory Mode"/>
+                    <Property name="text" type="java.lang.String" value="High"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnHighMemoryActionPerformed"/>

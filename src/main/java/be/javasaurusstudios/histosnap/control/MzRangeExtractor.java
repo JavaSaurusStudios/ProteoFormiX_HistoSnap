@@ -8,11 +8,8 @@ import be.javasaurusstudios.histosnap.control.util.SystemUtils;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
-import be.javasaurusstudios.histosnap.view.component.ProgressBar;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -22,8 +19,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -56,7 +51,6 @@ public class MzRangeExtractor {
      *
      * @param mzMin The minimal MZ to consider
      * @param mzMax The maximal MZ to consider
-     * @param progressBar The progressbar to indicate progress (can be null)
      * @return the extracted image
      * @throws IOException
      * @throws URISyntaxException
@@ -113,13 +107,14 @@ public class MzRangeExtractor {
      * docs for more inf)
      *
      * @param ranges
-     * @param progressBar The progressbar to indicate progress (can be null)
      * @return the extracted image
      * @throws IOException
      * @throws URISyntaxException
      * @throws Exception
      */
     public MultiMSiImage extractImageRange(List<float[]> ranges) throws IOException, URISyntaxException, Exception {
+
+        MSImagizer.instance.getProgressBar().setValueText(0, "Starting extraction in " + SystemUtils.getMemoryState(), true);
 
         if (MSImagizer.instance == null || MSImagizer.instance.isHighMemory()) {
             SystemUtils.MemoryState memoryState = SystemUtils.getMemoryState();
@@ -187,25 +182,7 @@ public class MzRangeExtractor {
 
             String[] cmds = new String[]{"python", pythonFile, "--input", in};
             ProcessBuilder builder = new ProcessBuilder(cmds);
-            Process process = builder.start();
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                        String line = null;
-                        while ((line = reader.readLine()) != null) {
-                            MSImagizer.instance.getProgressBar().setText(line);
-                            //                        UILogger.Log(line);
-                        }
-                    } catch (IOException ex) {
-                        Logger.getLogger(MzRangeExtractor.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }).start();
-
-            process.waitFor();
+            MSImagizer.instance.getProgressBar().RunExtractionProcess(builder.start());
         }
         HistoSnapDBFile file = new HistoSnapDBFile(dbFile);
         UILogger.Log("Processing between " + minMz + " and " + maxMz, UILogger.Level.INFO);
@@ -271,25 +248,7 @@ public class MzRangeExtractor {
 
             String[] cmds = new String[]{"python", pythonFile, "--input", in};
             ProcessBuilder builder = new ProcessBuilder(cmds);
-            Process process = builder.start();
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                        String line = null;
-                        while ((line = reader.readLine()) != null) {
-                            MSImagizer.instance.getProgressBar().setText(line);
-                            //                        UILogger.Log(line);
-                        }
-                    } catch (IOException ex) {
-                        Logger.getLogger(MzRangeExtractor.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }).start();
-
-            process.waitFor();
+            MSImagizer.instance.getProgressBar().RunExtractionProcess(builder.start());
         }
 
         HistoSnapDBFile file = new HistoSnapDBFile(dbFile);
@@ -315,6 +274,9 @@ public class MzRangeExtractor {
 
         UILogger.Log("Extracting image from memory...", UILogger.Level.INFO);
 
+        //TODO check if ranges are close together, if not we split them up in subranges to speed up the extraction
+        //Alternatively, we go over the python script to generate the bins
+        
         long time = System.currentTimeMillis();
 
         float minMz = Float.MAX_VALUE;
@@ -330,26 +292,7 @@ public class MzRangeExtractor {
 
         ProcessBuilder builder = new ProcessBuilder(cmds);
         //  builder.inheritIO();
-        Process process = builder.start();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    String line = null;
-                    while ((line = reader.readLine()) != null) {
-                        MSImagizer.instance.getProgressBar().setText(line);
-                        //                        UILogger.Log(line);
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(MzRangeExtractor.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }).start();
-
-        process.waitFor();
-
+        MSImagizer.instance.getProgressBar().RunExtractionProcess(builder.start());
         MSiFrame frame = new SpectralDataImporter().ReadFile(new File(out));
 
         if (frame.getWidth() <= 0 || frame.getHeight() <= 0) {
@@ -399,25 +342,7 @@ public class MzRangeExtractor {
 
         ProcessBuilder builder = new ProcessBuilder(cmds);
         //  builder.inheritIO();
-        Process process = builder.start();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    String line = null;
-                    while ((line = reader.readLine()) != null) {
-                        MSImagizer.instance.getProgressBar().setText(line);
-                        //                        UILogger.Log(line);
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(MzRangeExtractor.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }).start();
-
-        process.waitFor();
+        MSImagizer.instance.getProgressBar().RunExtractionProcess(builder.start());
 
         MSiFrame frame = new SpectralDataImporter().ReadFile(new File(out));
 

@@ -81,7 +81,7 @@ public class ImageDHBClusterTask extends WorkingTask {
 
             File inFile = new File(in);
             if (!inFile.exists()) {
-                 MSImagizer.instance.getProgressBar().setVisible(false);
+                MSImagizer.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "Please specify an input imzml file",
                         "Invalid input file",
@@ -92,7 +92,7 @@ public class ImageDHBClusterTask extends WorkingTask {
 
             File idbFile = new File(inFile.getAbsolutePath().replace(".imzml", ".ibd"));
             if (!idbFile.exists()) {
-                 MSImagizer.instance.getProgressBar().setVisible(false);
+                MSImagizer.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "The corresponding ibd file could not be found in the provided file directory./nPlease verify that an idb file exist with the EXACT same name as the provided imzml.",
                         "Invalid input file",
@@ -104,16 +104,19 @@ public class ImageDHBClusterTask extends WorkingTask {
             ExecuteImage(in, "Background", makeBackground);
 
         } catch (Exception ex) {
-             MSImagizer.instance.getProgressBar().setVisible(false);
+            MSImagizer.instance.getProgressBar().setVisible(false);
             ex.printStackTrace();
         }
     }
 
     private void ExecuteImage(String in, String extractionName, boolean generateBackground) throws Exception {
 
+        ProgressBar bar = MSImagizer.instance.getProgressBar();
+
         List<float[]> ranges = new LinkedList<>();
         List<DHBMatrixClusterMasses> masses = new LinkedList<>();
 
+        bar.setValueText(0, "Generating mass ranges for DHB Clusters", true);
         for (DHBMatrixClusterMasses DHBMatrixMass : DHBMatrixClusterMasses.values()) {
             if (DHBMatrixMass.getMonoIsotopicMass() >= minMZ && DHBMatrixMass.getMonoIsotopicMass() <= maxMZ) {
                 float mZ = DHBMatrixMass.getMonoIsotopicMass();
@@ -131,23 +134,28 @@ public class ImageDHBClusterTask extends WorkingTask {
         MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
         MultiMSiImage extractImageRange = extractor.extractImageRange(ranges);
 
+        bar.setValueText(0, "Generating mass ranges for DHB Clusters", true);
+        float value = 0;
         for (int i = 0; i < ranges.size(); i++) {
+            value = ((float) i / ranges.size());
             String name = masses.get(i) + "(" + masses.get(i).getMonoIsotopicMass() + ")";
+            bar.setValueText(value, name, false);
             MSiFrame frame = extractImageRange.getFrames().get(i);
             frame.setName(name);
             MSiImage image = new MSiImage(frame);
             image.setName(name);
+            bar.setValueText(value, "Processing...", true);
             image.RemoveHotSpots(99);
             MSImagizer.AddToCache(image);
         }
 
         MSiImage displayImage;
         if (generateBackground) {
+            bar.setValueText(value, "Combining images...", true);
             displayImage = MSiImage.CreateCombinedImage(extractImageRange);
-
             displayImage.setName(extractionName);
             displayImage.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
-
+            MSImagizer.AddToCache(displayImage);
         }
 
         parent.repaint();

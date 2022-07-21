@@ -21,9 +21,9 @@ mzMax=args.mzMax
 input=args.input
 output=args.output
 
-print("Input file = ",input)
-print("Output file = ",output)
-print("Extracting data between ",mzMin," and ",mzMax," that have an intensity >= ",noiseThreshold)
+#print("Input file = ",input)
+#print("Output file = ",output)
+#print("Extracting data between ",mzMin," and ",mzMax," that have an intensity >= ",noiseThreshold)
 sys.stdout.flush() 
 p = ImzMLParser(input)
 
@@ -44,15 +44,16 @@ if calculateBackground:
 print("Extracting spectra...") 
 f=open(output,"w")
 spectra=0;
-print("Processing ",len(p.coordinates)," spectra...")  
+#print("Processing ",len(p.coordinates)," spectra...")  
 sys.stdout.flush() 
 for idx, (x,y,z) in enumerate(p.coordinates):
  mzs, intensities = p.getspectrum(idx)
  line=">"+str(idx)+"\t"+str(x)+"\t"+str(y)+"\t"+str(z)+"\n"
  spectra+=1
  if spectra%1000==0:
-  print("Processed ",str(spectra)," spectra ",100*spectra/len(p.coordinates),"%") 
-  sys.stdout.flush() 
+  #print("Processed ",str(spectra)," spectra ",100*spectra/len(p.coordinates),"%") 
+   print(100*spectra/len(p.coordinates),"%") 
+   sys.stdout.flush() 
  
  i=0  
   #Skip to the area of interest in spectra
@@ -82,4 +83,4 @@ for idx, (x,y,z) in enumerate(p.coordinates):
    break   
  
 f.close()
-print("Done ")
+
