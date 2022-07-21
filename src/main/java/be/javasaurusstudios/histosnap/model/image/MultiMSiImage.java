@@ -1,6 +1,7 @@
 package be.javasaurusstudios.histosnap.model.image;
 
 import be.javasaurusstudios.histosnap.control.util.color.ColorUtils;
+import be.javasaurusstudios.histosnap.view.MSImagizer;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -43,7 +44,7 @@ public class MultiMSiImage extends MSiImage {
      * @return a new instance of a multi image
      */
     public static MultiMSiImage Generate(List<MSiFrame> frames) {
-        return Generate(frames, 3);
+        return Generate(frames, MSImagizer.instance.getColumnCount());
     }
     private final int cols;
     private final int rows;
@@ -152,7 +153,7 @@ public class MultiMSiImage extends MSiImage {
      * @param index
      * @param mode the reference mode
      * @param range the range
-     * @return 
+     * @return
      */
     public BufferedImage CreateSingleImage(int index, ImageMode mode, Color... range) {
 

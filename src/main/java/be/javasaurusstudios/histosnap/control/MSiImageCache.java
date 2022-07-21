@@ -3,7 +3,7 @@ package be.javasaurusstudios.histosnap.control;
 import be.javasaurusstudios.histosnap.control.cache.HistoSnapImageSession;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,7 +39,7 @@ public class MSiImageCache extends ArrayList<String> {
      * @param session the session
      * @param progessBar the progress bar
      */
-    public void setSession(HistoSnapImageSession session, ProgressBarFrame progessBar) {
+    public void setSession(HistoSnapImageSession session, ProgressBar progessBar) {
         if (this.session != null && !overrideSession) {
             this.session.SaveSession(progessBar);
         }

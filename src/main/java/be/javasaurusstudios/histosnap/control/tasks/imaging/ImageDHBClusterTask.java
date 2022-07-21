@@ -7,13 +7,11 @@ import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -44,7 +42,7 @@ public class ImageDHBClusterTask extends WorkingTask {
     //Boolean indicating if the images should be combined
     private boolean generateBackground;
 
-    public ImageDHBClusterTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, ProgressBarFrame progressBar, boolean generateBackground) {
+    public ImageDHBClusterTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, ProgressBar progressBar, boolean generateBackground) {
         super(progressBar);
         this.parent = parent;
         this.tfInput = tfInput;

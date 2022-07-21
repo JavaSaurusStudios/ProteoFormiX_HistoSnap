@@ -2,12 +2,12 @@ package be.javasaurusstudios.histosnap.control.tasks.housekeeping;
 
 import be.javasaurusstudios.histosnap.control.cache.HistoSnapImageSession;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.CACHE;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.instance;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.lastDirectory;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.awt.Color;
 import java.io.File;
 import javax.swing.JOptionPane;
@@ -29,7 +29,7 @@ public class SessionLoadingTask extends WorkingTask {
      * @param inputFolder the session folder
      * @param tfInput textfield for the session folder
      */
-    public SessionLoadingTask(ProgressBarFrame progessBar, File inputFolder, JTextField tfInput) {
+    public SessionLoadingTask(ProgressBar progessBar, File inputFolder, JTextField tfInput) {
         super(progessBar);
         this.inputFolder = inputFolder;
         this.tfInput = tfInput;

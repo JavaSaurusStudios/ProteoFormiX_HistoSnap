@@ -9,7 +9,7 @@ import be.javasaurusstudios.histosnap.control.tasks.WorkingThread;
 import be.javasaurusstudios.histosnap.control.tasks.imaging.ImageDHBClusterTask;
 import be.javasaurusstudios.histosnap.control.util.color.ColorRange;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.util.LinkedHashMap;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -23,7 +23,7 @@ import javax.swing.JTextField;
  */
 public class DHBBackgroundExtractionHandler extends BackgroundExtractionHandler {
 
-    public DHBBackgroundExtractionHandler(JFrame parent, ProgressBarFrame progressFrame, JTextField tfInput, JLabel lbImage, int currentScale, ColorRange currentRange, MSiImage.ImageMode currentMode) {
+    public DHBBackgroundExtractionHandler(JFrame parent, ProgressBar progressFrame, JTextField tfInput, JLabel lbImage, int currentScale, ColorRange currentRange, MSiImage.ImageMode currentMode) {
         super(parent, progressFrame, tfInput, lbImage, currentScale, currentRange, currentMode);
     }
 

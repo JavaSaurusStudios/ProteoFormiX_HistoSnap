@@ -1,8 +1,8 @@
 package be.javasaurusstudios.histosnap.control.tasks.housekeeping;
 
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.CACHE;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.io.File;
 
 /**
@@ -22,7 +22,7 @@ public class SessionSavingTask extends WorkingTask {
      * @param outputFolder the folder to store the images at
      * @param silent boolean indicating if this should be stored silently
      */
-    public SessionSavingTask(ProgressBarFrame progessBar, File outputFolder, boolean silent) {
+    public SessionSavingTask(ProgressBar progessBar, File outputFolder, boolean silent) {
         super(progessBar);
         this.outputFolder = outputFolder;
         this.silent = silent;

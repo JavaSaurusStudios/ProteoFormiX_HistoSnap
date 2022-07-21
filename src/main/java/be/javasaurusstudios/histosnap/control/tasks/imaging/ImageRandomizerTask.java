@@ -4,8 +4,8 @@ import be.javasaurusstudios.histosnap.control.MzRangeExtractor;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public class ImageRandomizerTask extends WorkingTask {
     //the random
     private final Random rnd;
 
-    public ImageRandomizerTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, int samples, ProgressBarFrame progressBar) {
+    public ImageRandomizerTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, int samples, ProgressBar progressBar) {
         super(progressBar);
         this.parent = parent;
         this.tfInput = tfInput;

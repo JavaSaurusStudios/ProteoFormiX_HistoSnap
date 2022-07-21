@@ -3,12 +3,12 @@ package be.javasaurusstudios.histosnap.control;
 import be.javasaurusstudios.histosnap.control.cache.HistoSnapDBFile;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.control.util.PythonExtractor;
 import be.javasaurusstudios.histosnap.control.util.SystemUtils;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +62,7 @@ public class MzRangeExtractor {
      * @throws URISyntaxException
      * @throws Exception
      */
-    public MSiImage extractSingleImage(float mzMin, float mzMax, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
+    public MSiImage extractSingleImage(float mzMin, float mzMax, ProgressBar progressBar) throws IOException, URISyntaxException, Exception {
         
         if (MSImagizer.instance == null || MSImagizer.instance.isHighMemory()) {
             SystemUtils.MemoryState memoryState = SystemUtils.getMemoryState();
@@ -74,7 +74,7 @@ public class MzRangeExtractor {
                     return extractImageMem(mzMin, mzMax, progressBar);
                 case MEDIUM:
                     dialogResult = JOptionPane.showConfirmDialog(
-                            progressBar,
+                            MSImagizer.instance,
                             memory + " GB available memory was detected. This might be insufficient. Please consider System Settings > Low Memory Mode if the process times out. Do you wish to continue?",
                             "Memory Settings",
                             JOptionPane.YES_NO_OPTION);
@@ -85,7 +85,7 @@ public class MzRangeExtractor {
                     }
                 case LOW:
                     dialogResult = JOptionPane.showConfirmDialog(
-                            progressBar,
+                              MSImagizer.instance,
                             memory + " GB available memory was detected. This will likely be insufficient, even for small projects. Please use System Settings > Low Memory Mode if the process times out. Do you wish to continue (not recommended)?",
                             "Memory Settings",
                             JOptionPane.YES_NO_OPTION);
@@ -96,7 +96,7 @@ public class MzRangeExtractor {
                     }
                 default:
                     JOptionPane.showMessageDialog(
-                            progressBar,
+                              MSImagizer.instance,
                             "Insufficient memory (" + memory + " GB) available. Please enable System Settings > Low Memory Mode",
                             "Memory Settings",
                             JOptionPane.PLAIN_MESSAGE);
@@ -121,7 +121,7 @@ public class MzRangeExtractor {
      * @throws URISyntaxException
      * @throws Exception
      */
-    public MultiMSiImage extractImageRange(List<float[]> ranges, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
+    public MultiMSiImage extractImageRange(List<float[]> ranges, ProgressBar progressBar) throws IOException, URISyntaxException, Exception {
         
         if (MSImagizer.instance == null || MSImagizer.instance.isHighMemory()) {
             SystemUtils.MemoryState memoryState = SystemUtils.getMemoryState();
@@ -133,7 +133,7 @@ public class MzRangeExtractor {
                     return extractImageRangeMem(ranges, progressBar);
                 case MEDIUM:
                     dialogResult = JOptionPane.showConfirmDialog(
-                            progressBar,
+                              MSImagizer.instance,
                             memory + " GB available memory was detected. This might be insufficient. Please consider System Settings > Low Memory Mode if the process times out. Do you wish to continue?",
                             "Memory Settings",
                             JOptionPane.YES_NO_OPTION);
@@ -144,7 +144,7 @@ public class MzRangeExtractor {
                     }
                 case LOW:
                     dialogResult = JOptionPane.showConfirmDialog(
-                            progressBar,
+                              MSImagizer.instance,
                             memory + " GB available memory was detected. This will likely be insufficient, even for small projects. Please use System Settings > Low Memory Mode if the process times out. Do you wish to continue (not recommended)?",
                             "Memory Settings",
                             JOptionPane.YES_NO_OPTION);
@@ -155,7 +155,7 @@ public class MzRangeExtractor {
                     }
                 default:
                     JOptionPane.showMessageDialog(
-                            progressBar,
+                              MSImagizer.instance,
                             "Insufficient memory (" + memory + " GB) available. Please enable System Settings > Low Memory Mode",
                             "Memory Settings",
                             JOptionPane.PLAIN_MESSAGE);
@@ -168,7 +168,7 @@ public class MzRangeExtractor {
     }
 
     ////DATABASE
-    private MultiMSiImage extractImageRangeDb(List<float[]> ranges, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
+    private MultiMSiImage extractImageRangeDb(List<float[]> ranges, ProgressBar progressBar) throws IOException, URISyntaxException, Exception {
         
         UILogger.Log("Extracting image from hard drive...", UILogger.Level.INFO);
         
@@ -259,7 +259,7 @@ public class MzRangeExtractor {
      * @throws URISyntaxException
      * @throws Exception
      */
-    private MSiImage extractImageDb(float mzMin, float mzMax, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
+    private MSiImage extractImageDb(float mzMin, float mzMax, ProgressBar progressBar) throws IOException, URISyntaxException, Exception {
         
         UILogger.Log("Extracting image from hard drive...", UILogger.Level.INFO);
         
@@ -310,7 +310,7 @@ public class MzRangeExtractor {
     }
 
     ////MEMORY
-    private MultiMSiImage extractImageRangeMem(List<float[]> ranges, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
+    private MultiMSiImage extractImageRangeMem(List<float[]> ranges, ProgressBar progressBar) throws IOException, URISyntaxException, Exception {
         
         UILogger.Log("Extracting image from memory...", UILogger.Level.INFO);
         
@@ -388,7 +388,7 @@ public class MzRangeExtractor {
      * @throws URISyntaxException
      * @throws Exception
      */
-    private MSiImage extractImageMem(float mzMin, float mzMax, ProgressBarFrame progressBar) throws IOException, URISyntaxException, Exception {
+    private MSiImage extractImageMem(float mzMin, float mzMax, ProgressBar progressBar) throws IOException, URISyntaxException, Exception {
         
         UILogger.Log("Extracting image from memory...", UILogger.Level.INFO);
         

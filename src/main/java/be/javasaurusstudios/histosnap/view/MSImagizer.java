@@ -1,6 +1,5 @@
 package be.javasaurusstudios.histosnap.view;
 
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.control.tasks.WorkingThread;
 import be.javasaurusstudios.histosnap.control.MSiImageCache;
 import be.javasaurusstudios.histosnap.control.tasks.imaging.ImageExtractionTask;
@@ -10,7 +9,9 @@ import be.javasaurusstudios.histosnap.model.MSScanAdduct;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.control.util.color.ColorRange;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
+import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import be.javasaurusstudios.histosnap.view.handlers.DHBBackgroundExtractionHandler;
 import be.javasaurusstudios.histosnap.view.handlers.RandomBackgroundExtractor;
 import be.javasaurusstudios.histosnap.view.listeners.imagelist.impl.ImageHighlightProvider;
@@ -29,7 +30,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -67,7 +67,7 @@ public class MSImagizer extends javax.swing.JFrame {
     //The msiImageCache (to prevent 
     public static final MSiImageCache CACHE = new MSiImageCache();
     //The progress bar (can be updated by working tasks)
-    private final ProgressBarFrame progressFrame;
+    private final ProgressBar progressFrame;
     //The UI element for the produced images
     public static JList imageCacheList;
     //The current pixel scale to export
@@ -84,6 +84,8 @@ public class MSImagizer extends javax.swing.JFrame {
     private boolean drawGrid = true;
     //Boolean indicating if title has to be drawn
     private boolean drawTitle = true;
+    //the max colums
+    private int columnCount = 3;
 
     ///list of buttons with checkboxes attached to select modes
     private List<JCheckBoxMenuItem> modeButtons;
@@ -110,7 +112,7 @@ public class MSImagizer extends javax.swing.JFrame {
 
         imageCacheList = imageList;
 
-        progressFrame = new ProgressBarFrame();
+        progressFrame = new ProgressBar(progessBar, lbProgessBar);
         progressFrame.setVisible(false);
 
         logArea.setModel(new DefaultListModel<>());
@@ -157,8 +159,6 @@ public class MSImagizer extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jMenu4 = new javax.swing.JMenu();
-        jMenu1 = new javax.swing.JMenu();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         tfInput = new javax.swing.JTextField();
@@ -168,8 +168,10 @@ public class MSImagizer extends javax.swing.JFrame {
         jScrollPane4 = new javax.swing.JScrollPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         lbImage = new be.javasaurusstudios.histosnap.view.component.ImageLabel();
-        jScrollPane5 = new javax.swing.JScrollPane();
+        logPanel = new javax.swing.JScrollPane();
         logArea = new javax.swing.JList<>();
+        progessBar = new javax.swing.JProgressBar();
+        lbProgessBar = new javax.swing.JLabel();
         jLayeredPane1 = new javax.swing.JLayeredPane();
         jMenuBar1 = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
@@ -216,6 +218,7 @@ public class MSImagizer extends javax.swing.JFrame {
         jMenu2 = new javax.swing.JMenu();
         btnShowOutline = new javax.swing.JCheckBoxMenuItem();
         btnShowTitle = new javax.swing.JCheckBoxMenuItem();
+        btnColumns = new javax.swing.JMenuItem();
         btnAdducts = new javax.swing.JMenu();
         btnCations = new javax.swing.JMenu();
         BtnAllCations = new javax.swing.JCheckBoxMenuItem();
@@ -234,15 +237,13 @@ public class MSImagizer extends javax.swing.JFrame {
         btnAnionOAc = new javax.swing.JCheckBoxMenuItem();
         btnAnionTFA = new javax.swing.JCheckBoxMenuItem();
         menuOptions = new javax.swing.JMenu();
+        jMenu1 = new javax.swing.JMenu();
         BtnLowMemory = new javax.swing.JCheckBoxMenuItem();
         btnHighMemory = new javax.swing.JCheckBoxMenuItem();
+        btnShowLog = new javax.swing.JCheckBoxMenuItem();
         btnHelp = new javax.swing.JMenu();
         btnAbout = new javax.swing.JMenuItem();
         btnHelpText = new javax.swing.JMenuItem();
-
-        jMenu4.setText("jMenu4");
-
-        jMenu1.setText("jMenu1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(650, 360));
@@ -251,26 +252,28 @@ public class MSImagizer extends javax.swing.JFrame {
 
         jLabel1.setBackground(new java.awt.Color(0, 0, 0));
         jLabel1.setForeground(new java.awt.Color(0, 0, 0));
-        jLabel1.setText("Input");
+        jLabel1.setText("Input (*.imzml)");
 
         tfInput.setEditable(false);
         tfInput.setBackground(new java.awt.Color(255, 102, 102));
         tfInput.setText("-");
 
-        jScrollPane3.setBackground(new java.awt.Color(204, 204, 204));
+        jScrollPane3.setBackground(new java.awt.Color(255, 255, 255));
 
-        jScrollPane2.setBackground(new java.awt.Color(204, 204, 204));
+        jScrollPane2.setBackground(new java.awt.Color(255, 255, 255));
 
-        imageList.setBackground(new java.awt.Color(204, 204, 204));
+        imageList.setBackground(new java.awt.Color(255, 255, 255));
+        imageList.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Masses", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        imageList.setForeground(new java.awt.Color(0, 0, 0));
         jScrollPane2.setViewportView(imageList);
 
         jScrollPane3.setViewportView(jScrollPane2);
 
-        jScrollPane4.setBackground(new java.awt.Color(204, 204, 204));
+        jScrollPane4.setBackground(new java.awt.Color(255, 255, 255));
 
-        jScrollPane1.setBackground(new java.awt.Color(204, 204, 204));
+        jScrollPane1.setBackground(new java.awt.Color(255, 255, 255));
 
-        lbImage.setBackground(new java.awt.Color(204, 204, 204));
+        lbImage.setBackground(new java.awt.Color(255, 255, 255));
         lbImage.setForeground(new java.awt.Color(0, 0, 0));
         lbImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lbImage.setToolTipText("");
@@ -278,10 +281,15 @@ public class MSImagizer extends javax.swing.JFrame {
 
         jScrollPane4.setViewportView(jScrollPane1);
 
-        jScrollPane5.setBackground(new java.awt.Color(204, 204, 204));
+        logPanel.setBackground(new java.awt.Color(255, 255, 255));
+        logPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Activity Log", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
-        logArea.setBackground(new java.awt.Color(204, 204, 204));
-        jScrollPane5.setViewportView(logArea);
+        logArea.setBackground(new java.awt.Color(255, 255, 255));
+        logPanel.setViewportView(logArea);
+
+        lbProgessBar.setForeground(new java.awt.Color(0, 0, 0));
+        lbProgessBar.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lbProgessBar.setText("Debug Message");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -290,15 +298,17 @@ public class MSImagizer extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfInput))
+                    .addComponent(lbProgessBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(logPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 724, Short.MAX_VALUE)
+                    .addComponent(progessBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jScrollPane4))
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tfInput)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -311,9 +321,13 @@ public class MSImagizer extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane4)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                .addComponent(logPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lbProgessBar)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(progessBar, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -645,6 +659,14 @@ public class MSImagizer extends javax.swing.JFrame {
         });
         jMenu2.add(btnShowTitle);
 
+        btnColumns.setText("Set #Columns");
+        btnColumns.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnColumnsActionPerformed(evt);
+            }
+        });
+        jMenu2.add(btnColumns);
+
         jMenu6.add(jMenu2);
 
         jMenuBar1.add(jMenu6);
@@ -789,6 +811,8 @@ public class MSImagizer extends javax.swing.JFrame {
 
         menuOptions.setText("Options");
 
+        jMenu1.setText("File Import Mode");
+
         BtnLowMemory.setSelected(true);
         BtnLowMemory.setText("Db Mode (slow)");
         BtnLowMemory.addActionListener(new java.awt.event.ActionListener() {
@@ -796,7 +820,7 @@ public class MSImagizer extends javax.swing.JFrame {
                 BtnLowMemoryActionPerformed(evt);
             }
         });
-        menuOptions.add(BtnLowMemory);
+        jMenu1.add(BtnLowMemory);
 
         btnHighMemory.setSelected(true);
         btnHighMemory.setText("Memory Mode");
@@ -805,7 +829,18 @@ public class MSImagizer extends javax.swing.JFrame {
                 btnHighMemoryActionPerformed(evt);
             }
         });
-        menuOptions.add(btnHighMemory);
+        jMenu1.add(btnHighMemory);
+
+        menuOptions.add(jMenu1);
+
+        btnShowLog.setSelected(true);
+        btnShowLog.setText("Show Log");
+        btnShowLog.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowLogActionPerformed(evt);
+            }
+        });
+        menuOptions.add(btnShowLog);
 
         jMenuBar1.add(menuOptions);
 
@@ -1361,6 +1396,28 @@ public class MSImagizer extends javax.swing.JFrame {
         UpdateImage();
     }//GEN-LAST:event_btnShowTitleActionPerformed
 
+    private void btnColumnsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnColumnsActionPerformed
+        Integer[] choices = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        int input = (int) JOptionPane.showInputDialog(null, "#Columns",
+                "Select the amount of columns", JOptionPane.QUESTION_MESSAGE, null, // Use
+                // default
+                // icon
+                choices, // Array of choices
+                getColumnCount()); // Initial choice
+        setColumnCount(input);
+        if (MSI_IMAGE instanceof MultiMSiImage) {
+            MSI_IMAGE = MultiMSiImage.Generate(((MultiMSiImage) MSI_IMAGE).getFrames(), getColumnCount());
+            UpdateImage();
+        }
+
+
+    }//GEN-LAST:event_btnColumnsActionPerformed
+
+    private void btnShowLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowLogActionPerformed
+        logPanel.setVisible(btnShowLog.isSelected());
+        this.pack();
+    }//GEN-LAST:event_btnShowLogActionPerformed
+
     /**
      * Adds a new image into the cache
      *
@@ -1579,7 +1636,7 @@ public class MSImagizer extends javax.swing.JFrame {
         return currentMode;
     }
 
-    public ProgressBarFrame getProgressFrame() {
+    public ProgressBar getProgressFrame() {
         return progressFrame;
     }
 
@@ -1597,6 +1654,14 @@ public class MSImagizer extends javax.swing.JFrame {
 
     public void setDrawTitle(boolean drawTitle) {
         this.drawTitle = drawTitle;
+    }
+
+    public int getColumnCount() {
+        return columnCount;
+    }
+
+    public void setColumnCount(int columnCount) {
+        this.columnCount = columnCount;
     }
 
     @Override
@@ -1629,6 +1694,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem btnCatNa;
     private javax.swing.JMenu btnCations;
     private javax.swing.JMenu btnColor;
+    private javax.swing.JMenuItem btnColumns;
     private javax.swing.JMenuItem btnExit;
     private javax.swing.JMenuItem btnExtractDHBMatrix;
     private javax.swing.JMenuItem btnExtractMz;
@@ -1654,6 +1720,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JMenuItem btnRedBlue;
     private javax.swing.JMenuItem btnSave;
     private javax.swing.JMenu btnScale;
+    private javax.swing.JCheckBoxMenuItem btnShowLog;
     private javax.swing.JCheckBoxMenuItem btnShowOutline;
     private javax.swing.JCheckBoxMenuItem btnShowTitle;
     private javax.swing.JCheckBoxMenuItem btnTIC;
@@ -1669,7 +1736,6 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenu jMenu6;
     private javax.swing.JMenuBar jMenuBar1;
@@ -1679,12 +1745,14 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JScrollPane jScrollPane5;
     private be.javasaurusstudios.histosnap.view.component.ImageLabel lbImage;
+    private javax.swing.JLabel lbProgessBar;
     private javax.swing.JList<String> logArea;
+    private javax.swing.JScrollPane logPanel;
     private javax.swing.JMenu menuExtract;
     private javax.swing.JMenu menuFile;
     private javax.swing.JMenu menuOptions;
+    private javax.swing.JProgressBar progessBar;
     private javax.swing.JMenu sessionsMenu;
     private javax.swing.JTextField tfInput;
     // End of variables declaration//GEN-END:variables

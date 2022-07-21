@@ -2,8 +2,8 @@ package be.javasaurusstudios.histosnap.control.tasks.housekeeping;
 
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.SimilarityResult;
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class SimilarityCalculationTask extends WorkingTask {
      * @param referenceName The name of the reference image
      * @param percentage the allowed similarity tolerance
      */
-    public SimilarityCalculationTask(ProgressBarFrame progessBar, int minX, int maxX, int minY, int maxY, BufferedImage[] images, String[] names, BufferedImage reference, String referenceName, double percentage) {
+    public SimilarityCalculationTask(ProgressBar progessBar, int minX, int maxX, int minY, int maxY, BufferedImage[] images, String[] names, BufferedImage reference, String referenceName, double percentage) {
         super(progessBar);
         this.names = names;
         this.refImage = createSubImage(reference, minX, maxX, minY, maxY);
@@ -70,7 +70,7 @@ public class SimilarityCalculationTask extends WorkingTask {
      * @param referenceName The name of the reference image
      * @param percentage the allowed similarity tolerance
      */
-    public SimilarityCalculationTask(ProgressBarFrame progessBar, BufferedImage[] images, String[] names, BufferedImage reference, String referenceName, double percentage) {
+    public SimilarityCalculationTask(ProgressBar progessBar, BufferedImage[] images, String[] names, BufferedImage reference, String referenceName, double percentage) {
         super(progessBar);
         this.names = names;
         this.refImage = reference;

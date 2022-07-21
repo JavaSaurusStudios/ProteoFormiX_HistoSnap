@@ -5,11 +5,11 @@ import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.MSScanAdduct;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
 import be.javasaurusstudios.histosnap.control.util.color.ColorRange;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +70,7 @@ public class ImageExtractionTask extends WorkingTask {
      * @param saveIntermediate boolean indicating if this image has to be auto
      * saved
      */
-    public ImageExtractionTask(JFrame parent, ProgressBarFrame progressBar, JTextField tfInput, JTextField minMZField, JTextField maxMZField, JTextField stepsField, JLabel imageIcon, int scale, MSiImage.ImageMode mode, ColorRange range, boolean saveIntermediate) {
+    public ImageExtractionTask(JFrame parent, ProgressBar progressBar, JTextField tfInput, JTextField minMZField, JTextField maxMZField, JTextField stepsField, JLabel imageIcon, int scale, MSiImage.ImageMode mode, ColorRange range, boolean saveIntermediate) {
         super(progressBar);
         this.parent = parent;
         this.tfInput = tfInput;
@@ -148,7 +148,7 @@ public class ImageExtractionTask extends WorkingTask {
      * @param saveIntermediate boolean indicating if this image has to be auto
      * saved
      */
-    public ImageExtractionTask(JFrame parent, ProgressBarFrame progressBar, JTextField tfInput, float minMz, float maxMz, int steps, JLabel imageIcon, int scale, MSiImage.ImageMode mode, ColorRange range, boolean saveIntermediate) {
+    public ImageExtractionTask(JFrame parent, ProgressBar progressBar, JTextField tfInput, float minMz, float maxMz, int steps, JLabel imageIcon, int scale, MSiImage.ImageMode mode, ColorRange range, boolean saveIntermediate) {
         super(progressBar);
         this.parent = parent;
         this.tfInput = tfInput;
@@ -236,7 +236,7 @@ public class ImageExtractionTask extends WorkingTask {
     private void ExecuteImage(String in, int scale, String extractionName, ColorRange range, float massOffset, boolean autoSave) throws Exception {
 
         if (minMZ >= maxMZ) {
-            JOptionPane.showConfirmDialog(MSImagizer.instance, "The minimal mz values should be less than the maximal mz value");
+            JOptionPane.showMessageDialog(MSImagizer.instance, "The minimal mz values should be less than the maximal mz value");
             return;
         }
 

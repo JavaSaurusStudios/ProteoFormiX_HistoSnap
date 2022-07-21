@@ -1,7 +1,7 @@
 package be.javasaurusstudios.histosnap.model.task;
 
 import be.javasaurusstudios.histosnap.control.tasks.WorkingTaskPostProcess;
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
 public abstract class WorkingTask implements Callable {
 
     // The progressbar to report to
-    protected ProgressBarFrame progressBar;
+    protected ProgressBar progressBar;
 
     // A list of postprocessing tasks that'll run once the result is available
     private final ArrayList<WorkingTaskPostProcess> postprocessing = new ArrayList<>();
@@ -24,7 +24,7 @@ public abstract class WorkingTask implements Callable {
      * Constructor
      * @param progressBar the progress bar (can be null) 
      */
-    public WorkingTask(ProgressBarFrame progressBar) {
+    public WorkingTask(ProgressBar progressBar) {
         this.progressBar = progressBar;
     }
 
@@ -52,7 +52,7 @@ public abstract class WorkingTask implements Callable {
      * Returns the progress bar
      * @return 
      */
-    public ProgressBarFrame getProgressBar() {
+    public ProgressBar getProgressBar() {
         return progressBar;
     }
 

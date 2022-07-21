@@ -5,13 +5,10 @@
  */
 package be.javasaurusstudios.histosnap.view.handlers;
 
-import be.javasaurusstudios.histosnap.control.tasks.WorkingThread;
-import be.javasaurusstudios.histosnap.control.tasks.imaging.ImageRandomizerTask;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.control.util.color.ColorRange;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
-import java.util.ArrayList;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.util.LinkedHashMap;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -27,14 +24,14 @@ import javax.swing.JTextField;
 public abstract class BackgroundExtractionHandler {
 
     protected final JFrame parent;
-    protected final ProgressBarFrame progressFrame;
+    protected final ProgressBar progressFrame;
     protected final JTextField tfInput;
     protected final JLabel lbImage;
     protected final int currentScale;
     protected final ColorRange currentRange;
     protected final MSiImage.ImageMode currentMode;
 
-    public BackgroundExtractionHandler(JFrame parent, ProgressBarFrame progressFrame, JTextField tfInput, JLabel lbImage, int currentScale, ColorRange currentRange, MSiImage.ImageMode currentMode) {
+    public BackgroundExtractionHandler(JFrame parent, ProgressBar progressFrame, JTextField tfInput, JLabel lbImage, int currentScale, ColorRange currentRange, MSiImage.ImageMode currentMode) {
         this.parent = parent;
         this.progressFrame = progressFrame;
         this.tfInput = tfInput;

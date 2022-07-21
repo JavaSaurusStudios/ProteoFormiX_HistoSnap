@@ -2,7 +2,7 @@ package be.javasaurusstudios.histosnap.control.cache;
 
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
-import be.javasaurusstudios.histosnap.view.component.ProgressBarFrame;
+import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -78,7 +78,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
     /**
      * Saves the session into the specified folder
      */
-    public void SaveSession(ProgressBarFrame progressBar) {
+    public void SaveSession(ProgressBar progressBar) {
         for (MSiFrame frame : this) {
             if (progressBar != null) {
                 progressBar.setText("Saving " + frame.getName() + " ...");
@@ -90,7 +90,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
     /**
      * Restores a saved session
      */
-    public void RestoreSession(ProgressBarFrame progressBar) {
+    public void RestoreSession(ProgressBar progressBar) {
         File[] files = sessionFolder.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
