@@ -3,7 +3,6 @@ package be.javasaurusstudios.histosnap.control.tasks.housekeeping;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.CACHE;
-import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.io.File;
 
 /**

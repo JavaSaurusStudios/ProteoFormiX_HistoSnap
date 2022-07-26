@@ -1,13 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package be.javasaurusstudios.histosnap.view.prompt.impl;
 
 import be.javasaurusstudios.histosnap.control.MSiImageCache;
-import be.javasaurusstudios.histosnap.control.util.AnimationExporter;
-import be.javasaurusstudios.histosnap.control.util.ImageUtils;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
@@ -15,7 +8,6 @@ import static be.javasaurusstudios.histosnap.view.MSImagizer.lastDirectory;
 import be.javasaurusstudios.histosnap.view.prompt.UserPrompt;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 import javax.imageio.ImageIO;

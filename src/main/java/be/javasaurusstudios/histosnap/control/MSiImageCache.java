@@ -4,7 +4,6 @@ import be.javasaurusstudios.histosnap.control.cache.HistoSnapImageSession;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
-import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

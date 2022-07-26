@@ -10,7 +10,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 /**
- *
+ * This class represents a square annotaton shape
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public class AnnotationRect extends Rectangle implements AnnotationShape {

@@ -2,7 +2,6 @@ package be.javasaurusstudios.histosnap.control.cache;
 
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
-import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

@@ -1,6 +1,5 @@
 package be.javasaurusstudios.histosnap.view.listeners.imagelist.impl;
 
-import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import be.javasaurusstudios.histosnap.view.component.ImageLabel;
 import be.javasaurusstudios.histosnap.view.listeners.imagelist.ListenerProvider;

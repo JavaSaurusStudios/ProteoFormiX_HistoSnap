@@ -15,7 +15,6 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 
 /**
  * This class represents a task to extract an image given a mz range

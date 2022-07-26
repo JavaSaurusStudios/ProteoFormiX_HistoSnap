@@ -1,7 +1,6 @@
 package be.javasaurusstudios.histosnap.model.task;
 
 import be.javasaurusstudios.histosnap.control.tasks.WorkingTaskPostProcess;
-import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
