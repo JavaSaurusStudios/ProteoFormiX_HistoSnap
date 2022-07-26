@@ -25,16 +25,16 @@ public abstract class BackgroundExtractionHandler {
 
     protected final JFrame parent;
     protected final ProgressBar progressFrame;
-    protected final JTextField tfInput;
+    protected final String path;
     protected final JLabel lbImage;
     protected final int currentScale;
     protected final ColorRange currentRange;
     protected final MSiImage.ImageMode currentMode;
 
-    public BackgroundExtractionHandler(JFrame parent, ProgressBar progressFrame, JTextField tfInput, JLabel lbImage, int currentScale, ColorRange currentRange, MSiImage.ImageMode currentMode) {
+    public BackgroundExtractionHandler(JFrame parent, ProgressBar progressFrame,String path, JLabel lbImage, int currentScale, ColorRange currentRange, MSiImage.ImageMode currentMode) {
         this.parent = parent;
         this.progressFrame = progressFrame;
-        this.tfInput = tfInput;
+        this.path = path;
         this.lbImage = lbImage;
         this.currentScale = currentScale;
         this.currentRange = currentRange;
@@ -44,6 +44,7 @@ public abstract class BackgroundExtractionHandler {
     public void Show(boolean isRandom) {
         JTextField samples = new JTextField();
         JTextField mzTolerance = new JTextField(".05");
+        JTextField intensityThreshold=new JTextField("0.01");
         JTextField lowerRangeMZ = new JTextField();
         JTextField upperRangeMZ = new JTextField();
 
@@ -58,6 +59,8 @@ public abstract class BackgroundExtractionHandler {
         inputs.put("minMz-field", lowerRangeMZ);
         inputs.put("maxMz-label", new JLabel("Maximal Mz"));
         inputs.put("maxMz-field", upperRangeMZ);
+        inputs.put("minI-label", new JLabel("Intensity Threshold"));
+        inputs.put("minI-field", intensityThreshold);
         if (isRandom) {
             inputs.put("samples-label", new JLabel("#Samples"));
             inputs.put("samples-field", samples);

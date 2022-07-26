@@ -9,7 +9,6 @@ import static be.javasaurusstudios.histosnap.view.MSImagizer.MSI_IMAGE;
 import be.javasaurusstudios.histosnap.view.component.ImageLabel;
 import be.javasaurusstudios.histosnap.view.prompt.impl.SaveAnimationDialog;
 import be.javasaurusstudios.histosnap.view.prompt.impl.SaveFramesDialog;
-import be.javasaurusstudios.histosnap.view.prompt.impl.SaveSimilaritiesDialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -33,7 +32,6 @@ public class ListActionPopupProvider implements ListenerProvider {
     private JMenuItem renameItem;
     private JMenuItem saveAnimationItem;
     private JMenuItem saveFrameItem;
-    private JMenuItem similarityItem;
     private final ImageLabel imgLabel;
     private JMenuItem generateCombinedImage;
 
@@ -136,15 +134,6 @@ public class ListActionPopupProvider implements ListenerProvider {
             }
         });
 
-        similarityItem = new JMenuItem("Check Similarities...");
-        menu.add(similarityItem);
-        similarityItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                List<String> selectedImageNames = imageCacheList.getSelectedValuesList();
-                new SaveSimilaritiesDialog(imgLabel, selectedImageNames,CACHE).Show();
-            }
-        });
 
         imageCacheList.addMouseListener(new MouseListener() {
             @Override
@@ -159,8 +148,6 @@ public class ListActionPopupProvider implements ListenerProvider {
                     renameItem.setEnabled(imageCacheList.getSelectedValuesList().size() >= 1);
                     deleteItem.setEnabled(imageCacheList.getSelectedValuesList().size() >= 1);
                     saveFrameItem.setEnabled(imageCacheList.getSelectedValuesList().size() >= 1);
-
-                    similarityItem.setEnabled(imageCacheList.getSelectedValuesList().size() >= 2);
                     saveAnimationItem.setEnabled(imageCacheList.getSelectedValuesList().size() >= 2);
 
                     menu.show(e.getComponent(), e.getX(), e.getY());

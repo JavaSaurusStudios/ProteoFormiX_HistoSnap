@@ -6,6 +6,7 @@ import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -110,10 +111,9 @@ public class MultiMSiImage extends MSiImage {
 
             double reference = (mode == ImageMode.TOTAL_ION_CURRENT) ? stat.getMean() : getStat(mode, stat);
 
-            for (MSiPixel pixel : frame.getPixels()) {
+            frame.getPixels().forEach((pixel) -> {
                 double check = getStat(mode, pixel.getStat());
                 double rel = Math.min(1, Math.max(0, check / reference));
-
                 Color color;
                 if (mode == ImageMode.TOTAL_ION_CURRENT) {
                     //TODO check if TIC is inverted as a special case or everything has to be inverted
@@ -121,24 +121,27 @@ public class MultiMSiImage extends MSiImage {
                 } else {
                     color = rel == 0 ? range[range.length - 1] : ColorUtils.getHeatMapColorInverse(rel, range);
                 }
-
                 //THIS IS THE TRICKY PART, THIS IS WHERE IT ACTUALLY GETS PUT ON SCREEN...
                 int fullPixelX = pixel.getX() + xOffset;
                 int fullPixelY = (pixel.getY() + yOffset);
-
                 if (fullPixelX > 0 && fullPixelX < getWidth()
                         && fullPixelY > 0 && fullPixelY < getHeight()) {
                     //draw a border
                     this.setRGB(fullPixelX, fullPixelY, color.getRGB());
                 }
+            });
 
-            }
+            frame.setxCoordinate(xCoordinate);
+            frame.setyCoordinate((rows - 1) - yCoordinate);
 
+            frame.setRect(new Rectangle(xOffset,yOffset,singleWidth,singleHeight));
+            
             xCoordinate++;
             if (xCoordinate >= cols) {
                 xCoordinate = 0;
                 yCoordinate++;
             }
+
         }
 
         DrawGrid(singleWidth, singleHeight, cols, rows);
@@ -149,12 +152,16 @@ public class MultiMSiImage extends MSiImage {
         bar.setValueText(0, "Annotating frames...", true);
 
         for (int z = 0; z < frames.size(); z++) {
-            annotateFrame(frames.get(z), 12, xCoordinate * singleWidth, yCoordinate * singleHeight);
+            int xOffset = xCoordinate * singleWidth;
+            int yOffset = yCoordinate * singleHeight;
+            annotateFrame(frames.get(z), 12, xOffset, yOffset);
+
             xCoordinate++;
             if (xCoordinate >= cols) {
                 xCoordinate = 0;
                 yCoordinate++;
             }
+
         }
     }
 
@@ -215,6 +222,25 @@ public class MultiMSiImage extends MSiImage {
         g.drawImage(this, 0, 0, null);
         g.dispose();
         return copy;
+    }
+
+    @Override
+    public MSiFrame getClickedFrame(int x, int y) {
+
+        for (MSiFrame frame : getFrames()) {
+
+            int checkWidthStart = frame.getXCoordinate() * frame.getWidth();
+            int checkWidthEnd = checkWidthStart + frame.getWidth();
+            int checkHeightStart = frame.getYCoordinate() * frame.getHeight();
+            int checkHeightEnd = checkHeightStart + frame.getHeight();
+
+            if (x > checkWidthStart && x < checkWidthEnd) {
+                if (y < checkHeightStart && y > checkHeightEnd) {
+                    return frame;
+                }
+            }
+        }
+        return null;
     }
 
     @Override

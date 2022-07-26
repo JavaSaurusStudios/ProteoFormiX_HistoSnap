@@ -22,8 +22,8 @@ import javax.swing.JTextField;
  */
 public class RandomBackgroundExtractor extends BackgroundExtractionHandler {
 
-    public RandomBackgroundExtractor(JFrame parent, ProgressBar progressFrame, JTextField tfInput, JLabel lbImage, int currentScale, ColorRange currentRange, MSiImage.ImageMode currentMode) {
-        super(parent, progressFrame, tfInput, lbImage, currentScale, currentRange, currentMode);
+    public RandomBackgroundExtractor(JFrame parent, ProgressBar progressFrame, String path, JLabel lbImage, int currentScale, ColorRange currentRange, MSiImage.ImageMode currentMode) {
+        super(parent, progressFrame, path, lbImage, currentScale, currentRange, currentMode);
     }
 
     @Override
@@ -37,13 +37,14 @@ public class RandomBackgroundExtractor extends BackgroundExtractionHandler {
         }
         float lowerMzBoundary = GetFloatValue(inputs, "minMz-field");
         float upperMzBoundary = GetFloatValue(inputs, "maxMz-field");
-
+        float intensityThreshold = GetFloatValue(inputs, "minI-field");
         ImageRandomizerTask task = new ImageRandomizerTask(
                 parent,
-                tfInput,
+                path,
                 lbImage,
                 lowerMzBoundary,
                 upperMzBoundary,
+                intensityThreshold,
                 sampleCount
         );
         task.setNotifyWhenRead(false);

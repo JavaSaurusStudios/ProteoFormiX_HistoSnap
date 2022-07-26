@@ -1,5 +1,6 @@
 package be.javasaurusstudios.histosnap.view.listeners.imagelist.impl;
 
+import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import be.javasaurusstudios.histosnap.view.component.ImageLabel;
 import be.javasaurusstudios.histosnap.view.listeners.imagelist.ListenerProvider;
@@ -7,7 +8,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 
 /**
  *
@@ -34,19 +34,21 @@ public class ImageHighlightProvider implements ListenerProvider {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                imgLabel.setMouseDown(true);
-                imgLabel.SetHighlightStart(e.getPoint());
-                if (SwingUtilities.isRightMouseButton(e)) {
-                    imgLabel.SetHighlightStart(null);
-                    imgLabel.setHighLightEnd(null);
-                    imgLabel.setMouseDown(false);
+                if (!MSImagizer.instance.IsAnnotationMode()) {
+                    return;
                 }
+                imgLabel.SetHighlightStart(e.getPoint());
+                imgLabel.setMouseDown(true);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                if (!MSImagizer.instance.IsAnnotationMode()) {
+                    return;
+                }
                 imgLabel.setMouseDown(false);
                 imgLabel.setHighLightEnd(e.getPoint());
+                imgLabel.createAnnotation(e.getPoint());
             }
 
             @Override
@@ -61,8 +63,12 @@ public class ImageHighlightProvider implements ListenerProvider {
         imgLabel.addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                if (!MSImagizer.instance.IsAnnotationMode()) {
+                    return;
+                }
                 imgLabel.setHighLightEnd(e.getPoint());
                 MSImagizer.instance.repaint();
+
             }
 
             @Override

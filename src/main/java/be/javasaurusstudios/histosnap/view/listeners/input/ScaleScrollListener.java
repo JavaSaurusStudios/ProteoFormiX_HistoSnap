@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package be.javasaurusstudios.histosnap.view.listeners.mouse;
+package be.javasaurusstudios.histosnap.view.listeners.input;
 
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import java.awt.event.KeyEvent;
@@ -21,7 +21,7 @@ public class ScaleScrollListener implements MouseWheelListener, KeyListener {
     private final MSImagizer parent;
     private boolean ctrlHeld;
 
-    public ScaleScrollListener(MSImagizer parent,JLabel imgLabel) {
+    public ScaleScrollListener(MSImagizer parent, JLabel imgLabel) {
         this.parent = parent;
         imgLabel.addMouseWheelListener(this);
         this.parent.addKeyListener(this);
@@ -29,12 +29,13 @@ public class ScaleScrollListener implements MouseWheelListener, KeyListener {
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-
-        int notches = e.getWheelRotation();
-        if (notches < 0) {
-            parent.increaseCurrentScale();
-        } else if (notches > 0) {
-            parent.decreaseCurrentScale();
+        if (ctrlHeld) {
+            int notches = e.getWheelRotation();
+            if (notches < 0) {
+                parent.increaseCurrentScale();
+            } else if (notches > 0) {
+                parent.decreaseCurrentScale();
+            }
         }
     }
 
@@ -45,7 +46,7 @@ public class ScaleScrollListener implements MouseWheelListener, KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (ctrlHeld && (e.getKeyCode() == KeyEvent.VK_CONTROL)) {
+        if (!ctrlHeld && (e.getKeyCode() == KeyEvent.VK_CONTROL)) {
             ctrlHeld = true;
         }
     }

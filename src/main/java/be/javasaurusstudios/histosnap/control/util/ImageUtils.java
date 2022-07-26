@@ -4,8 +4,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import javax.swing.ImageIcon;
 
 /**
  * This class contains useful methods to manipulate a buffered image
@@ -94,6 +96,15 @@ public class ImageUtils {
         average.setData(raster);
         return average;
 
+    }
+
+    public static ImageIcon scaleIcon(String iconPath, int width, int height) {
+        ImageIcon imageIcon = new ImageIcon(
+                ImageUtils.class.getResource(iconPath)
+        );
+        Image image = imageIcon.getImage(); // transform it 
+        Image newimg = image.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way  
+        return new ImageIcon(newimg);  // transform it back
     }
 
 }

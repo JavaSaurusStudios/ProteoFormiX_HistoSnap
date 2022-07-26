@@ -1,6 +1,7 @@
 package be.javasaurusstudios.histosnap.model.image;
 
 import be.javasaurusstudios.histosnap.control.util.UILogger;
+import java.awt.Rectangle;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -47,12 +48,17 @@ public class MSiFrame implements Serializable {
      * The name of the frame
      */
 
+    private int xCoordinate;
+    private int yCoordinate;
+    boolean isHighlighted;
+
     private String name;
 
     /**
      * A helper object to keep track of frame statistics
      */
     private final DescriptiveStatistics stat;
+    private Rectangle rectangle;
 
     /**
      * Constructor
@@ -122,6 +128,22 @@ public class MSiFrame implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getXCoordinate() {
+        return xCoordinate;
+    }
+
+    public void setxCoordinate(int xCoordinate) {
+        this.xCoordinate = xCoordinate;
+    }
+
+    public int getYCoordinate() {
+        return yCoordinate;
+    }
+
+    public void setyCoordinate(int yCoordinate) {
+        this.yCoordinate = yCoordinate;
     }
 
     public String getParentFile() {
@@ -199,17 +221,16 @@ public class MSiFrame implements Serializable {
      * @param intensityThreshold
      * @return the new smaller frame
      */
-    public MSiFrame CreateSubFrame(double minMz, double maxMz, double intensityThreshold) {
+    public MSiFrame CreateSubFrame(double minMz, double maxMz) {
+        UILogger.Log("Creating sub frame between " + minMz + " and " + maxMz);
         MSiFrame subFrame = new MSiFrame();
         subFrame.setHeight(height);
         subFrame.setWidth(width);
         for (MSiPixel pixel : getPixels()) {
             MSiPixel subPixel = new MSiPixel(pixel.getX(), pixel.getY());
             for (int i = 0; i < pixel.getMz().size(); i++) {
-                if (pixel.getI().get(i) >= intensityThreshold) {
-                    if (pixel.getMz().get(i) >= minMz && pixel.getMz().get(i) <= maxMz) {
-                        subPixel.addDataPoint(pixel.getMz().get(i), pixel.getI().get(i));
-                    }
+                if (pixel.getMz().get(i) >= minMz && pixel.getMz().get(i) <= maxMz) {
+                    subPixel.addDataPoint(pixel.getMz().get(i), pixel.getI().get(i));
                 }
             }
 
@@ -219,8 +240,16 @@ public class MSiFrame implements Serializable {
         return subFrame;
     }
 
-    public MSiFrame CreateSubFrame(double minMz, double maxMz) {
-        return CreateSubFrame(minMz, maxMz, 0);
+    public void setHighlighted(boolean b) {
+        isHighlighted = b;
+    }
+
+    public void setRect(Rectangle rectangle) {
+        this.rectangle = rectangle;
+    }
+
+    public Rectangle getRect() {
+        return this.rectangle;
     }
 
 }

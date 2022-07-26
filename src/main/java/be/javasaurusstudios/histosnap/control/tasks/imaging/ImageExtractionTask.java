@@ -30,7 +30,7 @@ public class ImageExtractionTask extends WorkingTask {
     //The parent JFrame 
     private final JFrame parent;
     //The textfield for the input file
-    private final JTextField tfInput;
+    private final String path;
     //the label for the image icon
     private final JLabel imageIcon;
     ///State indicators
@@ -47,6 +47,8 @@ public class ImageExtractionTask extends WorkingTask {
     private float maxMZ = -1;
     //The minimal mz value to consider
     private float minMZ = -1;
+    //The minimal mz value to consider
+    private float minI = 0;
     //The stepcount (= bin count)
     private float stepCount = -1;
     //The calculated interval
@@ -69,10 +71,10 @@ public class ImageExtractionTask extends WorkingTask {
      * @param saveIntermediate boolean indicating if this image has to be auto
      * saved
      */
-    public ImageExtractionTask(JFrame parent, JTextField tfInput, JTextField minMZField, JTextField maxMZField, JTextField stepsField, JLabel imageIcon, int scale, MSiImage.ImageMode mode, ColorRange range, boolean saveIntermediate) {
+    public ImageExtractionTask(JFrame parent, String path, JTextField minMZField, JTextField maxMZField, JTextField minIField, JTextField stepsField, JLabel imageIcon, int scale, MSiImage.ImageMode mode, ColorRange range, boolean saveIntermediate) {
         super();
         this.parent = parent;
-        this.tfInput = tfInput;
+        this.path = path;
         this.imageIcon = imageIcon;
         this.pixelScale = scale;
         this.mode = mode;
@@ -93,6 +95,7 @@ public class ImageExtractionTask extends WorkingTask {
                     JOptionPane.ERROR_MESSAGE);
             UILogger.Log("Invalid mass to charge range was provided.", UILogger.Level.ERROR);
         }
+
         try {
             maxMZ = (float) (Float.parseFloat((maxMZField.getText().replace(",", "."))));
             maxMZField.setText("" + maxMZ);
@@ -103,6 +106,21 @@ public class ImageExtractionTask extends WorkingTask {
             MSImagizer.instance.getProgressBar().setVisible(false);
             JOptionPane.showMessageDialog(parent,
                     "The maximal MZ value should be a real number >0",
+                    "Invalid mass to charge range",
+                    JOptionPane.ERROR_MESSAGE);
+            UILogger.Log("Invalid mass to charge range was provided.", UILogger.Level.ERROR);
+        }
+
+        try {
+            minI = (float) (Float.parseFloat(minIField.getText().replace(",", ".")));
+            minMZField.setText("" + minI);
+            if (minI < 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            MSImagizer.instance.getProgressBar().setVisible(false);
+            JOptionPane.showMessageDialog(parent,
+                    "The minimal intensity value should be a real number >=0",
                     "Invalid mass to charge range",
                     JOptionPane.ERROR_MESSAGE);
             UILogger.Log("Invalid mass to charge range was provided.", UILogger.Level.ERROR);
@@ -147,10 +165,10 @@ public class ImageExtractionTask extends WorkingTask {
      * @param saveIntermediate boolean indicating if this image has to be auto
      * saved
      */
-    public ImageExtractionTask(JFrame parent, JTextField tfInput, float minMz, float maxMz, int steps, JLabel imageIcon, int scale, MSiImage.ImageMode mode, ColorRange range, boolean saveIntermediate) {
+    public ImageExtractionTask(JFrame parent, String path, float minMz, float maxMz, int steps, JLabel imageIcon, int scale, MSiImage.ImageMode mode, ColorRange range, boolean saveIntermediate) {
         super();
         this.parent = parent;
-        this.tfInput = tfInput;
+        this.path = path;
 
         this.minMZ = minMz;
         this.maxMZ = maxMz;
@@ -167,7 +185,7 @@ public class ImageExtractionTask extends WorkingTask {
 
     @Override
     public Object call() throws Exception {
-        Process(tfInput, imageIcon, pixelScale, colorRange, saveIntermediate);
+        Process(path, imageIcon, pixelScale, colorRange, saveIntermediate);
         return "Done.";
     }
 
@@ -182,7 +200,7 @@ public class ImageExtractionTask extends WorkingTask {
      * intermediate
      * @throws Exception
      */
-    protected void Process(JTextField tfInput, JLabel imageIcon, int scale, ColorRange range, boolean autoSave) throws Exception {
+    protected void Process(String path, JLabel imageIcon, int scale, ColorRange range, boolean autoSave) throws Exception {
 
         if (!imageName.isEmpty()) {
             MSImagizer.instance.getProgressBar().setText("Extracting " + imageName);
@@ -194,7 +212,7 @@ public class ImageExtractionTask extends WorkingTask {
 
         imageIcon.setText("");
         try {
-            String in = tfInput.getText();
+            String in = path;
 
             File inFile = new File(in);
             if (!inFile.exists()) {
@@ -219,12 +237,12 @@ public class ImageExtractionTask extends WorkingTask {
             }
 
             UILogger.Log("Start image extraction ...", UILogger.Level.INFO);
-            ExecuteImage(in, scale, imageName, range, 0, autoSave);
+            ExecuteImage(in, scale, minI, imageName, range, 0, autoSave);
 
             if (!MSScanAdduct.ENABLED_ADDUCTS.isEmpty()) {
                 UILogger.Log("Extracting additional adducts...", UILogger.Level.INFO);
                 for (MSScanAdduct.ADDUCTS adduct : MSScanAdduct.ENABLED_ADDUCTS) {
-                    ExecuteImage(in, scale, imageName + "_" + adduct.toString(), range, adduct.getMassDeficit(), autoSave);
+                    ExecuteImage(in, scale, minI, imageName + "_" + adduct.toString(), range, adduct.getMassDeficit(), autoSave);
                 }
             }
 
@@ -236,7 +254,7 @@ public class ImageExtractionTask extends WorkingTask {
         }
     }
 
-    private void ExecuteImage(String in, int scale, String extractionName, ColorRange range, float massOffset, boolean autoSave) throws Exception {
+    private void ExecuteImage(String in, int scale, float minI, String extractionName, ColorRange range, float massOffset, boolean autoSave) throws Exception {
 
         if (minMZ >= maxMZ) {
             JOptionPane.showMessageDialog(MSImagizer.instance, "The minimal mz values should be less than the maximal mz value");
@@ -258,10 +276,9 @@ public class ImageExtractionTask extends WorkingTask {
         String tmp = in + minMZ + "to" + maxMZ + ".tmp.txt";
         MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
 
-        MultiMSiImage image = extractor.extractImageRange(ranges);
+        MultiMSiImage image = extractor.extractImageRange(ranges, minI);
 
-        image.setName(minMZ + " - " + maxMZ + ((extractionName == null || extractionName.isEmpty()) ? "" : "_" + extractionName));
-
+        //image.setName(minMZ + " - " + maxMZ + ((extractionName == null || extractionName.isEmpty()) ? "" : "_" + extractionName));
         float i = 0;
         for (MSiFrame frame : image.getFrames()) {
             i++;

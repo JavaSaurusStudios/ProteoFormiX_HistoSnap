@@ -28,7 +28,7 @@ public class ImageDHBClusterTask extends WorkingTask {
     //The parent JFrame 
     private final JFrame parent;
     //The textfield for the input file
-    private final JTextField tfInput;
+    private final String path;
     //the label for the image icon
     private final JLabel imageIcon;
 
@@ -39,22 +39,25 @@ public class ImageDHBClusterTask extends WorkingTask {
     private float maxMZ = -1;
     //The minimal mz value to consider
     private float minMZ = -1;
+    //The minimal intensity to consider
+    private float minI = -1;
     //Boolean indicating if the images should be combined
     private boolean generateBackground;
 
-    public ImageDHBClusterTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, boolean generateBackground) {
+    public ImageDHBClusterTask(JFrame parent, String path, JLabel imageIcon, float minMz, float maxMz, float minI, boolean generateBackground) {
         super();
         this.parent = parent;
-        this.tfInput = tfInput;
+        this.path = path;
         this.imageIcon = imageIcon;
         this.minMZ = minMz;
         this.maxMZ = maxMz;
+        this.minI = minI;
         this.generateBackground = generateBackground;
     }
 
     @Override
     public Object call() throws Exception {
-        Process(tfInput, imageIcon, generateBackground);
+        Process(path, imageIcon, generateBackground);
         return "Done.";
     }
 
@@ -69,7 +72,7 @@ public class ImageDHBClusterTask extends WorkingTask {
      * intermediate
      * @throws Exception
      */
-    private void Process(JTextField tfInput, JLabel imageIcon, boolean makeBackground) throws Exception {
+    private void Process(String path, JLabel imageIcon, boolean makeBackground) throws Exception {
 
         if (minMZ == -1 || maxMZ == -1) {
             throw new Exception("Please check the mz range...");
@@ -77,7 +80,7 @@ public class ImageDHBClusterTask extends WorkingTask {
 
         imageIcon.setText("");
         try {
-            String in = tfInput.getText();
+            String in = path;
 
             File inFile = new File(in);
             if (!inFile.exists()) {
@@ -132,7 +135,7 @@ public class ImageDHBClusterTask extends WorkingTask {
 
         String tmp = in + ".DHB.tmp.txt";
         MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
-        MultiMSiImage extractImageRange = extractor.extractImageRange(ranges);
+        MultiMSiImage extractImageRange = extractor.extractImageRange(ranges, minI);
 
         bar.setValueText(0, "Generating mass ranges for DHB Clusters", true);
         float value = 0;

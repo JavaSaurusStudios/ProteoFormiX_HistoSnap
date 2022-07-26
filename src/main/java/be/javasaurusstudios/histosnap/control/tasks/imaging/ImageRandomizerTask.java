@@ -3,13 +3,15 @@ package be.javasaurusstudios.histosnap.control.tasks.imaging;
 import be.javasaurusstudios.histosnap.control.MzRangeExtractor;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
+import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
-import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.TreeSet;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -27,7 +29,7 @@ public class ImageRandomizerTask extends WorkingTask {
     //The parent JFrame 
     private final JFrame parent;
     //The textfield for the input file
-    private final JTextField tfInput;
+    private final String path;
     //the label for the image icon
     private final JLabel imageIcon;
 
@@ -38,25 +40,28 @@ public class ImageRandomizerTask extends WorkingTask {
     private float maxMZ = -1;
     //The minimal mz value to consider
     private float minMZ = -1;
+    //The minimal mz value to consider
+    private float minI = -1;
     //the amount of samples
     private float samples;
     //the random
     private final Random rnd;
 
-    public ImageRandomizerTask(JFrame parent, JTextField tfInput, JLabel imageIcon, float minMz, float maxMz, int samples) {
+    public ImageRandomizerTask(JFrame parent, String path, JLabel imageIcon, float minMz, float maxMz, float minI, int samples) {
         super();
         this.parent = parent;
-        this.tfInput = tfInput;
+        this.path = path;
         this.imageIcon = imageIcon;
         this.minMZ = minMz;
         this.maxMZ = maxMz;
+        this.minI = minI;
         this.samples = samples;
         this.rnd = new Random();
     }
 
     @Override
     public Object call() throws Exception {
-        Process(tfInput, imageIcon);
+        Process(path, imageIcon);
         return "Done.";
     }
 
@@ -71,7 +76,7 @@ public class ImageRandomizerTask extends WorkingTask {
      * intermediate
      * @throws Exception
      */
-    private void Process(JTextField tfInput, JLabel imageIcon) throws Exception {
+    private void Process(String path, JLabel imageIcon) throws Exception {
 
         if (minMZ == -1 || maxMZ == -1) {
             throw new Exception("Please check the mz range...");
@@ -79,11 +84,11 @@ public class ImageRandomizerTask extends WorkingTask {
 
         imageIcon.setText("");
         try {
-            String in = tfInput.getText();
+            String in = path;
 
             File inFile = new File(in);
             if (!inFile.exists()) {
-                 MSImagizer.instance.getProgressBar().setVisible(false);
+                MSImagizer.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "Please specify an input imzml file",
                         "Invalid input file",
@@ -94,7 +99,7 @@ public class ImageRandomizerTask extends WorkingTask {
 
             File idbFile = new File(inFile.getAbsolutePath().replace(".imzml", ".ibd"));
             if (!idbFile.exists()) {
-                 MSImagizer.instance.getProgressBar().setVisible(false);
+                MSImagizer.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "The corresponding ibd file could not be found in the provided file directory./nPlease verify that an idb file exist with the EXACT same name as the provided imzml.",
                         "Invalid input file",
@@ -106,31 +111,29 @@ public class ImageRandomizerTask extends WorkingTask {
             ExecuteImage(in, "Background");
 
         } catch (Exception ex) {
-             MSImagizer.instance.getProgressBar().setVisible(false);
+            MSImagizer.instance.getProgressBar().setVisible(false);
             ex.printStackTrace();
         }
     }
 
     private void ExecuteImage(String in, String extractionName) throws Exception {
 
-        //TODO further subdivide this to create multiple, smaller tasks
-        
-        List<MSiImage> rndImages = new ArrayList<>();
-
+        TreeSet<Float> randomPoints = new TreeSet<>();
         for (int i = 0; i < samples; i++) {
             float mZ = minMZ + (rnd.nextFloat() * (maxMZ - minMZ));
-            String tmp = in + mZ + ".tmp.txt";
-            MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
-            MSiImage image = extractor.extractSingleImage(mZ - tolerance, mZ + tolerance);
-            rndImages.add(image);
-            if (image == null) {
-                return;
-            }
-            image.setName("" + mZ);
-            image.RemoveHotSpots(99);
+            randomPoints.add(mZ);
         }
 
-        MSiImage compiledImage = MSiImage.CreateCombinedImage(rndImages);
+        List<float[]> randomRanges = new LinkedList<>();
+        for (Float mz : randomPoints) {
+            randomRanges.add(new float[]{mz - tolerance, mz + tolerance});
+        }
+
+        String tmp = in + ".rng.tmp.txt";
+        MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
+        MultiMSiImage extractImageRange = extractor.extractImageRange(randomRanges, minI);
+
+        MSiImage compiledImage = MSiImage.CreateCombinedImage(extractImageRange);
         MSImagizer.AddToCache(compiledImage);
         compiledImage.setName(extractionName);
         compiledImage.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());

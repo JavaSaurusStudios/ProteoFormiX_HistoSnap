@@ -38,8 +38,12 @@ public class ProgressBar {
     }
 
     public void setValue(float value, boolean indeterminate) {
-        bar.setValue((int) (Math.max(0, Math.min(100, (value * 100)))));
-        bar.setIndeterminate(indeterminate);
+        try {
+            bar.setValue((int) (Math.max(0, Math.min(100, (value * 100)))));
+            bar.setIndeterminate(indeterminate);
+        } catch (java.lang.ArithmeticException e) {
+            bar.setIndeterminate(true);
+        }
     }
 
     public void setValueText(float value, String txt, boolean indeterminate) {

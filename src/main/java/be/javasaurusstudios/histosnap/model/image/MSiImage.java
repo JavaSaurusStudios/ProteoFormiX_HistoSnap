@@ -6,6 +6,7 @@ import be.javasaurusstudios.histosnap.view.MSImagizer;
 import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import javax.imageio.ImageIO;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
@@ -68,20 +70,31 @@ public class MSiImage extends BufferedImage implements Serializable {
     }
 
     protected void annotateFrame(MSiFrame frame, int fontSize, int xOffset, int yOffset) {
+        Graphics g = getGraphics();
+
+        g.setColor(MSImagizer.instance.getCurrentAnnotationColor());
+
+        MSImagizer.instance.getLbImage().getAnnotationShapes().forEach((annotation) -> {
+            annotation.draw(g, xOffset, yOffset);
+        });
+
         if (MSImagizer.instance.isDrawTitle()) {
+
             int titleX = xOffset + (int) Math.ceil(frame.getWidth() / 2);
             int titleY = yOffset + frame.getHeight() - 5;
+
             BufferedImage tmp = ImageUtils.SetImageSubTitle(
                     this,
                     frame.getName(),
                     (int) (Math.max(fontSize, Math.ceil((double) fontSize / MSImagizer.instance.getCurrentScale()))),
                     titleX,
                     titleY);
-            Graphics g = getGraphics();
+
             g.clearRect(0, 0, getWidth(), getHeight());
             g.drawImage(tmp, 0, 0, null);
-            g.dispose();
+
         }
+        g.dispose();
     }
 
     /**
@@ -251,6 +264,14 @@ public class MSiImage extends BufferedImage implements Serializable {
         return stat.getMean();
     }
 
+    public MSiFrame getClickedFrame(int x, int y) {
+        MSiFrame frame = getFrame();
+        if (frame != null && x >= 0 && y <= frame.getWidth() & x >= 0 && y <= frame.getHeight()) {
+            return frame;
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         return getName();
@@ -313,7 +334,7 @@ public class MSiImage extends BufferedImage implements Serializable {
         progressBar.setValueText(0, "Combining images...", true);
 
         float value = 0;
-        float max = frame.getWidth() * frame.getHeight();
+        float max = Math.max(1, frame.getWidth() * frame.getHeight());
 
         for (int x = 0; x < frame.getWidth(); x++) {
             for (int y = 0; y < frame.getHeight(); y++) {

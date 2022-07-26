@@ -30,8 +30,12 @@ public class UILogger {
 
         System.out.println(logMessage);
 
+        if (MSImagizer.instance == null) {
+            return;
+        }
+
         MSImagizer.instance.getProgressBar().setText(msg);
-        
+
         if (LOGGING_AREA == null) {
             return;
         }

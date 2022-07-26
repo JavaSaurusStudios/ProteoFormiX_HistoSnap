@@ -8,10 +8,8 @@ import static be.javasaurusstudios.histosnap.view.MSImagizer.CACHE;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.instance;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.lastDirectory;
 import be.javasaurusstudios.histosnap.view.component.ProgressBar;
-import java.awt.Color;
 import java.io.File;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 
 /**
  * This class represents a working task to load session content
@@ -21,7 +19,7 @@ import javax.swing.JTextField;
 public class SessionLoadingTask extends WorkingTask {
 
     private final File inputFolder;
-    private final JTextField tfInput;
+    private final String path;
 
     /**
      * Constructor for a task to load a session
@@ -30,10 +28,10 @@ public class SessionLoadingTask extends WorkingTask {
      * @param inputFolder the session folder
      * @param tfInput textfield for the session folder
      */
-    public SessionLoadingTask(ProgressBar progessBar, File inputFolder, JTextField tfInput) {
+    public SessionLoadingTask(ProgressBar progessBar, File inputFolder, String path) {
         super();
         this.inputFolder = inputFolder;
-        this.tfInput = tfInput;
+        this.path = path;
     }
 
     @Override
@@ -46,11 +44,10 @@ public class SessionLoadingTask extends WorkingTask {
 
         if (CACHE.getFirst() != null) {
             File selectedFile = new File(CACHE.getFirst().getFrame().getParentFile());
-            tfInput.setText(selectedFile.getAbsolutePath());
+         MSImagizer.instance.setPath(selectedFile.getAbsolutePath());
             lastDirectory = selectedFile.getParentFile();
             if (selectedFile.exists()) {
-                tfInput.setBackground(Color.green);
-                UILogger.Log("Done...", UILogger.Level.INFO);
+                   UILogger.Log("Done...", UILogger.Level.INFO);
             } else {
                 JOptionPane.showMessageDialog(instance,
                         selectedFile.getAbsolutePath() + " could not be found...",

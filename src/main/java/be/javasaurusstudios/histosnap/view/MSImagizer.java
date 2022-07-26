@@ -5,12 +5,15 @@ import be.javasaurusstudios.histosnap.control.MSiImageCache;
 import be.javasaurusstudios.histosnap.control.tasks.imaging.ImageExtractionTask;
 import be.javasaurusstudios.histosnap.control.tasks.housekeeping.SessionLoadingTask;
 import be.javasaurusstudios.histosnap.control.tasks.housekeeping.SessionSavingTask;
+import be.javasaurusstudios.histosnap.control.util.ButtonIcons;
 import be.javasaurusstudios.histosnap.model.MSScanAdduct;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.control.util.color.ColorRange;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
+import be.javasaurusstudios.histosnap.model.image.annotation.AnnotationShapeType;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
+import be.javasaurusstudios.histosnap.view.component.ImageLabel;
 import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import be.javasaurusstudios.histosnap.view.handlers.DHBBackgroundExtractionHandler;
 import be.javasaurusstudios.histosnap.view.handlers.RandomBackgroundExtractor;
@@ -18,12 +21,14 @@ import be.javasaurusstudios.histosnap.view.listeners.imagelist.impl.ImageHighlig
 import be.javasaurusstudios.histosnap.view.listeners.imagelist.impl.ListActionPopupProvider;
 import be.javasaurusstudios.histosnap.view.listeners.imagelist.impl.ListSavePopupProvider;
 import be.javasaurusstudios.histosnap.view.listeners.imagelist.impl.ListSelectionUpdateProvider;
-import be.javasaurusstudios.histosnap.view.listeners.mouse.ScaleScrollListener;
+import be.javasaurusstudios.histosnap.view.listeners.input.ScaleScrollListener;
+import be.javasaurusstudios.histosnap.view.prompt.impl.SaveAnimationDialog;
+import be.javasaurusstudios.histosnap.view.prompt.impl.SaveFramesDialog;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +41,14 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -48,6 +58,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -56,6 +67,8 @@ import javax.swing.filechooser.FileFilter;
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public class MSImagizer extends javax.swing.JFrame {
+
+    private static final int HighMemThreshold = 8;
 
     //The singleton instance
     public static MSImagizer instance;
@@ -71,12 +84,20 @@ public class MSImagizer extends javax.swing.JFrame {
     private final ProgressBar progressFrame;
     //The UI element for the produced images
     public static JList imageCacheList;
+    //The Current File Path
+    private String currentFilePath = "";
     //The current pixel scale to export
     private int exportScale = 4;
     //The actual current pixel scale
     private int currentScale;
     //The current range of colors that will be applied
     private ColorRange currentRange = ColorRange.BLUE_YELLOW;
+    //The current color for annotations
+    private Color currentAnnotationColor = Color.yellow;
+    //The current annotation shape
+    private AnnotationShapeType currentShape = AnnotationShapeType.ARC;
+    //Indicating the annotation drawing mode is on
+    private boolean doAnnotations = false;
     //The current mode of reference for intensities
     private MSiImage.ImageMode currentMode = MSiImage.ImageMode.MEAN;
     //Boolean indicating if this machine has enough memory or not
@@ -120,17 +141,29 @@ public class MSImagizer extends javax.swing.JFrame {
 
         UILogger.LOGGING_AREA = logArea;
 
-        InitListeners();
-        InitAdducts();
-        InitModes();
-
+        long allocatedMemory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+        long presumableFreeMemory = Runtime.getRuntime().maxMemory() - allocatedMemory;
+        int available = (int) (presumableFreeMemory / 1073741824);
+        useHighMemory = available >= HighMemThreshold;
         UILogger.Log("ProteoFormiX presents", UILogger.Level.NONE);
         UILogger.Log("HistoSnap is ready. Welcome !", UILogger.Level.NONE);
         UILogger.Log("-----------------------------", UILogger.Level.NONE);
+        UILogger.Log("There is " + available + " GB of free ram available.", UILogger.Level.NONE);
+        UILogger.Log("Selecting " + (useHighMemory ? "Memory Mode" : "Database Mode"), UILogger.Level.NONE);
+        UILogger.Log("-----------------------------", UILogger.Level.NONE);
+
+        InitListeners();
+        InitAdducts();
+        InitModes();
+        InitToolBar();
 
         BtnLowMemory.setSelected(true);
         btnHighMemory.setSelected(false);
 
+        //disable debug stuff
+        menuOptions.setVisible(false);
+        menuAnnotations.setVisible(false);
+        btnColumns.setVisible(false);
     }
 
     //Handle Scaling
@@ -151,8 +184,76 @@ public class MSImagizer extends javax.swing.JFrame {
         }
     }
 
+    public ImageLabel getLbImage() {
+        return lbImage;
+    }
+
     public ProgressBar getProgressBar() {
         return progressFrame;
+    }
+
+  
+    public Color getCurrentAnnotationColor() {
+        return currentAnnotationColor;
+    }
+
+    public AnnotationShapeType getCurrentAnnotationShapeType() {
+        return currentShape;
+    }
+
+    public void SetCurrentAnnotationShapeType(AnnotationShapeType type) {
+        currentShape = type;
+    }
+
+    public boolean IsAnnotationMode() {
+        return doAnnotations;
+    }
+
+    public void setPath(String absolutePath) {
+        currentFilePath = absolutePath;
+    }
+
+    public void delegateExtraction() {
+
+        if (currentFilePath.isEmpty()) {
+            if (JOptionPane.showConfirmDialog(this, "Please load an imzml file") == JOptionPane.YES_OPTION) {
+                Load();
+            }
+            return;
+        }
+
+        String[] buttons = {"Single value", "Sequence", "List of Masses", "Background", "Cancel"};
+        int returnValue = JOptionPane.showOptionDialog(null, "Please select the image extraction method ", "Extract",
+                0, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
+
+        switch (returnValue) {
+            case 0:
+                ShowSingleImageExtraction();
+                break;
+            case 1:
+                ShowSequenceImageExtraction();
+                break;
+            case 2:
+                ShowExtractListImage();
+                break;
+            case 3:
+                ShowExtractBackgroundDialog();
+                break;
+        }
+    }
+
+    public void ShowExtractBackgroundDialog() {
+        String[] buttons = {"Random", "DHB-matrix based", "Cancel"};
+        int returnValue = JOptionPane.showOptionDialog(null, "Please select the background extraction method ", "Extract",
+                0, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
+        switch (returnValue) {
+            case 0:
+                ShowRandomExtraction();
+                break;
+            case 1:
+                ShowDHBExtraction();
+                break;
+        }
     }
 
     /**
@@ -165,20 +266,17 @@ public class MSImagizer extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        tfInput = new javax.swing.JTextField();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jScrollPane2 = new javax.swing.JScrollPane();
         imageList = new javax.swing.JList<>();
         jScrollPane4 = new javax.swing.JScrollPane();
-        jScrollPane1 = new javax.swing.JScrollPane();
         lbImage = new be.javasaurusstudios.histosnap.view.component.ImageLabel();
         logPanel = new javax.swing.JScrollPane();
         logArea = new javax.swing.JList<>();
         progessBar = new javax.swing.JProgressBar();
         lbProgessBar = new javax.swing.JLabel();
+        toolbar = new javax.swing.JToolBar();
         jLayeredPane1 = new javax.swing.JLayeredPane();
-        jMenuBar1 = new javax.swing.JMenuBar();
+        menuBar = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
         fileMenu = new javax.swing.JMenu();
         btnLoad = new javax.swing.JMenuItem();
@@ -192,10 +290,27 @@ public class MSImagizer extends javax.swing.JFrame {
         btnGenerateImage = new javax.swing.JMenuItem();
         btnGenerateSequence = new javax.swing.JMenuItem();
         btnExtractMz = new javax.swing.JMenuItem();
+        btnAdducts = new javax.swing.JMenu();
+        btnCations = new javax.swing.JMenu();
+        BtnAllCations = new javax.swing.JCheckBoxMenuItem();
+        btnCatCH3OH = new javax.swing.JCheckBoxMenuItem();
+        btnCatCH3CNH = new javax.swing.JCheckBoxMenuItem();
+        btnCatDMSO = new javax.swing.JCheckBoxMenuItem();
+        btnCatK = new javax.swing.JCheckBoxMenuItem();
+        btnCatNa = new javax.swing.JCheckBoxMenuItem();
+        btnCatNH4 = new javax.swing.JCheckBoxMenuItem();
+        btnAnions = new javax.swing.JMenu();
+        btnAnionsAll = new javax.swing.JCheckBoxMenuItem();
+        btnAnionCl = new javax.swing.JCheckBoxMenuItem();
+        btnAnionHCOO = new javax.swing.JCheckBoxMenuItem();
+        btnAnionK = new javax.swing.JCheckBoxMenuItem();
+        btnAnionNa = new javax.swing.JCheckBoxMenuItem();
+        btnAnionOAc = new javax.swing.JCheckBoxMenuItem();
+        btnAnionTFA = new javax.swing.JCheckBoxMenuItem();
         jMenu3 = new javax.swing.JMenu();
         btnExtractRandomly = new javax.swing.JMenuItem();
         btnExtractDHBMatrix = new javax.swing.JMenuItem();
-        jMenu6 = new javax.swing.JMenu();
+        btnVisuals = new javax.swing.JMenu();
         btnIntensityMode = new javax.swing.JMenu();
         btnTIC = new javax.swing.JCheckBoxMenuItem();
         btnMean = new javax.swing.JCheckBoxMenuItem();
@@ -220,27 +335,12 @@ public class MSImagizer extends javax.swing.JFrame {
         btnX4 = new javax.swing.JCheckBoxMenuItem();
         btnX8 = new javax.swing.JCheckBoxMenuItem();
         btnX16 = new javax.swing.JCheckBoxMenuItem();
-        jMenu2 = new javax.swing.JMenu();
+        btnColumns = new javax.swing.JMenuItem();
+        menuAnnotations = new javax.swing.JMenu();
         btnShowOutline = new javax.swing.JCheckBoxMenuItem();
         btnShowTitle = new javax.swing.JCheckBoxMenuItem();
-        btnColumns = new javax.swing.JMenuItem();
-        btnAdducts = new javax.swing.JMenu();
-        btnCations = new javax.swing.JMenu();
-        BtnAllCations = new javax.swing.JCheckBoxMenuItem();
-        btnCatCH3OH = new javax.swing.JCheckBoxMenuItem();
-        btnCatCH3CNH = new javax.swing.JCheckBoxMenuItem();
-        btnCatDMSO = new javax.swing.JCheckBoxMenuItem();
-        btnCatK = new javax.swing.JCheckBoxMenuItem();
-        btnCatNa = new javax.swing.JCheckBoxMenuItem();
-        btnCatNH4 = new javax.swing.JCheckBoxMenuItem();
-        btnAnions = new javax.swing.JMenu();
-        btnAnionsAll = new javax.swing.JCheckBoxMenuItem();
-        btnAnionCl = new javax.swing.JCheckBoxMenuItem();
-        btnAnionHCOO = new javax.swing.JCheckBoxMenuItem();
-        btnAnionK = new javax.swing.JCheckBoxMenuItem();
-        btnAnionNa = new javax.swing.JCheckBoxMenuItem();
-        btnAnionOAc = new javax.swing.JCheckBoxMenuItem();
-        btnAnionTFA = new javax.swing.JCheckBoxMenuItem();
+        btnAnnotationColor = new javax.swing.JMenuItem();
+        btnClearAnnotations = new javax.swing.JMenuItem();
         menuOptions = new javax.swing.JMenu();
         jMenu1 = new javax.swing.JMenu();
         BtnLowMemory = new javax.swing.JCheckBoxMenuItem();
@@ -251,40 +351,27 @@ public class MSImagizer extends javax.swing.JFrame {
         btnHelpText = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(650, 360));
+        setMinimumSize(new java.awt.Dimension(870, 870));
+        setPreferredSize(new java.awt.Dimension(870, 870));
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
-        jLabel1.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel1.setForeground(new java.awt.Color(0, 0, 0));
-        jLabel1.setText("Input (*.imzml)");
-
-        tfInput.setEditable(false);
-        tfInput.setBackground(new java.awt.Color(255, 102, 102));
-        tfInput.setText("-");
-
         jScrollPane3.setBackground(new java.awt.Color(255, 255, 255));
-
-        jScrollPane2.setBackground(new java.awt.Color(255, 255, 255));
+        jScrollPane3.setBorder(null);
 
         imageList.setBackground(new java.awt.Color(255, 255, 255));
         imageList.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Masses", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
         imageList.setForeground(new java.awt.Color(0, 0, 0));
-        jScrollPane2.setViewportView(imageList);
-
-        jScrollPane3.setViewportView(jScrollPane2);
+        jScrollPane3.setViewportView(imageList);
 
         jScrollPane4.setBackground(new java.awt.Color(255, 255, 255));
-
-        jScrollPane1.setBackground(new java.awt.Color(255, 255, 255));
+        jScrollPane4.setBorder(null);
 
         lbImage.setBackground(new java.awt.Color(255, 255, 255));
         lbImage.setForeground(new java.awt.Color(0, 0, 0));
         lbImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lbImage.setToolTipText("");
-        jScrollPane1.setViewportView(lbImage);
-
-        jScrollPane4.setViewportView(jScrollPane1);
+        jScrollPane4.setViewportView(lbImage);
 
         logPanel.setBackground(new java.awt.Color(255, 255, 255));
         logPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Activity Log", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
@@ -296,39 +383,53 @@ public class MSImagizer extends javax.swing.JFrame {
         lbProgessBar.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lbProgessBar.setText("Debug Message");
 
+        toolbar.setBackground(new java.awt.Color(255, 255, 255));
+        toolbar.setBorder(null);
+        toolbar.setFloatable(false);
+        toolbar.setForeground(new java.awt.Color(255, 255, 255));
+        toolbar.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        toolbar.setRollover(true);
+        toolbar.setMaximumSize(new java.awt.Dimension(32, 100));
+        toolbar.setMinimumSize(new java.awt.Dimension(32, 100));
+        toolbar.setPreferredSize(new java.awt.Dimension(32, 100));
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lbProgessBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(logPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 724, Short.MAX_VALUE)
-                    .addComponent(progessBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(9, 9, 9)
+                        .addComponent(toolbar, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane4))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(logPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 760, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane4))))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfInput)))
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lbProgessBar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(progessBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(tfInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane4)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(logPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(8, 8, 8)
+                                .addComponent(jScrollPane4)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(logPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(toolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lbProgessBar)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -397,7 +498,7 @@ public class MSImagizer extends javax.swing.JFrame {
         });
         menuFile.add(btnExit);
 
-        jMenuBar1.add(menuFile);
+        menuBar.add(menuFile);
 
         menuExtract.setText("Extract");
 
@@ -426,255 +527,6 @@ public class MSImagizer extends javax.swing.JFrame {
             }
         });
         jMenu5.add(btnExtractMz);
-
-        menuExtract.add(jMenu5);
-
-        jMenu3.setText("Background");
-
-        btnExtractRandomly.setText("Random Background");
-        btnExtractRandomly.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnExtractRandomlyActionPerformed(evt);
-            }
-        });
-        jMenu3.add(btnExtractRandomly);
-
-        btnExtractDHBMatrix.setText("DHB Background");
-        btnExtractDHBMatrix.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnExtractDHBMatrixActionPerformed(evt);
-            }
-        });
-        jMenu3.add(btnExtractDHBMatrix);
-
-        menuExtract.add(jMenu3);
-
-        jMenuBar1.add(menuExtract);
-
-        jMenu6.setText("Visuals");
-
-        btnIntensityMode.setText("Compare To");
-
-        btnTIC.setSelected(true);
-        btnTIC.setText("Total Ion Current");
-        btnTIC.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnTICActionPerformed(evt);
-            }
-        });
-        btnIntensityMode.add(btnTIC);
-
-        btnMean.setSelected(true);
-        btnMean.setText("Mean");
-        btnMean.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnMeanActionPerformed(evt);
-            }
-        });
-        btnIntensityMode.add(btnMean);
-
-        btnMedian.setSelected(true);
-        btnMedian.setText("Median");
-        btnMedian.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnMedianActionPerformed(evt);
-            }
-        });
-        btnIntensityMode.add(btnMedian);
-
-        btnMin.setSelected(true);
-        btnMin.setText("Min");
-        btnMin.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnMinActionPerformed(evt);
-            }
-        });
-        btnIntensityMode.add(btnMin);
-
-        btnMax.setSelected(true);
-        btnMax.setText("Max");
-        btnMax.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnMaxActionPerformed(evt);
-            }
-        });
-        btnIntensityMode.add(btnMax);
-
-        btnPercentile.setText("Percentile");
-
-        btnQ1.setSelected(true);
-        btnQ1.setText("Q1");
-        btnQ1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnQ1ActionPerformed(evt);
-            }
-        });
-        btnPercentile.add(btnQ1);
-
-        btnQ2.setSelected(true);
-        btnQ2.setText("Q3");
-        btnQ2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnQ2ActionPerformed(evt);
-            }
-        });
-        btnPercentile.add(btnQ2);
-
-        btn90th.setSelected(true);
-        btn90th.setText("90th percentile");
-        btn90th.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn90thActionPerformed(evt);
-            }
-        });
-        btnPercentile.add(btn90th);
-
-        btn95th.setSelected(true);
-        btn95th.setText("95th percentile");
-        btn95th.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn95thActionPerformed(evt);
-            }
-        });
-        btnPercentile.add(btn95th);
-
-        btn99th.setSelected(true);
-        btn99th.setText("99th percentile");
-        btn99th.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn99thActionPerformed(evt);
-            }
-        });
-        btnPercentile.add(btn99th);
-
-        btnIntensityMode.add(btnPercentile);
-
-        jMenu6.add(btnIntensityMode);
-
-        btnColor.setText("Color");
-
-        btnBlueYellow.setText("Blue-Yellow");
-        btnBlueYellow.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBlueYellowActionPerformed(evt);
-            }
-        });
-        btnColor.add(btnBlueYellow);
-
-        btnGreenRed.setText("Green-Red");
-        btnGreenRed.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnGreenRedActionPerformed(evt);
-            }
-        });
-        btnColor.add(btnGreenRed);
-
-        btnGreenPink.setText("Green-Pink");
-        btnGreenPink.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnGreenPinkActionPerformed(evt);
-            }
-        });
-        btnColor.add(btnGreenPink);
-
-        btnRedBlue.setText("Red-Blue");
-        btnRedBlue.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnRedBlueActionPerformed(evt);
-            }
-        });
-        btnColor.add(btnRedBlue);
-
-        btnGrayScale.setText("Gray Scale");
-        btnGrayScale.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnGrayScaleActionPerformed(evt);
-            }
-        });
-        btnColor.add(btnGrayScale);
-
-        jMenu6.add(btnColor);
-
-        btnScale.setText("Scale");
-
-        btnX1.setSelected(true);
-        btnX1.setText("x1");
-        btnX1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnX1ActionPerformed(evt);
-            }
-        });
-        btnScale.add(btnX1);
-
-        btnX2.setSelected(true);
-        btnX2.setText("x2");
-        btnX2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnX2ActionPerformed(evt);
-            }
-        });
-        btnScale.add(btnX2);
-
-        btnX4.setSelected(true);
-        btnX4.setText("x4");
-        btnX4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnX4ActionPerformed(evt);
-            }
-        });
-        btnScale.add(btnX4);
-
-        btnX8.setSelected(true);
-        btnX8.setText("x8");
-        btnX8.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnX8ActionPerformed(evt);
-            }
-        });
-        btnScale.add(btnX8);
-
-        btnX16.setSelected(true);
-        btnX16.setText("x16");
-        btnX16.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnX16ActionPerformed(evt);
-            }
-        });
-        btnScale.add(btnX16);
-
-        jMenu6.add(btnScale);
-
-        jMenu2.setText("Annotation");
-
-        btnShowOutline.setSelected(true);
-        btnShowOutline.setText("Show Outline");
-        btnShowOutline.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnShowOutlineActionPerformed(evt);
-            }
-        });
-        jMenu2.add(btnShowOutline);
-
-        btnShowTitle.setSelected(true);
-        btnShowTitle.setText("Show Title");
-        btnShowTitle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnShowTitleActionPerformed(evt);
-            }
-        });
-        jMenu2.add(btnShowTitle);
-
-        btnColumns.setText("Set #Columns");
-        btnColumns.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnColumnsActionPerformed(evt);
-            }
-        });
-        jMenu2.add(btnColumns);
-
-        jMenu6.add(jMenu2);
-
-        jMenuBar1.add(jMenu6);
 
         btnAdducts.setText("Adducts");
 
@@ -812,7 +664,272 @@ public class MSImagizer extends javax.swing.JFrame {
 
         btnAdducts.add(btnAnions);
 
-        jMenuBar1.add(btnAdducts);
+        jMenu5.add(btnAdducts);
+
+        menuExtract.add(jMenu5);
+
+        jMenu3.setText("Background");
+
+        btnExtractRandomly.setText("Random Background");
+        btnExtractRandomly.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExtractRandomlyActionPerformed(evt);
+            }
+        });
+        jMenu3.add(btnExtractRandomly);
+
+        btnExtractDHBMatrix.setText("DHB Background");
+        btnExtractDHBMatrix.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExtractDHBMatrixActionPerformed(evt);
+            }
+        });
+        jMenu3.add(btnExtractDHBMatrix);
+
+        menuExtract.add(jMenu3);
+
+        menuBar.add(menuExtract);
+
+        btnVisuals.setText("Visuals");
+
+        btnIntensityMode.setText("Parameter");
+
+        btnTIC.setSelected(true);
+        btnTIC.setText("Total Ion Current");
+        btnTIC.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTICActionPerformed(evt);
+            }
+        });
+        btnIntensityMode.add(btnTIC);
+
+        btnMean.setSelected(true);
+        btnMean.setText("Mean");
+        btnMean.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMeanActionPerformed(evt);
+            }
+        });
+        btnIntensityMode.add(btnMean);
+
+        btnMedian.setSelected(true);
+        btnMedian.setText("Median");
+        btnMedian.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMedianActionPerformed(evt);
+            }
+        });
+        btnIntensityMode.add(btnMedian);
+
+        btnMin.setSelected(true);
+        btnMin.setText("Min");
+        btnMin.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMinActionPerformed(evt);
+            }
+        });
+        btnIntensityMode.add(btnMin);
+
+        btnMax.setSelected(true);
+        btnMax.setText("Max");
+        btnMax.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMaxActionPerformed(evt);
+            }
+        });
+        btnIntensityMode.add(btnMax);
+
+        btnPercentile.setText("Percentile");
+
+        btnQ1.setSelected(true);
+        btnQ1.setText("Q1");
+        btnQ1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnQ1ActionPerformed(evt);
+            }
+        });
+        btnPercentile.add(btnQ1);
+
+        btnQ2.setSelected(true);
+        btnQ2.setText("Q3");
+        btnQ2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnQ2ActionPerformed(evt);
+            }
+        });
+        btnPercentile.add(btnQ2);
+
+        btn90th.setSelected(true);
+        btn90th.setText("90th percentile");
+        btn90th.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn90thActionPerformed(evt);
+            }
+        });
+        btnPercentile.add(btn90th);
+
+        btn95th.setSelected(true);
+        btn95th.setText("95th percentile");
+        btn95th.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn95thActionPerformed(evt);
+            }
+        });
+        btnPercentile.add(btn95th);
+
+        btn99th.setSelected(true);
+        btn99th.setText("99th percentile");
+        btn99th.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn99thActionPerformed(evt);
+            }
+        });
+        btnPercentile.add(btn99th);
+
+        btnIntensityMode.add(btnPercentile);
+
+        btnVisuals.add(btnIntensityMode);
+
+        btnColor.setText("Color");
+
+        btnBlueYellow.setText("Blue-Yellow");
+        btnBlueYellow.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBlueYellowActionPerformed(evt);
+            }
+        });
+        btnColor.add(btnBlueYellow);
+
+        btnGreenRed.setText("Green-Red");
+        btnGreenRed.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGreenRedActionPerformed(evt);
+            }
+        });
+        btnColor.add(btnGreenRed);
+
+        btnGreenPink.setText("Green-Pink");
+        btnGreenPink.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGreenPinkActionPerformed(evt);
+            }
+        });
+        btnColor.add(btnGreenPink);
+
+        btnRedBlue.setText("Red-Blue");
+        btnRedBlue.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRedBlueActionPerformed(evt);
+            }
+        });
+        btnColor.add(btnRedBlue);
+
+        btnGrayScale.setText("Gray Scale");
+        btnGrayScale.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGrayScaleActionPerformed(evt);
+            }
+        });
+        btnColor.add(btnGrayScale);
+
+        btnVisuals.add(btnColor);
+
+        btnScale.setText("Scale");
+
+        btnX1.setSelected(true);
+        btnX1.setText("x1");
+        btnX1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnX1ActionPerformed(evt);
+            }
+        });
+        btnScale.add(btnX1);
+
+        btnX2.setSelected(true);
+        btnX2.setText("x2");
+        btnX2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnX2ActionPerformed(evt);
+            }
+        });
+        btnScale.add(btnX2);
+
+        btnX4.setSelected(true);
+        btnX4.setText("x4");
+        btnX4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnX4ActionPerformed(evt);
+            }
+        });
+        btnScale.add(btnX4);
+
+        btnX8.setSelected(true);
+        btnX8.setText("x8");
+        btnX8.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnX8ActionPerformed(evt);
+            }
+        });
+        btnScale.add(btnX8);
+
+        btnX16.setSelected(true);
+        btnX16.setText("x16");
+        btnX16.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnX16ActionPerformed(evt);
+            }
+        });
+        btnScale.add(btnX16);
+
+        btnVisuals.add(btnScale);
+
+        btnColumns.setText("#Columns");
+        btnColumns.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnColumnsActionPerformed(evt);
+            }
+        });
+        btnVisuals.add(btnColumns);
+
+        menuBar.add(btnVisuals);
+
+        menuAnnotations.setText("Annotation");
+
+        btnShowOutline.setSelected(true);
+        btnShowOutline.setText("Show Grid");
+        btnShowOutline.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowOutlineActionPerformed(evt);
+            }
+        });
+        menuAnnotations.add(btnShowOutline);
+
+        btnShowTitle.setSelected(true);
+        btnShowTitle.setText("Show Title");
+        btnShowTitle.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowTitleActionPerformed(evt);
+            }
+        });
+        menuAnnotations.add(btnShowTitle);
+
+        btnAnnotationColor.setText("Set Color");
+        btnAnnotationColor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAnnotationColorActionPerformed(evt);
+            }
+        });
+        menuAnnotations.add(btnAnnotationColor);
+
+        btnClearAnnotations.setText("Clear Annotations");
+        btnClearAnnotations.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearAnnotationsActionPerformed(evt);
+            }
+        });
+        menuAnnotations.add(btnClearAnnotations);
+
+        menuBar.add(menuAnnotations);
 
         menuOptions.setText("Options");
 
@@ -847,7 +964,7 @@ public class MSImagizer extends javax.swing.JFrame {
         });
         menuOptions.add(btnShowLog);
 
-        jMenuBar1.add(menuOptions);
+        menuBar.add(menuOptions);
 
         btnHelp.setText("Help");
 
@@ -867,19 +984,31 @@ public class MSImagizer extends javax.swing.JFrame {
         });
         btnHelp.add(btnHelpText);
 
-        jMenuBar1.add(btnHelp);
+        menuBar.add(btnHelp);
 
-        setJMenuBar(jMenuBar1);
+        setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(0, 435, Short.MAX_VALUE)
+                    .addComponent(jLayeredPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 435, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(0, 424, Short.MAX_VALUE)
+                    .addComponent(jLayeredPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 425, Short.MAX_VALUE)))
         );
 
         pack();
@@ -903,10 +1032,14 @@ public class MSImagizer extends javax.swing.JFrame {
     }//GEN-LAST:event_btnExitActionPerformed
 
     private void btnGenerateImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerateImageActionPerformed
+        ShowSingleImageExtraction();
+    }//GEN-LAST:event_btnGenerateImageActionPerformed
+
+    private void ShowSingleImageExtraction() {
 
         JTextField minMZ = new JTextField();
         JTextField maxMz = new JTextField();
-
+        JTextField minI = new JTextField();
         minMZ.setText("Min");
         maxMz.setText("Max");
 
@@ -914,7 +1047,9 @@ public class MSImagizer extends javax.swing.JFrame {
             new JLabel("Minimal MZ"),
             minMZ,
             new JLabel("Maximal Mz"),
-            maxMz,};
+            maxMz,
+            new JLabel("Minimal Intensity"),
+            minI};
         int result = JOptionPane.showConfirmDialog(this, inputs, "Generate Image...", JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
 
@@ -925,9 +1060,10 @@ public class MSImagizer extends javax.swing.JFrame {
 
             ImageExtractionTask task = new ImageExtractionTask(
                     this,
-                    tfInput,
+                    currentFilePath,
                     minMZ,
                     maxMz,
+                    minI,
                     null,
                     lbImage,
                     exportScale,
@@ -937,16 +1073,21 @@ public class MSImagizer extends javax.swing.JFrame {
             new WorkingThread(this, task).execute();
         }
 
-
-    }//GEN-LAST:event_btnGenerateImageActionPerformed
+    }
 
     private void btnGenerateSequenceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerateSequenceActionPerformed
+        ShowSequenceImageExtraction();
+    }//GEN-LAST:event_btnGenerateSequenceActionPerformed
+
+    private void ShowSequenceImageExtraction() {
         JTextField minMZ = new JTextField();
         JTextField maxMz = new JTextField();
+        JTextField minI = new JTextField();
         JTextField steps = new JTextField();
 
-        minMZ.setText("953");
-        maxMz.setText("954");
+        minMZ.setText("min");
+        maxMz.setText("max");
+        minI.setText("0.01");
         steps.setText("5");
 
         final JComponent[] inputs = new JComponent[]{
@@ -954,6 +1095,8 @@ public class MSImagizer extends javax.swing.JFrame {
             minMZ,
             new JLabel("Maximal Mz"),
             maxMz,
+            new JLabel("Intensity Threshold"),
+            minI,
             new JLabel("Steps"),
             steps,};
 
@@ -962,9 +1105,10 @@ public class MSImagizer extends javax.swing.JFrame {
 
             ImageExtractionTask task = new ImageExtractionTask(
                     this,
-                    tfInput,
+                    currentFilePath,
                     minMZ,
                     maxMz,
+                    minI,
                     steps,
                     lbImage,
                     exportScale,
@@ -973,7 +1117,7 @@ public class MSImagizer extends javax.swing.JFrame {
                     true);
             new WorkingThread(this, task).execute();
         }
-    }//GEN-LAST:event_btnGenerateSequenceActionPerformed
+    }
 
     private void btnGrayScaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGrayScaleActionPerformed
         currentRange = ColorRange.GRAY_SCALE;
@@ -1129,6 +1273,10 @@ public class MSImagizer extends javax.swing.JFrame {
     }//GEN-LAST:event_btnRedBlueActionPerformed
 
     private void btnExtractMzActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExtractMzActionPerformed
+        ShowExtractListImage();
+    }//GEN-LAST:event_btnExtractMzActionPerformed
+
+    private void ShowExtractListImage() {
 
         final JFrame parent = this;
 
@@ -1199,7 +1347,7 @@ public class MSImagizer extends javax.swing.JFrame {
                 progressFrame.setVisible(true);
                 ImageExtractionTask task = new ImageExtractionTask(
                         this,
-                        tfInput,
+                        currentFilePath,
                         entry.getValue() - (float) toleranceValue,
                         entry.getValue() + (float) toleranceValue,
                         1,
@@ -1224,11 +1372,15 @@ public class MSImagizer extends javax.swing.JFrame {
             //  JOptionPane.showMessageDialog(parent, "Finished extracting mz values");
             //  UILogger.Log("Finished extracting", UILogger.Level.INFO);
         }
-    }//GEN-LAST:event_btnExtractMzActionPerformed
+    }
 
     private void btnExtractRandomlyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExtractRandomlyActionPerformed
-        new RandomBackgroundExtractor(this, progressFrame, tfInput, lbImage, currentScale, currentRange, currentMode).Show(true);
+        ShowRandomExtraction();
     }//GEN-LAST:event_btnExtractRandomlyActionPerformed
+
+    private void ShowRandomExtraction() {
+        new RandomBackgroundExtractor(this, progressFrame, currentFilePath, lbImage, currentScale, currentRange, currentMode).Show(true);
+    }
 
     private void btnCatCH3OHActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCatCH3OHActionPerformed
         ToggleAdductEnabled(MSScanAdduct.ADDUCTS.CH3OH_CATION, btnCatCH3OH);
@@ -1363,7 +1515,7 @@ public class MSImagizer extends javax.swing.JFrame {
             UILogger.Log("Changing sessions...", UILogger.Level.INFO);
 
             progressFrame.setVisible(true);
-            WorkingTask task = new SessionLoadingTask(progressFrame, yourFolder, tfInput);
+            WorkingTask task = new SessionLoadingTask(progressFrame, yourFolder, currentFilePath);
             new WorkingThread(this, task).execute();
         }
 
@@ -1385,8 +1537,12 @@ public class MSImagizer extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void btnExtractDHBMatrixActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExtractDHBMatrixActionPerformed
-        new DHBBackgroundExtractionHandler(this, progressFrame, tfInput, lbImage, currentScale, currentRange, currentMode).Show(false);
+        ShowDHBExtraction();
     }//GEN-LAST:event_btnExtractDHBMatrixActionPerformed
+
+    private void ShowDHBExtraction() {
+        new DHBBackgroundExtractionHandler(this, progressFrame, currentFilePath, lbImage, currentScale, currentRange, currentMode).Show(false);
+    }
 
     private void btnShowOutlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowOutlineActionPerformed
         drawGrid = btnShowOutline.isSelected();
@@ -1422,6 +1578,16 @@ public class MSImagizer extends javax.swing.JFrame {
         this.setSize(dimension);
     }//GEN-LAST:event_btnShowLogActionPerformed
 
+    private void btnClearAnnotationsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearAnnotationsActionPerformed
+        lbImage.clear();
+        UpdateImage();
+    }//GEN-LAST:event_btnClearAnnotationsActionPerformed
+
+    private void btnAnnotationColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnnotationColorActionPerformed
+        currentAnnotationColor = JColorChooser.showDialog(this, "Select the annotation color", currentAnnotationColor);
+        UpdateImage();
+    }//GEN-LAST:event_btnAnnotationColorActionPerformed
+
     /**
      * Adds a new image into the cache
      *
@@ -1451,7 +1617,6 @@ public class MSImagizer extends javax.swing.JFrame {
         new ListSelectionUpdateProvider().SetUp(imageCacheList);
         new ListActionPopupProvider(lbImage).SetUp(imageCacheList);
         new ImageHighlightProvider().SetUp(lbImage);
-
         ScaleScrollListener scaleScrollListener = new ScaleScrollListener(this, lbImage);
 
     }
@@ -1517,6 +1682,377 @@ public class MSImagizer extends javax.swing.JFrame {
 
     }
 
+    private void InitToolBar() {
+
+        //THE IMPORT BUTTON
+        Action importFile = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                Load();
+            }
+        };
+        JButton importButton = new JButton(importFile);
+        importButton.setSize(32, 32);
+        importButton.setIcon(ButtonIcons.OPEN.getIcon());
+
+        //THE EXTRACT BUTTON
+        Action extractFile = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                delegateExtraction();
+            }
+        };
+        JButton extractButton = new JButton(extractFile);
+        extractButton.setSize(32, 32);
+        extractButton.setIcon(ButtonIcons.EXTRACT.getIcon());
+
+        //THE SAVE BUTTON
+        Action saveFile = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                Save();
+            }
+        };
+        JButton saveButton = new JButton(saveFile);
+        saveButton.setSize(32, 32);
+        saveButton.setIcon(ButtonIcons.SAVE_SINGLE.getIcon());
+
+        //THE SAVE frames BUTTON
+        Action framesFolder = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                List<String> selectedImageNames = imageCacheList.getSelectedValuesList();
+                if (selectedImageNames.size() <= 1) {
+                    Save();
+                } else {
+                    new SaveFramesDialog(selectedImageNames, CACHE).Show();
+                }
+            }
+        };
+        JButton framesButton = new JButton(framesFolder);
+        framesButton.setSize(32, 32);
+        framesButton.setIcon(ButtonIcons.SAVE_FRAMES.getIcon());
+
+        //THE SAVE GIF BUTTON
+        Action gifFile = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                List<String> selectedImageNames = imageCacheList.getSelectedValuesList();
+                if (selectedImageNames.size() <= 1) {
+                    return;
+                }
+                new SaveAnimationDialog(selectedImageNames, CACHE).Show();
+            }
+        };
+        JButton gifButton = new JButton(gifFile);
+        gifButton.setSize(32, 32);
+        gifButton.setIcon(ButtonIcons.SAVE_GIF.getIcon());
+
+        //THE MEMORY MODE BUTTON
+        ImageIcon dbIcon = ButtonIcons.MODE_DB.getIcon();
+        ImageIcon memIcon = ButtonIcons.MODE_MEMORY.getIcon();
+        Action selectMemMode = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                useHighMemory = !useHighMemory;
+                button.setIcon(useHighMemory ? memIcon : dbIcon);
+            }
+        };
+        JButton memoryModeButton = new JButton(selectMemMode);
+        memoryModeButton.setSize(32, 32);
+        memoryModeButton.setIcon(useHighMemory ? memIcon : dbIcon);
+
+        //THE SHOW GRID BUTTON
+        Action displayGridToggle = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                drawGrid = button.isSelected();
+                UpdateImage();
+            }
+        };
+        JToggleButton enableGridToggle = new JToggleButton(displayGridToggle);
+        enableGridToggle.setSize(32, 32);
+        enableGridToggle.setIcon(ButtonIcons.SHOW_GRID.getIcon());
+        enableGridToggle.setSelected(drawGrid);
+
+        //THE SHOW LOG BUTTON
+        Action displayLog = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                logPanel.setVisible(button.isSelected());
+                Dimension dimension = MSImagizer.instance.getSize();
+                MSImagizer.instance.pack();
+                MSImagizer.instance.setSize(dimension);
+                UpdateImage();
+            }
+        };
+        JToggleButton displayLogToggle = new JToggleButton(displayLog);
+        displayLogToggle.setSize(32, 32);
+        displayLogToggle.setIcon(ButtonIcons.ENABLE_LOG.getIcon());
+        displayLogToggle.setSelected(logPanel.isVisible());
+
+        //THE SHOW TITLE BUTTON
+        Action displayTitleToggle = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                drawTitle = button.isSelected();
+                UpdateImage();
+            }
+        };
+        JToggleButton enableTitleToggle = new JToggleButton(displayTitleToggle);
+        enableTitleToggle.setSize(32, 32);
+        enableTitleToggle.setIcon(ButtonIcons.SHOW_TITLE.getIcon());
+        enableTitleToggle.setSelected(drawTitle);
+
+        //THE ANNOTATION SHAPE BUTTON
+        ImageIcon circleIcon = ButtonIcons.ANNOTATE_CIRCLE.getIcon();
+        ImageIcon rectIcon = ButtonIcons.ANNOTATE_SQUARE.getIcon();
+        Action selectShapeMode = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+
+                switch (currentShape) {
+                    case ARC:
+                        currentShape = AnnotationShapeType.RECTANGLE;
+                        button.setIcon(rectIcon);
+                        break;
+                    case RECTANGLE:
+                        currentShape = AnnotationShapeType.ARC;
+                        button.setIcon(circleIcon);
+                        break;
+                }
+
+            }
+        };
+        JButton annotationTypeButton = new JButton(selectShapeMode);
+        annotationTypeButton.setSize(32, 32);
+        annotationTypeButton.setIcon(circleIcon);
+
+        //THE COLOR MODE
+        JTextField selectColorField = new JTextField(10);
+        selectColorField.setEditable(false);
+        selectColorField.setPreferredSize(new Dimension(128, 32));
+        selectColorField.setMaximumSize(new Dimension(128, 32));
+        selectColorField.setMinimumSize(new Dimension(128, 32));
+
+        Action selectColorMode = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                currentAnnotationColor = JColorChooser.showDialog(MSImagizer.instance, "Select the annotation color", currentAnnotationColor);
+                UpdateImage();
+                selectColorField.setBackground(currentAnnotationColor);
+            }
+        };
+        JButton selectColorButton = new JButton(selectColorMode);
+        selectColorButton.setIcon(ButtonIcons.SELECT_COLOR.getIcon());
+        selectColorButton.setOpaque(true);
+        selectColorField.setBackground(currentAnnotationColor);
+        selectColorField.setSize(32, 32);
+
+        //THE CLEAR ANNOTATIONS BUTTON
+        ImageIcon clearIcon = ButtonIcons.CLEAR.getIcon();
+        Action clearShapes = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                if (!lbImage.getAnnotationShapes().isEmpty()) {
+                    int input = JOptionPane.showConfirmDialog(null, "Are you sure you want to clear all annotations?");
+                    // 0=yes, 1=no, 2=cancel
+                    if (input == 0) {
+                        lbImage.getAnnotationShapes().clear();
+                        UpdateImage();
+                    }
+                }
+
+            }
+        };
+        JButton clearShapesButton = new JButton(clearShapes);
+        clearShapesButton.setSize(32, 32);
+        clearShapesButton.setIcon(clearIcon);
+
+        //THE UNDO ANNOTATIONS BUTTON
+        ImageIcon undoIcon = ButtonIcons.UNDO.getIcon();
+        Action undoShapes = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                lbImage.undo();
+            }
+        };
+        JButton undoShapesButton = new JButton(undoShapes);
+        undoShapesButton.setSize(32, 32);
+        undoShapesButton.setIcon(undoIcon);
+
+        //THE REDO ANNOTATIONS BUTTON
+        ImageIcon redoIcon = ButtonIcons.REDO.getIcon();
+        Action redoShapes = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                lbImage.redo();
+            }
+        };
+        JButton redoShapesButton = new JButton(redoShapes);
+        redoShapesButton.setSize(32, 32);
+        redoShapesButton.setIcon(redoIcon);
+
+        //THE ZOOM BUTTONS
+        ImageIcon zoomInIcon = ButtonIcons.ZOOM_IN.getIcon();
+        Action zoomAction = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                if (exportScale < 16) {
+                    exportScale *= 2;
+                }
+                currentScale = exportScale;
+                UpdateImage();
+            }
+        };
+        JButton zoomInButton = new JButton(zoomAction);
+        zoomInButton.setSize(32, 32);
+        zoomInButton.setIcon(zoomInIcon);
+
+        ImageIcon zoomOutIcon = ButtonIcons.ZOOM_OUT.getIcon();
+        Action zoomOutAction = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                if (exportScale > 1) {
+                    exportScale /= 2;
+                }
+                currentScale = exportScale;
+                UpdateImage();
+            }
+        };
+        JButton zoomOutButton = new JButton(zoomOutAction);
+        zoomOutButton.setSize(32, 32);
+        zoomOutButton.setIcon(zoomOutIcon);
+
+        //THE column BUTTONS
+        ImageIcon colIncreaseIcon = ButtonIcons.COL_INCRASE.getIcon();
+        Action colIncreaseAction = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                if (columnCount < 10) {
+                    columnCount++;
+                    if (MSI_IMAGE instanceof MultiMSiImage) {
+                        MSI_IMAGE = MultiMSiImage.Generate(((MultiMSiImage) MSI_IMAGE).getFrames(), columnCount);
+                        UpdateImage();
+                    }
+                }
+            }
+        };
+        JButton colIncreaseButton = new JButton(colIncreaseAction);
+        colIncreaseButton.setSize(32, 32);
+        colIncreaseButton.setIcon(colIncreaseIcon);
+
+        ImageIcon colDecreaseIcon = ButtonIcons.COL_DECREASE.getIcon();
+        Action colDecreaseAction = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                if (columnCount > 1) {
+                    columnCount--;
+                    if (MSI_IMAGE instanceof MultiMSiImage) {
+                        MSI_IMAGE = MultiMSiImage.Generate(((MultiMSiImage) MSI_IMAGE).getFrames(), columnCount);
+                        UpdateImage();
+                    }
+                }
+            }
+        };
+        JButton colDecreaseButton = new JButton(colDecreaseAction);
+        colDecreaseButton.setSize(32, 32);
+        colDecreaseButton.setIcon(colDecreaseIcon);
+
+        //THE MAIN ANNOTATION MODE BUTTON
+        Action enableAnnotations = new AbstractAction("") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton) e.getSource();
+                doAnnotations = button.isSelected();
+                annotationTypeButton.setVisible(doAnnotations);
+                selectColorButton.setVisible(doAnnotations);
+                selectColorField.setVisible(doAnnotations);
+                redoShapesButton.setVisible(doAnnotations);
+                undoShapesButton.setVisible(doAnnotations);
+                clearShapesButton.setVisible(doAnnotations);
+
+            }
+        };
+
+        JToggleButton enableAnnotationToggle = new JToggleButton(enableAnnotations);
+        enableAnnotationToggle.setSize(32, 32);
+        enableAnnotationToggle.setIcon(ButtonIcons.ENABLE_ANNOTATE.getIcon());
+        doAnnotations = true;
+        enableAnnotationToggle.setSelected(true);
+
+        //ADD TOOLTIPS
+        extractButton.setToolTipText("Extract image(s) from the project");
+        importButton.setToolTipText("Open an imzml file");
+        saveButton.setToolTipText("Save a copy of the generated (composite) image");
+        framesButton.setToolTipText("Export every frame in the selection seperately");
+        gifButton.setToolTipText("Export an animated gif for the selected frames");
+
+        enableGridToggle.setToolTipText("Enable drawing of a grid");
+        enableTitleToggle.setToolTipText("Enable drawing of the frame titles");
+        enableAnnotationToggle.setToolTipText("Enable annotating areas of interest");
+        annotationTypeButton.setToolTipText("Select the annotation shape (rectangle or arc)");
+        zoomInButton.setToolTipText("Zooms in");
+        zoomOutButton.setToolTipText("Zooms out");
+        colIncreaseButton.setToolTipText("Adds a column");
+        colDecreaseButton.setToolTipText("Removes a column");
+
+        selectColorButton.setToolTipText("Select color for the annotation");
+        //selectColorField.setToolTipText("Select the annotation shape (rectangle or arc)");
+        undoShapesButton.setToolTipText("Undo adding an annotation");
+        redoShapesButton.setToolTipText("Redo adding an annotation");
+        clearShapesButton.setToolTipText("Clears the selection of annotations");
+        displayLogToggle.setToolTipText("Display the event log");
+        memoryModeButton.setToolTipText("Toggle between Memory Mode and Database Mode (slow)");
+
+        //PUT IT TOGETHER
+        toolbar.add(importButton);
+        toolbar.add(extractButton);
+        toolbar.add(saveButton);
+        toolbar.add(framesButton);
+        toolbar.add(gifButton);
+
+        // toolbar.add(new JLabel("-------"));
+        toolbar.add(zoomInButton);
+        toolbar.add(zoomOutButton);
+        toolbar.add(enableAnnotationToggle);
+        toolbar.add(annotationTypeButton);
+        toolbar.add(selectColorButton);
+        toolbar.add(selectColorField);
+        toolbar.add(undoShapesButton);
+        toolbar.add(redoShapesButton);
+        toolbar.add(clearShapesButton);
+
+        // toolbar.add(new JLabel("-------"));
+        toolbar.add(colIncreaseButton);
+        toolbar.add(colDecreaseButton);
+        toolbar.add(enableGridToggle);
+        toolbar.add(enableTitleToggle);
+
+        // toolbar.add(new JLabel("-------"));
+        toolbar.add(displayLogToggle);
+        toolbar.add(memoryModeButton);
+
+    }
+
     private void ToggleAdductEnabled(MSScanAdduct.ADDUCTS adduct, JCheckBoxMenuItem button) {
         if (MSScanAdduct.ENABLED_ADDUCTS.contains(adduct)) {
             MSScanAdduct.ENABLED_ADDUCTS.remove(adduct);
@@ -1538,6 +2074,9 @@ public class MSImagizer extends javax.swing.JFrame {
         }
         lbImage.setIcon(icon);
         lbImage.setText("");
+        if (icon != null) {
+            lbImage.setSize(icon.getIconWidth(), icon.getIconHeight());
+        }
     }
 
     public boolean isHighMemory() {
@@ -1616,10 +2155,16 @@ public class MSImagizer extends javax.swing.JFrame {
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
-            tfInput.setText(selectedFile.getAbsolutePath());
+
             lastDirectory = selectedFile.getParentFile();
+            File IDBfile = new File(selectedFile.getAbsolutePath().replace(".imzml", ".ibd"));
             if (selectedFile.exists()) {
-                tfInput.setBackground(Color.green);
+                if (!IDBfile.exists()) {
+                    JOptionPane.showConfirmDialog(this, "Please ensure that " + IDBfile.getAbsolutePath() + " exists.");
+                } else {
+                    currentFilePath = selectedFile.getAbsolutePath();
+                    setTitle("ProteoFormiX HistoSnap - " + selectedFile.getAbsolutePath());
+                }
             }
         }
     }
@@ -1668,10 +2213,6 @@ public class MSImagizer extends javax.swing.JFrame {
         this.columnCount = columnCount;
     }
 
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g); //To change body of generated methods, choose Tools | Templates.
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBoxMenuItem BtnAllCations;
@@ -1689,6 +2230,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem btnAnionTFA;
     private javax.swing.JMenu btnAnions;
     private javax.swing.JCheckBoxMenuItem btnAnionsAll;
+    private javax.swing.JMenuItem btnAnnotationColor;
     private javax.swing.JMenuItem btnBlueYellow;
     private javax.swing.JCheckBoxMenuItem btnCatCH3CNH;
     private javax.swing.JCheckBoxMenuItem btnCatCH3OH;
@@ -1697,6 +2239,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem btnCatNH4;
     private javax.swing.JCheckBoxMenuItem btnCatNa;
     private javax.swing.JMenu btnCations;
+    private javax.swing.JMenuItem btnClearAnnotations;
     private javax.swing.JMenu btnColor;
     private javax.swing.JMenuItem btnColumns;
     private javax.swing.JMenuItem btnExit;
@@ -1728,6 +2271,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem btnShowOutline;
     private javax.swing.JCheckBoxMenuItem btnShowTitle;
     private javax.swing.JCheckBoxMenuItem btnTIC;
+    private javax.swing.JMenu btnVisuals;
     private javax.swing.JCheckBoxMenuItem btnX1;
     private javax.swing.JCheckBoxMenuItem btnX16;
     private javax.swing.JCheckBoxMenuItem btnX2;
@@ -1735,17 +2279,12 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem btnX8;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JList<String> imageList;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu5;
-    private javax.swing.JMenu jMenu6;
-    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
@@ -1753,12 +2292,14 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JLabel lbProgessBar;
     private javax.swing.JList<String> logArea;
     private javax.swing.JScrollPane logPanel;
+    private javax.swing.JMenu menuAnnotations;
+    private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenu menuExtract;
     private javax.swing.JMenu menuFile;
     private javax.swing.JMenu menuOptions;
     private javax.swing.JProgressBar progessBar;
     private javax.swing.JMenu sessionsMenu;
-    private javax.swing.JTextField tfInput;
+    private javax.swing.JToolBar toolbar;
     // End of variables declaration//GEN-END:variables
 
 }
