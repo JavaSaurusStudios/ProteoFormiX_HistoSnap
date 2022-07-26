@@ -24,14 +24,14 @@ public class ScaleScrollListener implements MouseWheelListener, KeyListener {
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        if (ctrlHeld) {
-            int notches = e.getWheelRotation();
-            if (notches < 0) {
-                parent.increaseCurrentScale();
-            } else if (notches > 0) {
-                parent.decreaseCurrentScale();
-            }
+        // if (ctrlHeld) {
+        int notches = e.getWheelRotation();
+        if (notches < 0) {
+            parent.increaseCurrentScale();
+        } else if (notches > 0) {
+            parent.decreaseCurrentScale();
         }
+        //    }
     }
 
     @Override
