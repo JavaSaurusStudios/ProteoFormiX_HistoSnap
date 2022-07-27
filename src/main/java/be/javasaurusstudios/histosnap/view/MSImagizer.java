@@ -92,6 +92,8 @@ public class MSImagizer extends javax.swing.JFrame {
     private int currentScale;
     //The current range of colors that will be applied
     private ColorRange currentRange = ColorRange.BLUE_YELLOW;
+    //The current color scale direction
+    private boolean useInvertedScale = false;
     //The current color for annotations
     private Color currentAnnotationColor = Color.yellow;
     //The current annotation shape
@@ -192,9 +194,12 @@ public class MSImagizer extends javax.swing.JFrame {
         return progressFrame;
     }
 
-  
     public Color getCurrentAnnotationColor() {
         return currentAnnotationColor;
+    }
+
+    public boolean isUseInvertedScale() {
+        return useInvertedScale;
     }
 
     public AnnotationShapeType getCurrentAnnotationShapeType() {
@@ -222,7 +227,7 @@ public class MSImagizer extends javax.swing.JFrame {
             return;
         }
 
-        String[] buttons = {"Single value", "Sequence", "List of Masses", "Background", "Cancel"};
+        String[] buttons = {"From Value", "From Range", "From List", "Extract Background", "Cancel"};
         int returnValue = JOptionPane.showOptionDialog(null, "Please select the image extraction method ", "Extract",
                 0, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
 
@@ -329,6 +334,7 @@ public class MSImagizer extends javax.swing.JFrame {
         btnGreenPink = new javax.swing.JMenuItem();
         btnRedBlue = new javax.swing.JMenuItem();
         btnGrayScale = new javax.swing.JMenuItem();
+        btnInvertedColorScale = new javax.swing.JRadioButtonMenuItem();
         btnScale = new javax.swing.JMenu();
         btnX1 = new javax.swing.JCheckBoxMenuItem();
         btnX2 = new javax.swing.JCheckBoxMenuItem();
@@ -351,8 +357,8 @@ public class MSImagizer extends javax.swing.JFrame {
         btnHelpText = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(870, 870));
-        setPreferredSize(new java.awt.Dimension(870, 870));
+        setBackground(new java.awt.Color(255, 255, 255));
+        setMinimumSize(new java.awt.Dimension(870, 900));
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -423,7 +429,7 @@ public class MSImagizer extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 606, Short.MAX_VALUE)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 648, Short.MAX_VALUE)
                             .addComponent(jScrollPane4))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(logPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -830,6 +836,15 @@ public class MSImagizer extends javax.swing.JFrame {
         });
         btnColor.add(btnGrayScale);
 
+        btnInvertedColorScale.setText("Inverted Color Scale");
+        btnInvertedColorScale.setOpaque(false);
+        btnInvertedColorScale.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnInvertedColorScaleActionPerformed(evt);
+            }
+        });
+        btnColor.add(btnInvertedColorScale);
+
         btnVisuals.add(btnColor);
 
         btnScale.setText("Scale");
@@ -999,14 +1014,12 @@ public class MSImagizer extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
-                    .addGap(0, 424, Short.MAX_VALUE)
+                    .addGap(0, 440, Short.MAX_VALUE)
                     .addComponent(jLayeredPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 425, Short.MAX_VALUE)))
+                    .addGap(0, 439, Short.MAX_VALUE)))
         );
 
         pack();
@@ -1585,6 +1598,11 @@ public class MSImagizer extends javax.swing.JFrame {
         currentAnnotationColor = JColorChooser.showDialog(this, "Select the annotation color", currentAnnotationColor);
         UpdateImage();
     }//GEN-LAST:event_btnAnnotationColorActionPerformed
+
+    private void btnInvertedColorScaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInvertedColorScaleActionPerformed
+        useInvertedScale = btnInvertedColorScale.isSelected();
+        UpdateImage();
+    }//GEN-LAST:event_btnInvertedColorScaleActionPerformed
 
     /**
      * Adds a new image into the cache
@@ -2254,6 +2272,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JMenuItem btnHelpText;
     private javax.swing.JCheckBoxMenuItem btnHighMemory;
     private javax.swing.JMenu btnIntensityMode;
+    private javax.swing.JRadioButtonMenuItem btnInvertedColorScale;
     private javax.swing.JMenuItem btnLoad;
     private javax.swing.JMenuItem btnLoadSession;
     private javax.swing.JCheckBoxMenuItem btnMax;
@@ -2284,7 +2303,6 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private be.javasaurusstudios.histosnap.view.component.ImageLabel lbImage;

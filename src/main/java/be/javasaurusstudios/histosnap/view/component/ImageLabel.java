@@ -135,7 +135,7 @@ public class ImageLabel extends JLabel {
         g.drawRect(getX() + 1, getY() + 1, getWidth() - 2, getHeight() - 2);
 
         //   g.fillRect(0, 0, getWidth(), getHeight());
-        if (MSImagizer.instance.IsAnnotationMode()) {
+        if (MSImagizer.instance != null && MSImagizer.instance.IsAnnotationMode()) {
             if (mouseDown && startingPoint != null && endingPoint != null) {
                 if (startingPoint.x < endingPoint.x && endingPoint.y > startingPoint.y) {
                     g.setColor(MSImagizer.instance.getCurrentAnnotationColor());
