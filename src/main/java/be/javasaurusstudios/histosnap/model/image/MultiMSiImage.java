@@ -114,13 +114,9 @@ public class MultiMSiImage extends MSiImage {
             frame.getPixels().forEach((pixel) -> {
                 double check = getStat(mode, pixel.getStat());
                 double rel = Math.min(1, Math.max(0, check / reference));
-                Color color;
-                if (mode == ImageMode.TOTAL_ION_CURRENT) {
-                    //TODO check if TIC is inverted as a special case or everything has to be inverted
-                    color = rel == 0 ? range[0] : ColorUtils.getHeatMapColor(1 - rel, range);
-                } else {
-                    color = rel == 0 ? range[range.length - 1] : ColorUtils.getHeatMapColorInverse(rel, range);
-                }
+                rel = mode == ImageMode.TOTAL_ION_CURRENT ? 1 - rel : rel;
+                Color color = rel == 0 ? range[0] : ColorUtils.getHeatMapColor(rel, range);
+
                 //THIS IS THE TRICKY PART, THIS IS WHERE IT ACTUALLY GETS PUT ON SCREEN...
                 int fullPixelX = pixel.getX() + xOffset;
                 int fullPixelY = (pixel.getY() + yOffset);
@@ -134,8 +130,8 @@ public class MultiMSiImage extends MSiImage {
             frame.setxCoordinate(xCoordinate);
             frame.setyCoordinate((rows - 1) - yCoordinate);
 
-            frame.setRect(new Rectangle(xOffset,yOffset,singleWidth,singleHeight));
-            
+            frame.setRect(new Rectangle(xOffset, yOffset, singleWidth, singleHeight));
+
             xCoordinate++;
             if (xCoordinate >= cols) {
                 xCoordinate = 0;
@@ -188,25 +184,20 @@ public class MultiMSiImage extends MSiImage {
 
         DescriptiveStatistics stat = new DescriptiveStatistics();
         for (MSiPixel pixel : activeFrame.getPixels()) {
-            double frameValue = (mode == ImageMode.TOTAL_ION_CURRENT) ? pixel.getStat().getSum() : pixel.getStat().getMax();
+            double frameValue = getStat(mode, pixel.getStat());
             if (!Double.isNaN(frameValue)) {
                 stat.addValue(frameValue);
             }
         }
 
-        double reference = (mode == ImageMode.TOTAL_ION_CURRENT) ? stat.getMean() : getStat(mode, stat);
+        //  double reference = (mode == ImageMode.TOTAL_ION_CURRENT) ? stat.getMean() : getStat(mode, stat);
+        double reference = stat.getMean();
 
         for (MSiPixel pixel : activeFrame.getPixels()) {
             double check = getStat(mode, pixel.getStat());
             double rel = Math.min(1, Math.max(0, check / reference));
-
-            Color color;
-            if (mode == ImageMode.TOTAL_ION_CURRENT) {
-                //TODO check if TIC is inverted as a special case or everything has to be inverted
-                color = rel == 0 ? range[0] : ColorUtils.getHeatMapColor(1 - rel, range);
-            } else {
-                color = rel == 0 ? range[range.length - 1] : ColorUtils.getHeatMapColorInverse(rel, range);
-            }
+            rel = mode == ImageMode.TOTAL_ION_CURRENT ? 1 - rel : rel;
+            Color color = rel == 0 ? range[0] : ColorUtils.getHeatMapColor(rel, range);
 
             if (pixel.getX() > 0 && pixel.getX() < activeFrame.getWidth() && pixel.getY() > 0 && pixel.getY() < activeFrame.getHeight()) {
                 this.setRGB(pixel.getX(), pixel.getY(), color.getRGB());

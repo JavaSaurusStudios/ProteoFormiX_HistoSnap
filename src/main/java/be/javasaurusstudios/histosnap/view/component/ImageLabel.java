@@ -92,7 +92,7 @@ public class ImageLabel extends JLabel {
         }
 
         MSiFrame frame = getHoveredFrame(endPoint);
-        if (frame != null) {
+        if (frame != null && startingPoint != null) {
             //this all works on scale 1 so we need to divide everything to the scale ?
 
             int scale = MSImagizer.instance.getCurrentScale();

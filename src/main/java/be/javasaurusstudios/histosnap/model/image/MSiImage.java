@@ -173,13 +173,14 @@ public class MSiImage extends BufferedImage implements Serializable {
             i++;
             float value = i / activeFrame.getPixels().size();
             progressBar.setValueText(value, "Generating image : " + (100 * value) + "%", false);
-            double frameValue = (mode == ImageMode.TOTAL_ION_CURRENT) ? pixel.getStat().getSum() : pixel.getStat().getMax();
+            double frameValue = getStat(mode, pixel.getStat());
             if (!Double.isNaN(frameValue)) {
                 stat.addValue(frameValue);
             }
         }
 
-        double reference = (mode == ImageMode.TOTAL_ION_CURRENT) ? stat.getMean() : getStat(mode, stat);
+        // double reference = (mode == ImageMode.TOTAL_ION_CURRENT) ? stat.getMean() : getStat(mode, stat);
+        double reference = stat.getMean();
 
         progressBar.setValueText(0, "Converting to color...", true);
 
@@ -190,14 +191,8 @@ public class MSiImage extends BufferedImage implements Serializable {
             progressBar.setValueText(value, "Converting to color : " + (100 * value) + "%", false);
             double check = getStat(mode, pixel.getStat());
             double rel = Math.min(1, Math.max(0, check / reference));
-
-            Color color;
-            if (mode == ImageMode.TOTAL_ION_CURRENT) {
-                //TODO check if TIC is inverted as a special case or everything has to be inverted
-                color = rel == 0 ? range[0] : ColorUtils.getHeatMapColor(1 - rel, range);
-            } else {
-                color = rel == 0 ? range[range.length - 1] : ColorUtils.getHeatMapColorInverse(rel, range);
-            }
+            rel = mode == ImageMode.TOTAL_ION_CURRENT ? 1 - rel : rel;
+            Color color = rel == 0 ? range[0] : ColorUtils.getHeatMapColor(rel, range);
 
             if (pixel.getX() > 0 && pixel.getX() < this.getWidth() && pixel.getY() > 0 && pixel.getY() < this.getHeight()) {
                 this.setRGB(pixel.getX(), pixel.getY(), color.getRGB());
