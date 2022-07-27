@@ -109,7 +109,7 @@ public class MultiMSiImage extends MSiImage {
                 }
             }
 
-            double reference = (mode == ImageMode.TOTAL_ION_CURRENT) ? stat.getMean() : getStat(mode, stat);
+            double reference = stat.getMean();
 
             frame.getPixels().forEach((pixel) -> {
                 double check = getStat(mode, pixel.getStat());
