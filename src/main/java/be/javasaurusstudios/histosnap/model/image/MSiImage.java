@@ -192,7 +192,7 @@ public class MSiImage extends BufferedImage implements Serializable {
             double check = getStat(mode, pixel.getStat());
             double rel = Math.min(1, Math.max(0, check / reference));
             rel = mode == ImageMode.TOTAL_ION_CURRENT ? 1 - rel : rel;
-            Color color = rel == 0 ? range[0] : ColorUtils.getHeatMapColor(rel, range);
+            Color color = rel == 0 ? range[0] : MSImagizer.instance.isUseInvertedScale()?ColorUtils.getHeatMapColorInverse(rel, range):ColorUtils.getHeatMapColor(rel, range);
 
             if (pixel.getX() > 0 && pixel.getX() < this.getWidth() && pixel.getY() > 0 && pixel.getY() < this.getHeight()) {
                 this.setRGB(pixel.getX(), pixel.getY(), color.getRGB());
