@@ -24,7 +24,11 @@ public class ImageHighlightProvider implements ListenerProvider {
     }
 
     @Override
-    public void SetUp(JComponent component) {
+    public void setUp(JComponent component) {
+
+        if (!(component instanceof ImageLabel)) {
+            return;
+        }
 
         imgLabel = (ImageLabel) component;
 
@@ -36,16 +40,16 @@ public class ImageHighlightProvider implements ListenerProvider {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                if (!MSImagizer.instance.IsAnnotationMode()) {
+                if (!MSImagizer.instance.iAnnotationMode()) {
                     return;
                 }
-                imgLabel.SetHighlightStart(e.getPoint());
+                imgLabel.setHighlightStart(e.getPoint());
                 imgLabel.setMouseDown(true);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (!MSImagizer.instance.IsAnnotationMode()) {
+                if (!MSImagizer.instance.iAnnotationMode()) {
                     return;
                 }
                 imgLabel.setMouseDown(false);
@@ -65,7 +69,7 @@ public class ImageHighlightProvider implements ListenerProvider {
         imgLabel.addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (!MSImagizer.instance.IsAnnotationMode()) {
+                if (!MSImagizer.instance.iAnnotationMode()) {
                     return;
                 }
                 imgLabel.setHighLightEnd(e.getPoint());

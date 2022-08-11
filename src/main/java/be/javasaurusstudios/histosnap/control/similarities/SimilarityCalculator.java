@@ -26,7 +26,7 @@ public class SimilarityCalculator {
      * @param postProcessing potential postprocessing tasks (for example
      * reporting, exporting outliers images, etc)
      */
-    public static void DoSimilarities(double percentage, BufferedImage[] images, String[] names, BufferedImage refImage, String refName, WorkingTaskPostProcess... postProcessing) {
+    public static void doSimilarities(double percentage, BufferedImage[] images, String[] names, BufferedImage refImage, String refName, WorkingTaskPostProcess... postProcessing) {
         try {
             SimilarityCalculationTask task = new SimilarityCalculationTask(
                     images,
@@ -35,7 +35,7 @@ public class SimilarityCalculator {
                     refName,
                     percentage);
             for (WorkingTaskPostProcess postProcess : postProcessing) {
-                task.AddPostProcessing(postProcess);
+                task.addPostProcessing(postProcess);
             }
             new WorkingThread(MSImagizer.instance, task).execute();
         } catch (Exception ex) {
@@ -44,7 +44,7 @@ public class SimilarityCalculator {
                     "Something went wrong..." + ex.getMessage(),
                     "Failed to calculate similarities...",
                     JOptionPane.ERROR_MESSAGE);
-            UILogger.Log("Failed to calculate similarities", UILogger.Level.ERROR);
+            UILogger.log("Failed to calculate similarities", UILogger.Level.ERROR);
             return;
         }
     }
@@ -62,7 +62,7 @@ public class SimilarityCalculator {
      * @param postProcessing potential postprocessing tasks (for example
      * reporting, exporting outliers images, etc)
      */
-    public static void DoSimilarities(double percentage, int minX, int maxX, int minY, int maxY, BufferedImage[] images, String[] names, BufferedImage refImage, String refName, WorkingTaskPostProcess... postProcessing) {
+    public static void doSimilarities(double percentage, int minX, int maxX, int minY, int maxY, BufferedImage[] images, String[] names, BufferedImage refImage, String refName, WorkingTaskPostProcess... postProcessing) {
         try {
             SimilarityCalculationTask task = new SimilarityCalculationTask(
                     minX,
@@ -75,7 +75,7 @@ public class SimilarityCalculator {
                     refName,
                     percentage);
             for (WorkingTaskPostProcess postProcess : postProcessing) {
-                task.AddPostProcessing(postProcess);
+                task.addPostProcessing(postProcess);
             }
             new WorkingThread(MSImagizer.instance, task).execute();
         } catch (Exception ex) {
@@ -84,7 +84,7 @@ public class SimilarityCalculator {
                     "Something went wrong..." + ex.getMessage(),
                     "Failed to calculate similarities...",
                     JOptionPane.ERROR_MESSAGE);
-            UILogger.Log("Failed to calculate similarities", UILogger.Level.ERROR);
+            UILogger.log("Failed to calculate similarities", UILogger.Level.ERROR);
             return;
         }
     }

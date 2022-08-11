@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +21,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  */
 public class MSiFrame implements Serializable {
 
+    private static final long serialVersionUID = 1234567L;
     /**
      * The collection of pixels in this frame
      */
@@ -86,7 +88,7 @@ public class MSiFrame implements Serializable {
      *
      * @param pixel the new pixel
      */
-    public void AddPixel(MSiPixel pixel) {
+    public void addPixel(MSiPixel pixel) {
         if (!pixels.contains(pixel)) {
             pixels.add(pixel);
         }
@@ -177,9 +179,9 @@ public class MSiFrame implements Serializable {
      *
      * @param percentile the percentile value to be applied
      */
-    public void RemoveHotSpots(int percentile) {
+    public void removeHotSpots(int percentile) {
 
-        UILogger.Log("Postprocessing " + getName() + "...", UILogger.Level.INFO);
+        UILogger.log("Postprocessing " + getName() + "...", UILogger.Level.INFO);
 
         int threads = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
         ExecutorService executor = Executors.newFixedThreadPool(threads);
@@ -187,23 +189,20 @@ public class MSiFrame implements Serializable {
         List<MSiPixel> tmpList = new ArrayList<>();
         tmpList.addAll(pixels);
 
-        List<List<MSiPixel>> parts = new ArrayList<List<MSiPixel>>();
+        List<List<MSiPixel>> parts = new ArrayList<>();
         final int N = tmpList.size();
         for (int i = 0; i < N; i += threads) {
-            parts.add(new ArrayList<MSiPixel>(tmpList.subList(i, Math.min(N, i + threads)))
+            parts.add(new ArrayList<>(tmpList.subList(i, Math.min(N, i + threads)))
             );
         }
 
-        for (List<MSiPixel> part : parts) {
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    for (MSiPixel pixel : part) {
-                        pixel.RemoveHotSpots(percentile);
-                    }
-                }
+        parts.forEach((part) -> {
+            Future<?> submit = executor.submit(() -> {
+                part.forEach((pixel) -> {
+                    pixel.removeHotSpots(percentile);
+                });
             });
-        }
+        });
 
         executor.shutdown();
 
@@ -231,24 +230,24 @@ public class MSiFrame implements Serializable {
      *
      * @param minMz the minimal MZ
      * @param maxMz the maximal Mz
-     * @param intensityThreshold
      * @return the new smaller frame
      */
-    public MSiFrame CreateSubFrame(double minMz, double maxMz) {
-        UILogger.Log("Creating sub frame between " + minMz + " and " + maxMz);
+    public MSiFrame createSubFrame(double minMz, double maxMz) {
+        UILogger.log("Creating sub frame between " + minMz + " and " + maxMz);
         MSiFrame subFrame = new MSiFrame();
         subFrame.setHeight(height);
         subFrame.setWidth(width);
-        for (MSiPixel pixel : getPixels()) {
+        getPixels().stream().map((pixel) -> {
             MSiPixel subPixel = new MSiPixel(pixel.getX(), pixel.getY());
             for (int i = 0; i < pixel.getMz().size(); i++) {
                 if (pixel.getMz().get(i) >= minMz && pixel.getMz().get(i) <= maxMz) {
                     subPixel.addDataPoint(pixel.getMz().get(i), pixel.getI().get(i));
                 }
             }
-
-            subFrame.AddPixel(subPixel);
-        }
+            return subPixel;
+        }).forEachOrdered((subPixel) -> {
+            subFrame.addPixel(subPixel);
+        });
 
         return subFrame;
     }

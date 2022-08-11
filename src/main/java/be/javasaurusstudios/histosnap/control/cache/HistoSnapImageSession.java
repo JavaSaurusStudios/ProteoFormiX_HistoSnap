@@ -5,7 +5,6 @@ import be.javasaurusstudios.histosnap.view.MSImagizer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -14,10 +13,12 @@ import javax.swing.JOptionPane;
 
 /**
  * This class represents a session to store MSiFrames in for later
+ *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public class HistoSnapImageSession extends ArrayList<MSiFrame> {
 
+    private static final long serialVersionUID = 1234567L;
     /**
      * The current session folder
      */
@@ -31,7 +32,11 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
     public HistoSnapImageSession(String location) {
         this.sessionFolder = new File(location);
         if (!this.sessionFolder.exists()) {
-            this.sessionFolder.mkdirs();
+            if (!this.sessionFolder.mkdirs()) {
+                JOptionPane.showMessageDialog(MSImagizer.instance, "Can not create required directories at " + location, "Error ",
+                        JOptionPane.ERROR_MESSAGE);
+
+            }
         }
     }
 
@@ -41,7 +46,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
      *
      * @param image the image to store
      */
-    public void StoreInSession(MSiFrame image) {
+    public void storeInSession(MSiFrame image) {
         serialize(new File(sessionFolder, image.getName() + ".hsi").getAbsolutePath(), image);
     }
 
@@ -51,7 +56,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
      * @param name the name of the session
      * @return boolean indicating the existence of the image
      */
-    public boolean IsInSession(String name) {
+    public boolean isInSession(String name) {
         return new File(sessionFolder, name + ".hsi").exists();
     }
 
@@ -61,15 +66,15 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
      * @param oldName
      * @param newName
      */
-    public void RenameImage(String oldName, String newName) {
-        if (IsInSession(oldName)) {
-            if (IsInSession(newName)) {
+    public void renameImage(String oldName, String newName) {
+        if (isInSession(oldName)) {
+            if (isInSession(newName)) {
 
             } else {
-                MSiFrame tmp = GetFromSession(oldName);
+                MSiFrame tmp = getFromSession(oldName);
                 tmp.setName(newName);
-                StoreInSession(tmp);
-                RemoveFromSession(oldName);
+                storeInSession(tmp);
+                removeFromSession(oldName);
             }
         }
     }
@@ -77,27 +82,22 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
     /**
      * Saves the session into the specified folder
      */
-    public void SaveSession() {
+    public void saveSession() {
         for (MSiFrame frame : this) {
             MSImagizer.instance.getProgressBar().setText("Saving " + frame.getName() + " ...");
-            StoreInSession(frame);
+            storeInSession(frame);
         }
     }
 
     /**
      * Restores a saved session
      */
-    public void RestoreSession() {
-        File[] files = sessionFolder.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".hsi");
-            }
-        });
+    public void restoreSession() {
+        File[] files = sessionFolder.listFiles((File dir, String name) -> name.endsWith(".hsi"));
 
         for (File file : files) {
             MSImagizer.instance.getProgressBar().setText("Loading " + file.getName());
-            MSiFrame tmp = GetFromSession(file.getName());
+            MSiFrame tmp = getFromSession(file.getName());
             add(tmp);
         }
 
@@ -109,7 +109,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
      * @param name the session name
      * @return an image object
      */
-    public MSiFrame GetFromSession(String name) {
+    public MSiFrame getFromSession(String name) {
         MSiFrame sessionImage = deSerialize(sessionFolder.getAbsolutePath(), name);
         if (sessionImage == null) {
             JOptionPane.showConfirmDialog(MSImagizer.instance, name + " could not be found in the current session !");
@@ -122,10 +122,13 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
      *
      * @param name the name of the image to be removed
      */
-    public void RemoveFromSession(String name) {
+    public void removeFromSession(String name) {
         File t = new File(sessionFolder, name + ".hsi");
         if (t.exists()) {
-            t.delete();
+            if (!t.delete()) {
+                JOptionPane.showMessageDialog(MSImagizer.instance, "Could not delete session : " + name, "Dialog",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 

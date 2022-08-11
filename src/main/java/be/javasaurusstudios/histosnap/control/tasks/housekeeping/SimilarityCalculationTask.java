@@ -83,7 +83,7 @@ public class SimilarityCalculationTask extends WorkingTask {
 
     @Override
     public Object call() throws Exception {
-        return CheckForDerivations();
+        return checkForDerivations();
     }
 
     /**
@@ -134,14 +134,14 @@ public class SimilarityCalculationTask extends WorkingTask {
      * @return a list of similarity results
      * @throws Exception
      */
-    private List<SimilarityResult> CheckForDerivations() throws Exception {
+    private List<SimilarityResult> checkForDerivations() throws Exception {
         //TODO devise multiple strategies for this?
         DescriptiveStatistics stats = new DescriptiveStatistics();
         List<SimilarityResult> results = new ArrayList<>();
         for (int i = 0; i < images.length - 1; i++) {
             if (!referenceName.equalsIgnoreCase(names[i])) {
                  MSImagizer.instance.getProgressBar().setText("Calculating similarities (" + i + "/" + images.length + ")");
-                double percentage = Compare(refImage == null ? images[0] : refImage, images[i + 1]);
+                double percentage = compare(refImage == null ? images[0] : refImage, images[i + 1]);
                 if (percentage >= threshold) {
                     stats.addValue(percentage);
                     results.add(new SimilarityResult(names[i + 1], images[i + 1], originals.get(names[i + 1]), percentage));
@@ -160,7 +160,7 @@ public class SimilarityCalculationTask extends WorkingTask {
      * @return a value indicating similarity
      * @throws IOException when the images are not of the same dimension
      */
-    private double Compare(BufferedImage img1, BufferedImage img2) throws IOException {
+    private double compare(BufferedImage img1, BufferedImage img2) throws IOException {
 
         double percentage = 0;
         int w1 = img1.getWidth();
@@ -168,7 +168,7 @@ public class SimilarityCalculationTask extends WorkingTask {
         int h1 = img1.getHeight();
         int h2 = img2.getHeight();
         if ((w1 != w2) || (h1 != h2)) {
-           UILogger.Log("Both images should have same dimensions",UILogger.Level.ERROR);
+           UILogger.log("Both images should have same dimensions",UILogger.Level.ERROR);
         } else {
             long diff = 0;
             for (int j = 0; j < h1; j++) {
@@ -191,7 +191,7 @@ public class SimilarityCalculationTask extends WorkingTask {
                 }
 
             }
-            double avg = diff / (w1 * h1 * 3);
+            double avg = diff / (w1 * h1 * 3.0);
             percentage = (avg / 255) * 100;
 
         }

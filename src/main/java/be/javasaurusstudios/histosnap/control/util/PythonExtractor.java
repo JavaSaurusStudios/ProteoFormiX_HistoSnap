@@ -28,8 +28,8 @@ public class PythonExtractor {
             System.out.println("Python script detected...");
             return python;
         } else {
-            UILogger.Log("Extracting python script to " + python.getAbsolutePath(),UILogger.Level.INFO);
-            return new File(ExportResource("/" + scriptName));
+            UILogger.log("Extracting python script to " + python.getAbsolutePath(), UILogger.Level.INFO);
+            return new File(exportSource("/" + scriptName));
         }
     }
 
@@ -40,7 +40,7 @@ public class PythonExtractor {
      * @return The file path for the resource
      * @throws Exception
      */
-    private static String ExportResource(String resourceName) throws Exception {
+    private static String exportSource(String resourceName) throws Exception {
         InputStream stream = null;
         OutputStream resStreamOut = null;
         String jarFolder;
@@ -57,7 +57,15 @@ public class PythonExtractor {
             while ((readBytes = stream.read(buffer)) > 0) {
                 resStreamOut.write(buffer, 0, readBytes);
             }
+            stream.close();
+            resStreamOut.close();
         } catch (Exception ex) {
+            if (stream != null) {
+                stream.close();
+            }
+            if (resStreamOut != null) {
+                resStreamOut.close();
+            }
             throw ex;
         } finally {
             if (stream != null) {

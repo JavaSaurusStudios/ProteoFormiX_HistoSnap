@@ -139,7 +139,7 @@ public class AnimationExporter implements Closeable {
      * @param looping boolean indicating if the gif loops
      * @throws Exception 
      */
-    public static void Save(BufferedImage[] images, File outputFile, int ms, boolean looping) throws Exception {
+    public static void save(BufferedImage[] images, File outputFile, int ms, boolean looping) throws Exception {
 
         try (ImageOutputStream output = new FileImageOutputStream(outputFile); AnimationExporter writer = new AnimationExporter(output, images[0].getType(), ms, looping)) {
             // write out the first image to our sequence...

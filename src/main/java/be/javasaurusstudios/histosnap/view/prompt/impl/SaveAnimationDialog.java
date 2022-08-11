@@ -30,48 +30,41 @@ import javax.swing.filechooser.FileFilter;
 public class SaveAnimationDialog implements UserPrompt {
     
     private final List<String> selectedImageNames;
-    private final MSiImageCache cache;
+   
     
-    public SaveAnimationDialog(List<String> selectedImageNames, MSiImageCache cache) {
+    public SaveAnimationDialog(List<String> selectedImageNames) {
         this.selectedImageNames = selectedImageNames;
-        this.cache = cache;
     }
     
     @Override
-    public void Show() {
-        final JFrame parent = MSImagizer.instance;
+    public void show() {
+  
         JTextField timeBetweenFrames = new JTextField();
         JTextField outputFile = new JTextField();
         JButton saveAnimationLocationButton = new JButton("...");
         timeBetweenFrames.setText("" + 1000 / 60);
         
-        saveAnimationLocationButton.addActionListener(
-                new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e
-            ) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setDialogTitle("Save animation...");
-                fileChooser.setCurrentDirectory(lastDirectory);
-                fileChooser.setFileFilter(new FileFilter() {
-                    @Override
-                    public boolean accept(File f) {
-                        return f.isDirectory() || f.getAbsolutePath().toLowerCase().endsWith(".gif");
-                    }
-                    
-                    @Override
-                    public String getDescription() {
-                        return "Output gif animation";
-                    }
-                });
-                int userSelection = fileChooser.showSaveDialog(parent);
-                
-                if (userSelection == JFileChooser.APPROVE_OPTION) {
-                    outputFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
+        saveAnimationLocationButton.addActionListener((ActionEvent e) -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Save animation...");
+            fileChooser.setCurrentDirectory(lastDirectory);
+            fileChooser.setFileFilter(new FileFilter() {
+                @Override
+                public boolean accept(File f) {
+                    return f.isDirectory() || f.getAbsolutePath().toLowerCase().endsWith(".gif");
                 }
+                
+                @Override
+                public String getDescription() {
+                    return "Output gif animation";
+                }
+            });
+            int userSelection = fileChooser.showSaveDialog(MSImagizer.instance);
+            
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                outputFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
             }
-        }
-        );
+        });
         
         final JComponent[] inputs = new JComponent[]{
             new JLabel("Time Between Frames (milliseconds)"),
@@ -81,7 +74,7 @@ public class SaveAnimationDialog implements UserPrompt {
             outputFile,
             saveAnimationLocationButton,};
         
-        int result = JOptionPane.showConfirmDialog(parent, inputs, "Save animation...", JOptionPane.PLAIN_MESSAGE);
+        int result = JOptionPane.showConfirmDialog(MSImagizer.instance, inputs, "Save animation...", JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
             File fileToStore = new File(outputFile.getText());
             
@@ -90,7 +83,7 @@ public class SaveAnimationDialog implements UserPrompt {
             }
             
             if (fileToStore.exists()) {
-                int response = JOptionPane.showConfirmDialog(parent, "File already exists. Override?", "Saving...",
+                int response = JOptionPane.showConfirmDialog(MSImagizer.instance, "File already exists. Override?", "Saving...",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE);
                 if (response != JOptionPane.YES_OPTION) {
@@ -100,7 +93,7 @@ public class SaveAnimationDialog implements UserPrompt {
             
             try {
                 int ms = Integer.parseInt(timeBetweenFrames.getText());
-                UILogger.Log("Reading images from session...", UILogger.Level.INFO);
+                UILogger.log("Reading images from session...", UILogger.Level.INFO);
                 
                 BufferedImage[] images;
                 MSiImage currentImage = MSImagizer.MSI_IMAGE;
@@ -109,19 +102,18 @@ public class SaveAnimationDialog implements UserPrompt {
                     MultiMSiImage img = (MultiMSiImage) currentImage;
                     images = new BufferedImage[img.getFrames().size()];
                     for (int i = 0; i < images.length; i++) {
-                        images[i] = img.CreateSingleImage(i, 
+                        images[i] = img.createSingleImage(i, 
                                 MSImagizer.instance.getCurrentMode(),
                                 MSImagizer.instance.getCurrentRange().getColors());
                     }
                 } else {
-                    List<MSiImage> selectedImages = CACHE.GetCachedImages(selectedImageNames);
-                    selectedImages = CACHE.GetCachedImages(selectedImageNames);
+                    List<MSiImage> selectedImages = CACHE.getCachedImages(selectedImageNames);
                     if (selectedImages.isEmpty()) {
                         return;
                     }
                     images = new BufferedImage[selectedImages.size()];
                     for (int i = 0; i < images.length; i++) {
-                        selectedImages.get(i).CreateImage(
+                        selectedImages.get(i).createImage(
                                 MSImagizer.instance.getCurrentMode(),
                                 MSImagizer.instance.getCurrentRange().getColors());
                     }
@@ -129,15 +121,15 @@ public class SaveAnimationDialog implements UserPrompt {
              
                 }
                 
-                AnimationExporter.Save(images, fileToStore, ms, true);
-                UILogger.Log("Exported animation to " + fileToStore.getAbsolutePath(), UILogger.Level.INFO);
-                JOptionPane.showMessageDialog(parent, "Exported animation to " + fileToStore.getAbsolutePath());
+                AnimationExporter.save(images, fileToStore, ms, true);
+                UILogger.log("Exported animation to " + fileToStore.getAbsolutePath(), UILogger.Level.INFO);
+                JOptionPane.showMessageDialog(MSImagizer.instance, "Exported animation to " + fileToStore.getAbsolutePath());
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(parent,
+                JOptionPane.showMessageDialog(MSImagizer.instance,
                         "Could not save this file : " + ex.getMessage(),
                         "Failed to export animation...",
                         JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Failed to export animation...", UILogger.Level.ERROR);
+                UILogger.log("Failed to export animation...", UILogger.Level.ERROR);
                 return;
             }
         }

@@ -26,7 +26,7 @@ public class SpectralDataImporter {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public MSiFrame ReadFile(File file) throws FileNotFoundException, IOException {
+    public MSiFrame readFile(File file) throws FileNotFoundException, IOException {
         MSiFrame frame = new MSiFrame();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             int x = 0;
@@ -46,7 +46,7 @@ public class SpectralDataImporter {
                             pixel.addDataPoint(mz.get(i), intensities.get(i));
                         }
 
-                        frame.AddPixel(pixel);
+                        frame.addPixel(pixel);
                     }
                     x = Integer.parseInt(line.split("\t")[1]);
                     y = Integer.parseInt(line.split("\t")[2]);
@@ -85,7 +85,7 @@ public class SpectralDataImporter {
      * @param lines the input lines
      * @return a MSiFrame
      */
-    public MSiFrame ReadLines(List<String> lines) {
+    public MSiFrame readLines(List<String> lines) {
         MSiFrame frame = new MSiFrame();
         int x = 0;
         int y = 0;
@@ -103,7 +103,7 @@ public class SpectralDataImporter {
                     for (int i = 0; i < intensities.size(); i++) {
                         pixel.addDataPoint(mz.get(i), intensities.get(i));
                     }
-                    frame.AddPixel(pixel);
+                    frame.addPixel(pixel);
                 }
                 x = Integer.parseInt(line.split("\t")[1]);
                 y = Integer.parseInt(line.split("\t")[2]);

@@ -16,13 +16,14 @@ import java.util.List;
  */
 public class MSiImageCache extends ArrayList<String> {
 
+    private static final long serialVersionUID = 1234567L;
     //The session to keep track of
     private HistoSnapImageSession session;
 
     //dictionary
     private HashMap<String, MSiImage> images;
 
-    private static final boolean overrideSession = true;
+    public static boolean OVERRIDE_SESSION = true;
 
     public MSiImageCache() {
         this.session = new HistoSnapImageSession(".\\Sessions\\default");
@@ -37,16 +38,15 @@ public class MSiImageCache extends ArrayList<String> {
      * Sets the current session to the cache
      *
      * @param session the session
-     * @param progessBar the progress bar
      */
     public void setSession(HistoSnapImageSession session) {
-        if (this.session != null && !overrideSession) {
-            this.session.SaveSession();
+        if (this.session != null && !OVERRIDE_SESSION) {
+            this.session.saveSession();
         }
 
         this.session = session;
-        session.RestoreSession();
-        Clear();
+        session.restoreSession();
+        clear();
         for (MSiFrame frame : session) {
             MSImagizer.instance.getProgressBar().setText("Loading " + frame.getName());
             add(frame.getName());
@@ -57,10 +57,10 @@ public class MSiImageCache extends ArrayList<String> {
     /**
      * Clears the cache
      */
-    public void Clear() {
+    public void clear() {
         images.clear();
         for (String name : this) {
-            session.RemoveFromSession(name);
+            session.removeFromSession(name);
         }
         this.clear();
     }
@@ -72,7 +72,7 @@ public class MSiImageCache extends ArrayList<String> {
      * @return
      */
     public boolean add(MSiImage image) {
-        session.StoreInSession(image.getFrame());
+        session.storeInSession(image.getFrame());
         images.put(image.getName(), image);
         return add(image.getName());
     }
@@ -83,7 +83,7 @@ public class MSiImageCache extends ArrayList<String> {
      * @param image
      */
     public boolean remove(MSiImage image) {
-        session.RemoveFromSession(image.getName());
+        session.removeFromSession(image.getName());
         images.remove(image.getName());
         return remove(image.getName());
     }
@@ -96,7 +96,7 @@ public class MSiImageCache extends ArrayList<String> {
      */
     public boolean addToCache(Collection<MSiImage> images) {
         for (MSiImage image : images) {
-            session.StoreInSession(image.getFrame());
+            session.storeInSession(image.getFrame());
             this.images.put(image.getName(), image);
             if (!add(image.getName())) {
                 return false;
@@ -113,7 +113,7 @@ public class MSiImageCache extends ArrayList<String> {
      */
     public boolean removeImagesFromCache(Collection<MSiImage> images) {
         for (MSiImage image : images) {
-            session.RemoveFromSession(image.getName());
+            session.removeFromSession(image.getName());
             this.images.remove(image.getName());
             if (!remove(image.getName())) {
                 return false;
@@ -131,7 +131,7 @@ public class MSiImageCache extends ArrayList<String> {
     public boolean removeImagesFromCacheByName(List<String> images) {
         for (int i = images.size() - 1; i >= 0; i--) {
             String image = images.get(i);
-            session.RemoveFromSession(image);
+            session.removeFromSession(image);
             images.remove(image);
             if (!remove(image)) {
                 return false;
@@ -152,8 +152,8 @@ public class MSiImageCache extends ArrayList<String> {
         MSiImage value;
         if (images.containsKey(imageName)) {
             value = images.get(imageName);
-        } else if (session.IsInSession(imageName)) {
-            value = new MSiImage(session.GetFromSession(imageName));
+        } else if (session.isInSession(imageName)) {
+            value = new MSiImage(session.getFromSession(imageName));
         } else {
             value = null;
         }
@@ -161,14 +161,14 @@ public class MSiImageCache extends ArrayList<String> {
         return value;
     }
 
-    public void UpdateImageName(String oldName, String newName) {
+    public void updateImageName(String oldName, String newName) {
         if (images.containsKey(oldName)) {
             MSiImage tmp = images.get(oldName);
             tmp.setName(newName);
             images.put(newName, tmp);
             images.remove(oldName);
         }
-        session.RenameImage(oldName, newName);
+        session.renameImage(oldName, newName);
     }
 
     /**
@@ -177,7 +177,7 @@ public class MSiImageCache extends ArrayList<String> {
      * @param imageNames the names of the frames
      * @return a list of cached images
      */
-    public ArrayList<MSiImage> GetCachedImages(List<String> imageNames) {
+    public ArrayList<MSiImage> getCachedImages(List<String> imageNames) {
         ArrayList<MSiImage> selectedImages = new ArrayList<>();
         for (String imageName : imageNames) {
             selectedImages.add(getImage(imageName));

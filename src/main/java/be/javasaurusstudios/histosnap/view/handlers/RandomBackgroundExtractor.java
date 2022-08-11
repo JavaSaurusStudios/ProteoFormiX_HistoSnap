@@ -16,22 +16,22 @@ import javax.swing.JLabel;
  */
 public class RandomBackgroundExtractor extends BackgroundExtractionHandler {
 
-    public RandomBackgroundExtractor(JFrame parent, ProgressBar progressFrame, String path, JLabel lbImage, int currentScale, ColorRange currentRange, MSiImage.ImageMode currentMode) {
-        super(parent, progressFrame, path, lbImage, currentScale, currentRange, currentMode);
+    public RandomBackgroundExtractor(JFrame parent,  String path, JLabel lbImage) {
+        super(parent, path, lbImage);
     }
 
     @Override
-    protected void HandleImageGeneration(LinkedHashMap<String, JComponent> inputs) {
+    protected void handleImageGeneration(LinkedHashMap<String, JComponent> inputs) {
         //get SampleCount
-        int sampleCount = GetIntValue(inputs, "samples-field");
+        int sampleCount = getIntValue(inputs, "samples-field");
 
-        float toleranceValue = GetFloatValue(inputs, "tolerance-field");
+        float toleranceValue = getFloatValue(inputs, "tolerance-field");
         if (toleranceValue <= 0) {
             throw new NullPointerException();
         }
-        float lowerMzBoundary = GetFloatValue(inputs, "minMz-field");
-        float upperMzBoundary = GetFloatValue(inputs, "maxMz-field");
-        float intensityThreshold = GetFloatValue(inputs, "minI-field");
+        float lowerMzBoundary = getFloatValue(inputs, "minMz-field");
+        float upperMzBoundary = getFloatValue(inputs, "maxMz-field");
+        float intensityThreshold = getFloatValue(inputs, "minI-field");
         ImageRandomizerTask task = new ImageRandomizerTask(
                 parent,
                 path,

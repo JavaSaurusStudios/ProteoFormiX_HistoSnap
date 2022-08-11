@@ -6,9 +6,11 @@ import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import static be.javasaurusstudios.histosnap.view.MSImagizer.lastDirectory;
 import be.javasaurusstudios.histosnap.view.prompt.UserPrompt;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -35,8 +37,7 @@ public class SaveFramesDialog implements UserPrompt {
     }
 
     @Override
-    public void Show() {
-        final JFrame parent = MSImagizer.instance;
+    public void show() {
         JTextField outputFile = new JTextField();
         JButton saveFramesLocationButton = new JButton("...");
 
@@ -60,7 +61,7 @@ public class SaveFramesDialog implements UserPrompt {
                         return "Output directory";
                     }
                 });
-                int userSelection = fileChooser.showSaveDialog(parent);
+                int userSelection = fileChooser.showSaveDialog(MSImagizer.instance);
 
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                     outputFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
@@ -75,33 +76,41 @@ public class SaveFramesDialog implements UserPrompt {
             outputFile,
             saveFramesLocationButton,};
 
-        int result = JOptionPane.showConfirmDialog(parent, inputs, "Save frames...", JOptionPane.PLAIN_MESSAGE);
+        int result = JOptionPane.showConfirmDialog(MSImagizer.instance, inputs, "Save frames...", JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
             File fileToStore = new File(outputFile.getText());
-            fileToStore.mkdirs();
+
+            if (fileToStore.exists() && fileToStore.isDirectory()) {
+                //check if folder is approved
+            } else {
+                if (!fileToStore.mkdirs()) {
+                    JOptionPane.showMessageDialog(MSImagizer.instance, "Failed to create directory : " + fileToStore.getAbsolutePath(), "Warning",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
 
             try {
 
                 for (int i = 0; i < selectedImageNames.size(); i++) {
                     MSiImage tmp = cache.getImage(selectedImageNames.get(i));
-                    tmp.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
+                    tmp.createImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
                     File fileToSave = new File(fileToStore, selectedImageNames.get(i) + ".png");
-                  /*  BufferedImage bImage = ImageUtils.SetImageTitle(
+                    /*  BufferedImage bImage = ImageUtils.SetImageTitle(
                             
                             tmp.getScaledImage(MSImagizer.instance.getExportScale()), selectedImageNames.get(i)
                     
                     );
                     ImageIO.write(bImage, "png", fileToSave);*/
-                   ImageIO.write(tmp.getScaledImage(MSImagizer.instance.getExportScale()), "png", fileToSave);
+                    ImageIO.write(tmp.getScaledImage(MSImagizer.instance.getExportScale()), "png", fileToSave);
                 }
-                UILogger.Log("Exported " + selectedImageNames.size() + " frames to " + fileToStore.getAbsolutePath(), UILogger.Level.INFO);
-                JOptionPane.showMessageDialog(parent, "Exported " + selectedImageNames.size() + " frames to " + fileToStore.getAbsolutePath());
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(parent,
+                UILogger.log("Exported " + selectedImageNames.size() + " frames to " + fileToStore.getAbsolutePath(), UILogger.Level.INFO);
+                JOptionPane.showMessageDialog(MSImagizer.instance, "Exported " + selectedImageNames.size() + " frames to " + fileToStore.getAbsolutePath());
+            } catch (HeadlessException | IOException ex) {
+                JOptionPane.showMessageDialog(MSImagizer.instance,
                         "Could not save this file : " + ex.getMessage(),
                         "Failed to export frames...",
                         JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Failed to export frames...", UILogger.Level.ERROR);
+                UILogger.log("Failed to export frames...", UILogger.Level.ERROR);
                 return;
             }
         }

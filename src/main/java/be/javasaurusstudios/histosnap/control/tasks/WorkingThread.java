@@ -64,7 +64,7 @@ public class WorkingThread extends SwingWorker {
         progressFrame.setVisible(true);
         for (int i = 0; i < tasks.length; i++) {
             Object call = tasks[i].call();
-            tasks[i].Finish(call);
+            tasks[i].finish(call);
         }
         return true;
     }
@@ -76,7 +76,7 @@ public class WorkingThread extends SwingWorker {
     protected void done() {
         progressFrame.setVisible(false);
         working = false;
-        UILogger.Log(tasks[0].getFinishMessage(), UILogger.Level.INFO);
+        UILogger.log(tasks[0].getFinishMessage(), UILogger.Level.INFO);
         if (tasks[0].isNotifyWhenReady()) {
             JOptionPane.showMessageDialog(parent, tasks[0].getFinishMessage());
         }

@@ -88,7 +88,7 @@ public class ImageDHBClusterTask extends WorkingTask {
                         "Please specify an input imzml file",
                         "Invalid input file",
                         JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Invalid input file", UILogger.Level.ERROR);
+                UILogger.log("Invalid input file", UILogger.Level.ERROR);
                 return;
             }
 
@@ -99,7 +99,7 @@ public class ImageDHBClusterTask extends WorkingTask {
                         "The corresponding ibd file could not be found in the provided file directory./nPlease verify that an idb file exist with the EXACT same name as the provided imzml.",
                         "Invalid input file",
                         JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Invalid input file", UILogger.Level.ERROR);
+                UILogger.log("Invalid input file", UILogger.Level.ERROR);
                 return;
             }
 
@@ -156,17 +156,17 @@ public class ImageDHBClusterTask extends WorkingTask {
             MSiImage image = new MSiImage(frame);
             image.setName(name);
             bar.setValueText(value, "Processing...", true);
-            image.RemoveHotSpots(99);
-            MSImagizer.AddToCache(image);
+            image.removeHotSpots(99);
+            MSImagizer.addToCache(image);
         }
 
         MSiImage displayImage;
         if (generateBackground) {
             bar.setValueText(value, "Combining images...", true);
-            displayImage = MSiImage.CreateCombinedImage(extractImageRange);
+            displayImage = MSiImage.createCombinedImage(extractImageRange);
             displayImage.setName(extractionName);
-            displayImage.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
-            MSImagizer.AddToCache(displayImage);
+            displayImage.createImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
+            MSImagizer.addToCache(displayImage);
         }
 
         parent.repaint();

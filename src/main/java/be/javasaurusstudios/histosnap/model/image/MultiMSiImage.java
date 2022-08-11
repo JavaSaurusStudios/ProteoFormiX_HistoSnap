@@ -27,10 +27,10 @@ public class MultiMSiImage extends MSiImage {
      * @param columns
      * @return a new instance of a multi image
      */
-    public static MultiMSiImage Generate(List<MSiFrame> frames, int columns) {
+    public static MultiMSiImage generate(List<MSiFrame> frames, int columns) {
         int singleWidth = frames.get(0).getWidth();
         int singleHeight = frames.get(0).getHeight();
-        int rowsNeeded = (int) Math.floor(frames.size() / columns) + (columns != frames.size() ? 1 : 0);
+        int rowsNeeded = (int) (Math.floor((double)frames.size() / columns) + (columns != frames.size() ? 1 : 0));
         return new MultiMSiImage(
                 frames,
                 frames.size() < columns ? frames.size() : columns,
@@ -45,8 +45,8 @@ public class MultiMSiImage extends MSiImage {
      * @param frames
      * @return a new instance of a multi image
      */
-    public static MultiMSiImage Generate(List<MSiFrame> frames) {
-        return Generate(frames, MSImagizer.instance.getColumnCount());
+    public static MultiMSiImage generate(List<MSiFrame> frames) {
+        return MultiMSiImage.generate(frames, MSImagizer.instance.getColumnCount());
     }
     private final int cols;
     private final int rows;
@@ -70,7 +70,7 @@ public class MultiMSiImage extends MSiImage {
      * @param range the range
      */
     @Override
-    public void CreateImage(ImageMode mode, Color... range) {
+    public void createImage(ImageMode mode, Color... range) {
 
         ProgressBar bar = MSImagizer.instance.getProgressBar();
 
@@ -140,7 +140,7 @@ public class MultiMSiImage extends MSiImage {
 
         }
 
-        DrawGrid(singleWidth, singleHeight, cols, rows);
+        drawGrid(singleWidth, singleHeight, cols, rows);
 
         xCoordinate = 0;
         yCoordinate = 0;
@@ -169,7 +169,7 @@ public class MultiMSiImage extends MSiImage {
      * @param range the range
      * @return
      */
-    public BufferedImage CreateSingleImage(int index, ImageMode mode, Color... range) {
+    public BufferedImage createSingleImage(int index, ImageMode mode, Color... range) {
 
         if (index > 0 && index < getFrames().size()) {
             activeFrame = getFrames().get(index);
@@ -204,7 +204,7 @@ public class MultiMSiImage extends MSiImage {
             }
         }
 
-        DrawGrid(activeFrame.getWidth(), activeFrame.getHeight(), 1, 1);
+        drawGrid(activeFrame.getWidth(), activeFrame.getHeight(), 1, 1);
         annotateFrame(activeFrame, 12, 0, 0);
 
         //not sure if needed

@@ -62,7 +62,8 @@ public class ImageExtractionTask extends WorkingTask {
      * @param path The path to the data
      * @param minMZField the text field for the minimal mz
      * @param maxMZField the text for the maximal mz
-     * @param minIField the minimal intensity that is considered (threshold filter)
+     * @param minIField the minimal intensity that is considered (threshold
+     * filter)
      * @param stepsField the field for the amount of steps (1= none)
      * @param imageIcon the icon to load the image to
      * @param scale the pixel scale
@@ -93,7 +94,7 @@ public class ImageExtractionTask extends WorkingTask {
                     "The minimal MZ value should be a real number >=0",
                     "Invalid mass to charge range",
                     JOptionPane.ERROR_MESSAGE);
-            UILogger.Log("Invalid mass to charge range was provided.", UILogger.Level.ERROR);
+            UILogger.log("Invalid mass to charge range was provided.", UILogger.Level.ERROR);
         }
 
         try {
@@ -108,7 +109,7 @@ public class ImageExtractionTask extends WorkingTask {
                     "The maximal MZ value should be a real number >0",
                     "Invalid mass to charge range",
                     JOptionPane.ERROR_MESSAGE);
-            UILogger.Log("Invalid mass to charge range was provided.", UILogger.Level.ERROR);
+            UILogger.log("Invalid mass to charge range was provided.", UILogger.Level.ERROR);
         }
 
         try {
@@ -123,7 +124,7 @@ public class ImageExtractionTask extends WorkingTask {
                     "The minimal intensity value should be a real number >=0",
                     "Invalid mass to charge range",
                     JOptionPane.ERROR_MESSAGE);
-            UILogger.Log("Invalid mass to charge range was provided.", UILogger.Level.ERROR);
+            UILogger.log("Invalid mass to charge range was provided.", UILogger.Level.ERROR);
         }
 
         if (stepsField == null) {
@@ -144,7 +145,7 @@ public class ImageExtractionTask extends WorkingTask {
                         "The step count >=1",
                         "Invalid step size",
                         JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Invalid step size was provided.", UILogger.Level.ERROR);
+                UILogger.log("Invalid step size was provided.", UILogger.Level.ERROR);
             }
         }
 
@@ -184,7 +185,7 @@ public class ImageExtractionTask extends WorkingTask {
 
     @Override
     public Object call() throws Exception {
-        Process(path, imageIcon, pixelScale, colorRange, saveIntermediate);
+        process(path, imageIcon, pixelScale, colorRange, saveIntermediate);
         return "Done.";
     }
 
@@ -199,7 +200,7 @@ public class ImageExtractionTask extends WorkingTask {
      * intermediate
      * @throws Exception
      */
-    protected void Process(String path, JLabel imageIcon, int scale, ColorRange range, boolean autoSave) throws Exception {
+    protected void process(String path, JLabel imageIcon, int scale, ColorRange range, boolean autoSave) throws Exception {
 
         if (!imageName.isEmpty()) {
             MSImagizer.instance.getProgressBar().setText("Extracting " + imageName);
@@ -220,7 +221,7 @@ public class ImageExtractionTask extends WorkingTask {
                         "Please specify an input imzml file",
                         "Invalid input file",
                         JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Invalid input file", UILogger.Level.ERROR);
+                UILogger.log("Invalid input file", UILogger.Level.ERROR);
                 return;
             }
 
@@ -231,17 +232,17 @@ public class ImageExtractionTask extends WorkingTask {
                         "The corresponding ibd file could not be found in the provided file directory./nPlease verify that an idb file exist with the EXACT same name as the provided imzml.",
                         "Invalid input file",
                         JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Invalid input file", UILogger.Level.ERROR);
+                UILogger.log("Invalid input file", UILogger.Level.ERROR);
                 return;
             }
 
-            UILogger.Log("Start image extraction ...", UILogger.Level.INFO);
-            ExecuteImage(in, scale, minI, imageName, range, 0, autoSave);
+            UILogger.log("Start image extraction ...", UILogger.Level.INFO);
+            executeImage(in, scale, minI, imageName, range, 0, autoSave);
 
             if (!MSScanAdduct.ENABLED_ADDUCTS.isEmpty()) {
-                UILogger.Log("Extracting additional adducts...", UILogger.Level.INFO);
+                UILogger.log("Extracting additional adducts...", UILogger.Level.INFO);
                 for (MSScanAdduct.ADDUCTS adduct : MSScanAdduct.ENABLED_ADDUCTS) {
-                    ExecuteImage(in, scale, minI, imageName + "_" + adduct.toString(), range, adduct.getMassDeficit(), autoSave);
+                    executeImage(in, scale, minI, imageName + "_" + adduct.toString(), range, adduct.getMassDeficit(), autoSave);
                 }
             }
 
@@ -253,7 +254,7 @@ public class ImageExtractionTask extends WorkingTask {
         }
     }
 
-    private void ExecuteImage(String in, int scale, float minI, String extractionName, ColorRange range, float massOffset, boolean autoSave) throws Exception {
+    private void executeImage(String in, int scale, float minI, String extractionName, ColorRange range, float massOffset, boolean autoSave) throws Exception {
 
         if (minMZ >= maxMZ) {
             JOptionPane.showMessageDialog(MSImagizer.instance, "The minimal mz values should be less than the maximal mz value");
@@ -262,7 +263,7 @@ public class ImageExtractionTask extends WorkingTask {
 
         List<float[]> ranges = new ArrayList<>();
 
-        UILogger.Log("Calculating mass ranges");
+        UILogger.log("Calculating mass ranges");
         for (int i = 0; i < stepCount; i++) {
 
             float minMzTmp = Math.max(minMZ, minMZ + (i * interval));
@@ -281,13 +282,13 @@ public class ImageExtractionTask extends WorkingTask {
         float i = 0;
         for (MSiFrame frame : image.getFrames()) {
             i++;
-            MSImagizer.AddToCache(new MSiImage(frame));
+            MSImagizer.addToCache(new MSiImage(frame));
             MSImagizer.instance.getProgressBar().setValueText(i / image.getFrames().size(),
                     "Removing hotspots for " + frame.getName(), false);
-            MSImagizer.MSI_IMAGE.RemoveHotSpots(99);
+            MSImagizer.MSI_IMAGE.removeHotSpots(99);
             MSImagizer.instance.getProgressBar().setValueText(i / image.getFrames().size(),
                     "Generating heatmap for " + frame.getName(), false);
-            MSImagizer.MSI_IMAGE.CreateImage(mode, range.getColors());
+            MSImagizer.MSI_IMAGE.createImage(mode, range.getColors());
 
             MSImagizer.instance.getProgressBar().setValueText(i / image.getFrames().size(),
                     "Applying scale " + frame.getName(), false);
@@ -299,14 +300,19 @@ public class ImageExtractionTask extends WorkingTask {
                 imageIcon.setText("");
                 imageIcon.setSize(MSImagizer.CURRENT_IMAGE.getWidth() + 2, MSImagizer.CURRENT_IMAGE.getHeight() + 2);
             }
-            
+
         }
         parent.repaint();
 
         if (autoSave) {
             File outputDir = new File(new File(tmp).getParentFile(), minMZ + "-to-" + maxMZ);
             File tmpFile = new File(tmp);
-            outputDir.mkdirs();
+            if (!outputDir.exists()) {
+                if (!outputDir.mkdirs()) {
+                    JOptionPane.showMessageDialog(MSImagizer.instance, "Could not create folder : " + outputDir.getAbsolutePath(), "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
             File outputFile = new File(outputDir, tmpFile.getName().replace(".tmp.txt", ".png"));
             MSImagizer.instance.getProgressBar().setValueText(0, "Saving to " + outputFile, true);
             ImageIO.write(MSImagizer.CURRENT_IMAGE, "png", outputFile);

@@ -24,8 +24,8 @@ public class ImageUtils {
      * @param fontSize
      * @return the buffered image with a title
      */
-    public static BufferedImage SetImageTitle(BufferedImage image, String title, int fontSize) {
-        return SetImageSubTitle(image, title, fontSize, 0, 0);
+    public static BufferedImage setImageTitle(BufferedImage image, String title, int fontSize) {
+        return setImageSubTitle(image, title, fontSize, 0, 0);
     }
 
     /**
@@ -39,7 +39,7 @@ public class ImageUtils {
      * @param y
      * @return the buffered image with a title
      */
-    public static BufferedImage SetImageSubTitle(BufferedImage image, String title, int fontSize, int x, int y) {
+    public static BufferedImage setImageSubTitle(BufferedImage image, String title, int fontSize, int x, int y) {
         if (title == null) {
             title = "";
         }
@@ -66,7 +66,8 @@ public class ImageUtils {
      * @param maxY the upper left Y for the rectangle
      * @return a buffered image with a highlighted region of interest
      */
-    public static BufferedImage HighlightZone(BufferedImage image, int minX, int maxX, int minY, int maxY) {
+    @Deprecated
+    public static BufferedImage highLightZone(BufferedImage image, int minX, int maxX, int minY, int maxY) {
         BufferedImage framedImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
 
         Graphics2D graph = framedImage.createGraphics();
@@ -81,7 +82,7 @@ public class ImageUtils {
         return framedImage;
     }
 
-    public static BufferedImage CreatePooledImage(BufferedImage[] images) {
+    public static BufferedImage createPooledImage(BufferedImage[] images) {
         BufferedImage average = new BufferedImage(images[0].getWidth(), images[0].getHeight(), BufferedImage.TYPE_INT_ARGB);
         WritableRaster raster = average.getRaster().createCompatibleWritableRaster();
         for (int k = 0; k < images[0].getHeight(); ++k) {

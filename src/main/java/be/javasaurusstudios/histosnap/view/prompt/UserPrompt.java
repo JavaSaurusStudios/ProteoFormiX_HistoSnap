@@ -6,6 +6,6 @@ package be.javasaurusstudios.histosnap.view.prompt;
  */
 public interface UserPrompt {
 
-    public void Show();
+    public void show();
 
 }

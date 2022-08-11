@@ -19,13 +19,13 @@ public class UILogger {
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     public static JList LOGGING_AREA;
-    public static int cacheSize = 100;
+    public static final int cacheSize = 100;
 
-    public static void Log(String msg) {
-        Log(msg, Level.INFO);
+    public static void log(String msg) {
+        log(msg, Level.INFO);
     }
 
-    public static void Log(String msg, Level lv) {
+    public static void log(String msg, Level lv) {
         String logMessage = formatter.format(LocalDateTime.now()) + " : " + (lv == Level.NONE ? "" : "[" + lv + "] : ") + msg;
 
         System.out.println(logMessage);

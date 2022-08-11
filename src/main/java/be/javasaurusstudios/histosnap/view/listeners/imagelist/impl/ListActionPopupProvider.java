@@ -32,36 +32,36 @@ public class ListActionPopupProvider implements ListenerProvider {
     private JMenuItem renameItem;
     private JMenuItem saveAnimationItem;
     private JMenuItem saveFrameItem;
-    private final ImageLabel imgLabel;
     private JMenuItem generateCombinedImage;
 
-    public ListActionPopupProvider(ImageLabel imgLabel) {
-        this.imgLabel = imgLabel;
+    public ListActionPopupProvider() {
+
     }
 
     @Override
-    public void SetUp(JComponent component) {
+    public void setUp(JComponent component) {
 
         final MSImagizer parent = MSImagizer.instance;
+
+        if (!(component instanceof JList)) {
+            return;
+        }
 
         JList imageCacheList = (JList) component;
 
         JPopupMenu menu = new JPopupMenu();
         deleteItem = new JMenuItem("Delete...");
         menu.add(deleteItem);
-        deleteItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                List<String> selectedImageNames = imageCacheList.getSelectedValuesList();
-                CACHE.removeImagesFromCacheByName(selectedImageNames);
-                UILogger.Log("Deleted " + selectedImageNames.size() + " image(s)", UILogger.Level.INFO);
-                MSImagizer.UpdateCacheUI();
-                if (!CACHE.isEmpty()) {
-                    MSI_IMAGE = CACHE.getFirst();
-                    imageCacheList.setSelectedIndex(0);
-                }
-                parent.UpdateImage();
+        deleteItem.addActionListener((ActionEvent e) -> {
+            List<String> selectedImageNames = imageCacheList.getSelectedValuesList();
+            CACHE.removeImagesFromCacheByName(selectedImageNames);
+            UILogger.log("Deleted " + selectedImageNames.size() + " image(s)", UILogger.Level.INFO);
+            MSImagizer.updateCacheUI();
+            if (!CACHE.isEmpty()) {
+                MSI_IMAGE = CACHE.getFirst();
+                imageCacheList.setSelectedIndex(0);
             }
+            parent.updateImage();
         });
 
         renameItem = new JMenuItem("Rename...");
@@ -74,41 +74,38 @@ public class ListActionPopupProvider implements ListenerProvider {
             }
             String tmpName = selectedImages.get(0);
             String newName = JOptionPane.showInputDialog(parent, "Enter a new name", MSI_IMAGE.getName());
-            CACHE.UpdateImageName(tmpName, newName);
+            CACHE.updateImageName(tmpName, newName);
             DefaultListModel model = (DefaultListModel) imageCacheList.getModel();
             model.setElementAt(newName, imageCacheList.getSelectedIndex());
-            UILogger.Log("Updated " + tmpName + " to " + newName, UILogger.Level.INFO);
-            parent.UpdateImage();
+            UILogger.log("Updated " + tmpName + " to " + newName, UILogger.Level.INFO);
+            parent.updateImage();
         });
 
         generateCombinedImage = new JMenuItem("Combine...");
         //    menu.add(generateCombinedImage);
-        generateCombinedImage.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                List<String> selectedImageNames = imageCacheList.getSelectedValuesList();
-                if (selectedImageNames.size() <= 1) {
-                    return;
-                }
-                try {
-                    UILogger.Log("Creating combined image for " + selectedImageNames.size() + " images...", UILogger.Level.INFO);
-
-                    MSImagizer.instance.getProgressFrame().setVisible(true);
-
-                    MSImagizer.instance.getProgressFrame().setText("Generating combined image...");
-                    MSiImage image = MSiImage.CreateCombinedImage(CACHE.GetCachedImages(selectedImageNames));
-
-                    MSImagizer.AddToCache(image);
-
-                    MSImagizer.MSI_IMAGE = image;
-                    MSImagizer.instance.getProgressFrame().setText("Removing hotspots");
-                    MSImagizer.MSI_IMAGE.RemoveHotSpots(99);
-                    MSImagizer.instance.getProgressFrame().setText("Generating heatmap...");
-                    MSImagizer.MSI_IMAGE.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
-                    MSImagizer.CURRENT_IMAGE = MSImagizer.MSI_IMAGE.getScaledImage(MSImagizer.instance.getCurrentScale());
-                } finally {
-                    MSImagizer.instance.getProgressFrame().setVisible(false);
-                }
+        generateCombinedImage.addActionListener((ActionEvent e) -> {
+            List<String> selectedImageNames = imageCacheList.getSelectedValuesList();
+            if (selectedImageNames.size() <= 1) {
+                return;
+            }
+            try {
+                UILogger.log("Creating combined image for " + selectedImageNames.size() + " images...", UILogger.Level.INFO);
+                
+                MSImagizer.instance.getProgressFrame().setVisible(true);
+                
+                MSImagizer.instance.getProgressFrame().setText("Generating combined image...");
+                MSiImage image = MSiImage.createCombinedImage(CACHE.getCachedImages(selectedImageNames));
+                
+                MSImagizer.addToCache(image);
+                
+                MSImagizer.MSI_IMAGE = image;
+                MSImagizer.instance.getProgressFrame().setText("Removing hotspots");
+                MSImagizer.MSI_IMAGE.removeHotSpots(99);
+                MSImagizer.instance.getProgressFrame().setText("Generating heatmap...");
+                MSImagizer.MSI_IMAGE.createImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
+                MSImagizer.CURRENT_IMAGE = MSImagizer.MSI_IMAGE.getScaledImage(MSImagizer.instance.getCurrentScale());
+            } finally {
+                MSImagizer.instance.getProgressFrame().setVisible(false);
             }
         });
 
@@ -121,7 +118,7 @@ public class ListActionPopupProvider implements ListenerProvider {
                 if (selectedImageNames.size() <= 1) {
                     return;
                 }
-                new SaveAnimationDialog(selectedImageNames, CACHE).Show();
+                new SaveAnimationDialog(selectedImageNames).show();
             }
         });
 
@@ -131,7 +128,7 @@ public class ListActionPopupProvider implements ListenerProvider {
             @Override
             public void actionPerformed(ActionEvent e) {
                 List<String> selectedImagesNames = imageCacheList.getSelectedValuesList();
-                new SaveFramesDialog(selectedImagesNames, CACHE).Show();
+                new SaveFramesDialog(selectedImagesNames, CACHE).show();
             }
         });
 
@@ -143,7 +140,7 @@ public class ListActionPopupProvider implements ListenerProvider {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                if (imageCacheList.getSelectedValuesList().size() >= 1 && (imageCacheList.getVisibleRowCount() > 0 & (e.getModifiers() & InputEvent.BUTTON3_MASK) != 0)) {
+                if (imageCacheList != null && imageCacheList.getSelectedValuesList().size() >= 1 && (imageCacheList.getVisibleRowCount() > 0 & (e.getModifiers() & InputEvent.BUTTON3_MASK) != 0)) {
 
                     renameItem.setEnabled(imageCacheList.getSelectedValuesList().size() >= 1);
                     deleteItem.setEnabled(imageCacheList.getSelectedValuesList().size() >= 1);

@@ -3,9 +3,11 @@ package be.javasaurusstudios.histosnap.model.image.annotation;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.util.Objects;
 
 /**
  * This class represents a square annotation shape
+ *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public class AnnotationRect extends Rectangle implements AnnotationShape {
@@ -17,6 +19,7 @@ public class AnnotationRect extends Rectangle implements AnnotationShape {
 
     /**
      * Constructor for a rectangle shaped annotation
+     *
      * @param x the x coordinate (bot-left)
      * @param y the y coordinate (bot-left)
      * @param width the width of the rectangle
@@ -38,5 +41,15 @@ public class AnnotationRect extends Rectangle implements AnnotationShape {
     public Color getColor() {
         return color;
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+       return super.equals(obj);
+     }
 
 }

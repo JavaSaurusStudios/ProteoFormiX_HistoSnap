@@ -8,6 +8,6 @@ import javax.swing.JComponent;
  */
 public interface ListenerProvider {
     
-  public void SetUp(JComponent component);  
+  public void setUp(JComponent component);  
     
 }

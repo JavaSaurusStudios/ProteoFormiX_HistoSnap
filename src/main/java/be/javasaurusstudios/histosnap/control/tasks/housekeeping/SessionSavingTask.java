@@ -41,7 +41,7 @@ public class SessionSavingTask extends WorkingTask {
         }
         if (CACHE.getFirst() != null) {
             CACHE.getSession().setSessionFolder(outputFolder);
-            CACHE.getSession().SaveSession();
+            CACHE.getSession().saveSession();
         }
         MSImagizer.instance.getProgressBar().setVisible(false);
         return true;

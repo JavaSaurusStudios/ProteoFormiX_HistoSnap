@@ -11,6 +11,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  */
 public class MSiPixel implements Comparable, Serializable {
 
+    private static final long serialVersionUID = 1234567L;
     private int x;
     private int y;
     private LinkedList<Double> mz;
@@ -89,7 +90,7 @@ public class MSiPixel implements Comparable, Serializable {
      *
      * @param percentile the maximal percentile to consider
      */
-    public void RemoveHotSpots(int percentile) {
+    public void removeHotSpots(int percentile) {
         DescriptiveStatistics stats = getStat();
         LinkedList<Double> tmpI = new LinkedList<>();
         double threshold = stats.getPercentile(percentile);

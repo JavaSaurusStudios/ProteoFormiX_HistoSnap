@@ -66,25 +66,26 @@ public class ProgressBar {
      * @param process the progress to be launched (for example extraction of data)
      * @throws InterruptedException 
      */
-    public void RunExtractionProcess(Process process) throws InterruptedException {
+    public void runExtractionProcess(Process process) throws InterruptedException {
         SwingWorker worker = new SwingWorker<Void, Float>() {
             @Override
             protected Void doInBackground() throws Exception {
                 try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    String line = null;
-                    while ((line = reader.readLine()) != null) {
-                        String tmp = line.replace(" %", "");
-                        try {
-                            float value = Float.parseFloat(tmp);
-                            publish(value);
-                        } catch (NumberFormatException e) {
-                            MSImagizer.instance.getProgressBar().setValueText(0, "Working...", true);
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                        String line = null;
+                        while ((line = reader.readLine()) != null) {
+                            String tmp = line.replace(" %", "");
+                            try {
+                                float value = Float.parseFloat(tmp);
+                                publish(value);
+                            } catch (NumberFormatException e) {
+                                MSImagizer.instance.getProgressBar().setValueText(0, "Working...", true);
+                            }
+                            
+                            //                        UILogger.Log(line);
                         }
-
-                        //                        UILogger.Log(line);
+                        MSImagizer.instance.getProgressBar().setValueText(0, "Finalizing", true);
                     }
-                    MSImagizer.instance.getProgressBar().setValueText(0, "Finalizing", true);
                 } catch (IOException ex) {
                     Logger.getLogger(MzRangeExtractor.class.getName()).log(Level.SEVERE, null, ex);
                 }

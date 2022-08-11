@@ -28,7 +28,7 @@ public abstract class WorkingTask implements Callable {
      * @param process the processing job to add
      * @return this workingtask
      */
-    public WorkingTask AddPostProcessing(WorkingTaskPostProcess process) {
+    public WorkingTask addPostProcessing(WorkingTaskPostProcess process) {
         postprocessing.add(process);
         return this;
     }
@@ -37,7 +37,7 @@ public abstract class WorkingTask implements Callable {
      * Runs post processing
      * @param result  the result of this task
      */
-    public void Finish(Object result) {
+    public void finish(Object result) {
         for (WorkingTaskPostProcess event : postprocessing) {
             event.SetResult(result).run();
         }

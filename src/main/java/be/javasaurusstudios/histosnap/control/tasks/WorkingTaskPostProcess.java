@@ -28,4 +28,10 @@ public abstract class WorkingTaskPostProcess implements Runnable {
         return this;
     }
 
+    public Object getResult() {
+        return result;
+    }
+    
+    
+
 }

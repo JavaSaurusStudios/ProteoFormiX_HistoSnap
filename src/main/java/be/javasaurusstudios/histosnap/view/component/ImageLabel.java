@@ -57,7 +57,7 @@ public class ImageLabel extends JLabel {
 
     public void addAnnotationShape(AnnotationShape shape) {
         annotationShapes.add(shape);
-        MSImagizer.instance.UpdateImage();
+        MSImagizer.instance.updateImage();
     }
 
     public void undo() {
@@ -67,17 +67,17 @@ public class ImageLabel extends JLabel {
                 undoneAnnotationShapes.pollFirst();
             }
         }
-        MSImagizer.instance.UpdateImage();
+        MSImagizer.instance.updateImage();
     }
 
     public void redo() {
         if (!undoneAnnotationShapes.isEmpty()) {
             annotationShapes.addLast(undoneAnnotationShapes.pollLast());
         }
-        MSImagizer.instance.UpdateImage();
+        MSImagizer.instance.updateImage();
     }
 
-    public void SetHighlightStart(Point point) {
+    public void setHighlightStart(Point point) {
         this.startingPoint = point;
     }
 
@@ -156,7 +156,7 @@ public class ImageLabel extends JLabel {
         g.drawRect(getX() + 1, getY() + 1, getWidth() - 2, getHeight() - 2);
 
         //   g.fillRect(0, 0, getWidth(), getHeight());
-        if (MSImagizer.instance != null && MSImagizer.instance.IsAnnotationMode()) {
+        if (MSImagizer.instance != null && MSImagizer.instance.iAnnotationMode()) {
             if (mouseDown && startingPoint != null && endingPoint != null) {
                 boolean isRightDirection = (startingPoint.x < endingPoint.x && endingPoint.y > startingPoint.y);
 

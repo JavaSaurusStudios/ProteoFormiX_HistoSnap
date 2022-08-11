@@ -7,6 +7,7 @@ import javax.swing.ImageIcon;
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public enum ButtonIcons {
+    ICON("/icon.png"),
     OPEN("/icons8-add-new-64.png"),
     EXTRACT("/icons8-unpacking-64.png"),
     SAVE_SINGLE("/icons8-full-image-64.png"),

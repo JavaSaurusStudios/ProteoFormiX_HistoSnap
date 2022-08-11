@@ -19,27 +19,29 @@ import javax.swing.event.ListSelectionListener;
 public class ListSelectionUpdateProvider implements ListenerProvider {
 
     @Override
-    public void SetUp(JComponent component) {
+    public void setUp(JComponent component) {
+
+        if (!(component instanceof JList)) {
+            return;
+        }
+
         JList imageCacheList = (JList) component;
 
         MSImagizer main = MSImagizer.instance;
 
-        imageCacheList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (imageCacheList.getSelectedValuesList().size() == 1) {
-                    MSI_IMAGE = MSImagizer.CACHE.getImage((String) imageCacheList.getSelectedValue());
-                    main.UpdateImage();
-                } else {
-                    if (imageCacheList.getSelectedValuesList().size() > 1) {
-                        List<MSiFrame> frames = new ArrayList<>();
-                        for (Object value : imageCacheList.getSelectedValuesList()) {
-                            frames.add(MSImagizer.CACHE.getImage((String) value).getFrame());
-                        }
-                        if (!frames.isEmpty()) {
-                            MSI_IMAGE = MultiMSiImage.Generate(frames);
-                            main.UpdateImage();
-                        }
+        imageCacheList.addListSelectionListener((ListSelectionEvent e) -> {
+            if (imageCacheList.getSelectedValuesList().size() == 1) {
+                MSI_IMAGE = MSImagizer.CACHE.getImage((String) imageCacheList.getSelectedValue());
+                main.updateImage();
+            } else {
+                if (imageCacheList.getSelectedValuesList().size() > 1) {
+                    List<MSiFrame> frames = new ArrayList<>();
+                    for (Object value : imageCacheList.getSelectedValuesList()) {
+                        frames.add(MSImagizer.CACHE.getImage((String) value).getFrame());
+                    }
+                    if (!frames.isEmpty()) {
+                        MSI_IMAGE = MultiMSiImage.generate(frames);
+                        main.updateImage();
                     }
                 }
             }

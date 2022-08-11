@@ -19,19 +19,17 @@ import javax.swing.JOptionPane;
 public class SessionLoadingTask extends WorkingTask {
 
     private final File inputFolder;
-    private final String path;
+ 
 
     /**
      * Constructor for a task to load a session
      *
      * @param progessBar The progressbar
      * @param inputFolder the session folder
-     * @param tfInput textfield for the session folder
      */
-    public SessionLoadingTask(ProgressBar progessBar, File inputFolder, String path) {
+    public SessionLoadingTask(ProgressBar progessBar, File inputFolder) {
         super();
         this.inputFolder = inputFolder;
-        this.path = path;
     }
 
     @Override
@@ -39,15 +37,15 @@ public class SessionLoadingTask extends WorkingTask {
         MSImagizer.instance.getProgressBar().setText("Changing sessions...");
         CACHE.setSession(new HistoSnapImageSession(inputFolder.getAbsolutePath()));
         MSImagizer.MSI_IMAGE = CACHE.getFirst();
-        MSImagizer.instance.UpdateCacheUI();
-        MSImagizer.instance.UpdateImage();
+        MSImagizer.updateCacheUI();
+        MSImagizer.instance.updateImage();
 
         if (CACHE.getFirst() != null) {
             File selectedFile = new File(CACHE.getFirst().getFrame().getParentFile());
          MSImagizer.instance.setPath(selectedFile.getAbsolutePath());
             lastDirectory = selectedFile.getParentFile();
             if (selectedFile.exists()) {
-                   UILogger.Log("Done...", UILogger.Level.INFO);
+                   UILogger.log("Done...", UILogger.Level.INFO);
             } else {
                 JOptionPane.showMessageDialog(instance,
                         selectedFile.getAbsolutePath() + " could not be found...",

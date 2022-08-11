@@ -109,13 +109,13 @@
                         <Property name="text" type="java.lang.String" value="Cations"/>
                       </Properties>
                       <SubComponents>
-                        <MenuItem class="javax.swing.JCheckBoxMenuItem" name="BtnAllCations">
+                        <MenuItem class="javax.swing.JCheckBoxMenuItem" name="btnAllCations">
                           <Properties>
                             <Property name="selected" type="boolean" value="true"/>
                             <Property name="text" type="java.lang.String" value="All"/>
                           </Properties>
                           <Events>
-                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="BtnAllCationsActionPerformed"/>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAllCationsActionPerformed"/>
                           </Events>
                         </MenuItem>
                         <MenuItem class="javax.swing.JCheckBoxMenuItem" name="btnCatCH3OH">
@@ -551,13 +551,13 @@
                 <Property name="text" type="java.lang.String" value="Memory Mode"/>
               </Properties>
               <SubComponents>
-                <MenuItem class="javax.swing.JCheckBoxMenuItem" name="BtnLowMemory">
+                <MenuItem class="javax.swing.JCheckBoxMenuItem" name="btnLowMemory">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="Low (Slow)"/>
                   </Properties>
                   <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="BtnLowMemoryActionPerformed"/>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnLowMemoryActionPerformed"/>
                   </Events>
                 </MenuItem>
                 <MenuItem class="javax.swing.JCheckBoxMenuItem" name="btnHighMemory">

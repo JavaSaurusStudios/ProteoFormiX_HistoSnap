@@ -50,15 +50,19 @@ public class MSiImage extends BufferedImage implements Serializable {
             this.name = "Default - " + System.currentTimeMillis();
             this.activeFrame.setName(this.name);
         }
-        InitFrame(frame);
+        init(frame);
     }
 
     public MSiImage(MSiFrame frame, int width, int height) {
         super(width, height, BufferedImage.TYPE_INT_ARGB);
-        InitFrame(frame);
+        init(frame);
     }
 
-    protected void InitFrame(MSiFrame frame) {
+    private void init(MSiFrame frame) {
+        initFrame(frame);
+    }
+
+    protected void initFrame(MSiFrame frame) {
         this.activeFrame = frame;
         this.name = this.activeFrame.getName();
         if (this.name == null || this.name.isEmpty()) {
@@ -78,10 +82,10 @@ public class MSiImage extends BufferedImage implements Serializable {
 
         if (MSImagizer.instance.isDrawTitle()) {
 
-            int titleX = xOffset + (int) Math.ceil(frame.getWidth() / 2);
+            int titleX = (int) (xOffset + Math.ceil(frame.getWidth() / 2));
             int titleY = yOffset + frame.getHeight() - 5;
 
-            BufferedImage tmp = ImageUtils.SetImageSubTitle(
+            BufferedImage tmp = ImageUtils.setImageSubTitle(
                     this,
                     frame.getName(),
                     (int) (Math.max(fontSize, Math.ceil((double) fontSize / MSImagizer.instance.getCurrentScale()))),
@@ -100,7 +104,7 @@ public class MSiImage extends BufferedImage implements Serializable {
      *
      * @param intensity the maximal intensity
      */
-    public void LimitIntensity(double intensity) {
+    public void limitIntensity(double intensity) {
         this.activeFrame.clampIntensity(intensity);
     }
 
@@ -109,8 +113,8 @@ public class MSiImage extends BufferedImage implements Serializable {
      *
      * @param bgPercentile the percentile to clamp to
      */
-    public void RemoveHotSpots(int bgPercentile) {
-        this.activeFrame.RemoveHotSpots(bgPercentile);
+    public void removeHotSpots(int bgPercentile) {
+        this.activeFrame.removeHotSpots(bgPercentile);
     }
 
     /**
@@ -119,8 +123,8 @@ public class MSiImage extends BufferedImage implements Serializable {
      * @param outputfile the requested outputfile
      * @throws IOException
      */
-    public void SaveToFile(File outputfile) throws IOException {
-        SaveToFile(outputfile, 1);
+    public void saveToFile(File outputfile) throws IOException {
+        saveToFile(outputfile, 1);
     }
 
     /**
@@ -130,7 +134,7 @@ public class MSiImage extends BufferedImage implements Serializable {
      * @param scale the pixel scale for the output image
      * @throws IOException
      */
-    public void SaveToFile(File outputfile, int scale) throws IOException {
+    public void saveToFile(File outputfile, int scale) throws IOException {
         ImageIO.write(scale == 1 ? this : getScaledImage(scale), "png", outputfile);
     }
 
@@ -153,7 +157,7 @@ public class MSiImage extends BufferedImage implements Serializable {
      * @param mode the reference mode
      * @param range the range
      */
-    public void CreateImage(ImageMode mode, Color... range) {
+    public void createImage(ImageMode mode, Color... range) {
 
         ProgressBar progressBar = MSImagizer.instance.getProgressBar();
 
@@ -192,14 +196,14 @@ public class MSiImage extends BufferedImage implements Serializable {
             double check = getStat(mode, pixel.getStat());
             double rel = Math.min(1, Math.max(0, check / reference));
             rel = mode == ImageMode.TOTAL_ION_CURRENT ? 1 - rel : rel;
-            Color color = rel == 0 ? range[0] : MSImagizer.instance.isUseInvertedScale()?ColorUtils.getHeatMapColorInverse(rel, range):ColorUtils.getHeatMapColor(rel, range);
+            Color color = rel == 0 ? range[0] : MSImagizer.instance.isUseInvertedScale() ? ColorUtils.getHeatMapColorInverse(rel, range) : ColorUtils.getHeatMapColor(rel, range);
 
             if (pixel.getX() > 0 && pixel.getX() < this.getWidth() && pixel.getY() > 0 && pixel.getY() < this.getHeight()) {
                 this.setRGB(pixel.getX(), pixel.getY(), color.getRGB());
             }
         }
 
-        DrawGrid(getWidth(), getHeight(), 1, 1);
+        drawGrid(getWidth(), getHeight(), 1, 1);
         annotateFrame(activeFrame, 12, 0, 0);
     }
 
@@ -259,7 +263,7 @@ public class MSiImage extends BufferedImage implements Serializable {
 
     public MSiFrame getClickedFrame(int x, int y) {
         MSiFrame frame = getFrame();
-        if (frame != null && x >= 0 && y <= frame.getWidth() & x >= 0 && y <= frame.getHeight()) {
+        if (frame == null||(x >= 0 && y <= frame.getWidth() & x >= 0 && y <= frame.getHeight())) {
             return frame;
         }
         return null;
@@ -270,26 +274,26 @@ public class MSiImage extends BufferedImage implements Serializable {
         return getName();
     }
 
-    protected void DrawGrid(int singleWidth, int singleHeight, int cols, int rows) {
+    protected void drawGrid(int singleWidth, int singleHeight, int cols, int rows) {
         //draw grid on top
         if (MSImagizer.instance.isDrawGrid()) {
             for (int i = 0; i <= cols; i++) {
                 int startingX = i * singleWidth;
                 for (int j = startingX - 1; j < startingX + 1; j++) {
-                    DrawVertical(j);
+                    drawVertical(j);
                 }
             }
 
             for (int i = 0; i <= rows; i++) {
                 int startingY = i * singleHeight;
                 for (int j = startingY - 1; j < startingY + 1; j++) {
-                    DrawHorizontal(j);
+                    drawHorizontal(j);
                 }
             }
         }
     }
 
-    private void DrawHorizontal(int y) {
+    private void drawHorizontal(int y) {
         for (int j = 0; j < getWidth(); j++) {
             int h = y;
             if (h >= 0 && h < getHeight()) {
@@ -298,7 +302,7 @@ public class MSiImage extends BufferedImage implements Serializable {
         }
     }
 
-    private void DrawVertical(int x) {
+    private void drawVertical(int x) {
         for (int j = 0; j < getHeight(); j++) {
             int w = x;
             if (w >= 0 && w < getWidth()) {
@@ -307,16 +311,16 @@ public class MSiImage extends BufferedImage implements Serializable {
         }
     }
 
-    public static MSiImage CreateCombinedImage(MultiMSiImage img) {
+    public static MSiImage createCombinedImage(MultiMSiImage img) {
         List<MSiImage> images = new ArrayList<>();
 
         for (MSiFrame frame : img.getFrames()) {
             images.add(new MSiImage(frame));
         }
-        return CreateCombinedImage(images);
+        return createCombinedImage(images);
     }
 
-    public static MSiImage CreateCombinedImage(List<MSiImage> images) {
+    public static MSiImage createCombinedImage(List<MSiImage> images) {
 
         MSiFrame frame = new MSiFrame();
         frame.setWidth(images.get(0).getFrame().getWidth());
@@ -364,7 +368,7 @@ public class MSiImage extends BufferedImage implements Serializable {
                     }
                 }
 
-                frame.AddPixel(newPixel);
+                frame.addPixel(newPixel);
             }
         }
 

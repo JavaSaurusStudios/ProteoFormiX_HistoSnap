@@ -145,8 +145,8 @@ public class ColorUtils {
         return gradient;
     }
 
-    public static Color Average(Color first, Color second) {
-        return new Color(Average(first.getRGB(), second.getRGB()));
+    public static Color average(Color first, Color second) {
+        return new Color(average(first.getRGB(), second.getRGB()));
     }
 
     /**
@@ -156,7 +156,7 @@ public class ColorUtils {
      * @param argb2 input rgb value 2
      * @return the average rgb int
      */
-    public static int Average(int argb1, int argb2) {
+    public static int average(int argb1, int argb2) {
         return (((argb1 & 0xFF) + (argb2 & 0xFF)) >> 1)
                 | //b
                 (((argb1 >> 8 & 0xFF) + (argb2 >> 8 & 0xFF)) >> 1) << 8

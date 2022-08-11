@@ -69,7 +69,7 @@ public class ImageRandomizerTask extends WorkingTask {
 
     @Override
     public Object call() throws Exception {
-        Process(path, imageIcon);
+        process(path, imageIcon);
         return "Done.";
     }
 
@@ -84,7 +84,7 @@ public class ImageRandomizerTask extends WorkingTask {
      * intermediate
      * @throws Exception
      */
-    private void Process(String path, JLabel imageIcon) throws Exception {
+    private void process(String path, JLabel imageIcon) throws Exception {
 
         if (minMZ == -1 || maxMZ == -1) {
             throw new Exception("Please check the mz range...");
@@ -101,7 +101,7 @@ public class ImageRandomizerTask extends WorkingTask {
                         "Please specify an input imzml file",
                         "Invalid input file",
                         JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Invalid input file", UILogger.Level.ERROR);
+                UILogger.log("Invalid input file", UILogger.Level.ERROR);
                 return;
             }
 
@@ -112,11 +112,11 @@ public class ImageRandomizerTask extends WorkingTask {
                         "The corresponding ibd file could not be found in the provided file directory./nPlease verify that an idb file exist with the EXACT same name as the provided imzml.",
                         "Invalid input file",
                         JOptionPane.ERROR_MESSAGE);
-                UILogger.Log("Invalid input file", UILogger.Level.ERROR);
+                UILogger.log("Invalid input file", UILogger.Level.ERROR);
                 return;
             }
 
-            ExecuteImage(in, "Background");
+            executeImage(in, "Background");
 
         } catch (Exception ex) {
             MSImagizer.instance.getProgressBar().setVisible(false);
@@ -130,7 +130,7 @@ public class ImageRandomizerTask extends WorkingTask {
      * @param extractionName the name for this extraction
      * @throws Exception 
      */
-    private void ExecuteImage(String in, String extractionName) throws Exception {
+    private void executeImage(String in, String extractionName) throws Exception {
 
         TreeSet<Float> randomPoints = new TreeSet<>();
         for (int i = 0; i < samples; i++) {
@@ -147,10 +147,10 @@ public class ImageRandomizerTask extends WorkingTask {
         MzRangeExtractor extractor = new MzRangeExtractor(in, tmp);
         MultiMSiImage extractImageRange = extractor.extractImageRange(randomRanges, minI);
 
-        MSiImage compiledImage = MSiImage.CreateCombinedImage(extractImageRange);
-        MSImagizer.AddToCache(compiledImage);
+        MSiImage compiledImage = MSiImage.createCombinedImage(extractImageRange);
+        MSImagizer.addToCache(compiledImage);
         compiledImage.setName(extractionName);
-        compiledImage.CreateImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
+        compiledImage.createImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
         MSImagizer.CURRENT_IMAGE = compiledImage.getScaledImage(MSImagizer.instance.getExportScale());
         if (imageIcon != null) {
             ImageIcon icon = new ImageIcon(compiledImage);

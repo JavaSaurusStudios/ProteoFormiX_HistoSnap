@@ -61,12 +61,7 @@ public class MzRangeExtractor {
 
         MSImagizer.instance.getProgressBar().setValueText(0, "Starting extraction in " + SystemUtils.getMemoryState(), true);
 
-        Collections.sort(ranges, new Comparator<float[]>() {
-            @Override
-            public int compare(float[] o1, float[] o2) {
-                return Float.compare(o1[0], o2[0]);
-            }
-        });
+        Collections.sort(ranges, (float[] o1, float[] o2) -> Float.compare(o1[0], o2[0]));
 
         if (MSImagizer.instance == null || MSImagizer.instance.isHighMemory()) {
             SystemUtils.MemoryState memoryState = SystemUtils.getMemoryState();
@@ -115,7 +110,7 @@ public class MzRangeExtractor {
     ////DATABASE
     private MultiMSiImage extractImageRangeDb(List<float[]> ranges, float minI) throws Exception {
 
-        UILogger.Log("Extracting image from hard drive...", UILogger.Level.INFO);
+        UILogger.log("Extracting image from hard drive...", UILogger.Level.INFO);
 
         float minMz = Float.MAX_VALUE;
         float maxMz = Float.MIN_VALUE;
@@ -129,16 +124,16 @@ public class MzRangeExtractor {
         File dbFile = new File(in + ".db");
         if (!dbFile.exists()) {
             MSImagizer.instance.getProgressBar().setText("Generating database file...");
-            UILogger.Log("Creating database, this may take a while...", UILogger.Level.INFO);
+            UILogger.log("Creating database, this may take a while...", UILogger.Level.INFO);
             String pythonFile = PythonExtractor.getPythonScript("CreateDB.py").getAbsolutePath();
 
             //TODO add intensity limiter
             String[] cmds = new String[]{"python", pythonFile, "--input", in};
             ProcessBuilder builder = new ProcessBuilder(cmds);
-            MSImagizer.instance.getProgressBar().RunExtractionProcess(builder.start());
+            MSImagizer.instance.getProgressBar().runExtractionProcess(builder.start());
         }
         HistoSnapDBFile file = new HistoSnapDBFile(dbFile);
-        UILogger.Log("Processing between " + minMz + " and " + maxMz, UILogger.Level.INFO);
+        UILogger.log("Processing between " + minMz + " and " + maxMz, UILogger.Level.INFO);
 
         MSiFrame frame = file.getImage(minMz, maxMz).getFrame();
 
@@ -149,7 +144,7 @@ public class MzRangeExtractor {
         List<Future<MSiFrame>> subFrames = new LinkedList<>();
         for (float[] range : ranges) {
             subFrames.add(executor.submit(() -> {
-                MSiFrame subFrame = frame.CreateSubFrame(range[0], range[1]);
+                MSiFrame subFrame = frame.createSubFrame(range[0], range[1]);
                 subFrame.setName(range[0] + " - " + range[1]);
                 return subFrame;
             }));
@@ -167,10 +162,15 @@ public class MzRangeExtractor {
 
         File tmp = new File(out);
         if (tmp.exists()) {
-            tmp.delete();
+            if (!tmp.delete()) {
+                JOptionPane.showMessageDialog(MSImagizer.instance,
+                        "Could not delete " + tmp.getAbsolutePath(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
 
-        return MultiMSiImage.Generate(frames);
+        return MultiMSiImage.generate(frames);
 
     }
 
@@ -182,12 +182,10 @@ public class MzRangeExtractor {
             return null;
         }
 
-        UILogger.Log("Extracting image from memory...", UILogger.Level.INFO);
+        UILogger.log("Extracting image from memory...", UILogger.Level.INFO);
 
         //TODO check if ranges are close together, if not we split them up in subranges to speed up the extraction
         //Alternatively, we go over the python script to generate the bins
-        long time = System.currentTimeMillis();
-
         float minMz = Float.MAX_VALUE;
         float maxMz = Float.MIN_VALUE;
         String minMzString = "\"";
@@ -216,9 +214,9 @@ public class MzRangeExtractor {
 
         ProcessBuilder builder = new ProcessBuilder(cmds);
         //  builder.inheritIO();
-        MSImagizer.instance.getProgressBar().RunExtractionProcess(builder.start());
+        MSImagizer.instance.getProgressBar().runExtractionProcess(builder.start());
 
-        MSiFrame frame = new SpectralDataImporter().ReadFile(new File(out));
+        MSiFrame frame = new SpectralDataImporter().readFile(new File(out));
 
         if (frame.getWidth() <= 0 || frame.getHeight() <= 0) {
             return null;
@@ -226,7 +224,7 @@ public class MzRangeExtractor {
 
         frame.setParentFile(in);
 
-        UILogger.Log("Processing between " + ranges.get(0)[0] + " and " + ranges.get(ranges.size() - 1)[1], UILogger.Level.INFO);
+        UILogger.log("Processing between " + ranges.get(0)[0] + " and " + ranges.get(ranges.size() - 1)[1], UILogger.Level.INFO);
 
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
@@ -234,7 +232,7 @@ public class MzRangeExtractor {
 
         for (float[] range : ranges) {
             subFrames.add(executor.submit(() -> {
-                MSiFrame subFrame = frame.CreateSubFrame(range[0], range[1]);
+                MSiFrame subFrame = frame.createSubFrame(range[0], range[1]);
                 subFrame.setName(range[0] + " - " + range[1]);
                 return subFrame;
             }));
@@ -250,9 +248,15 @@ public class MzRangeExtractor {
 
         File tmp = new File(out);
         if (tmp.exists()) {
-            tmp.delete();
+            if (!tmp.delete()) {
+                JOptionPane.showMessageDialog(
+                        MSImagizer.instance, 
+                        "Could not delete " + tmp.getAbsolutePath(), 
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
-        return MultiMSiImage.Generate(frames);
+        return MultiMSiImage.generate(frames);
     }
 
     /**
@@ -264,7 +268,7 @@ public class MzRangeExtractor {
      * @throws URISyntaxException
      * @throws Exception
      */
-    public MSiImage ExtractFull(float minI) throws IOException, URISyntaxException, Exception {
+    public MSiImage extractFull(float minI) throws IOException, URISyntaxException, Exception {
         float[] range = new float[]{-1f, Float.MAX_VALUE};
         ArrayList<float[]> ranges = new ArrayList<>();
         ranges.add(range);

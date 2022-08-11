@@ -13,7 +13,7 @@ public class MSScanAdduct {
     /**
      * The list of adducts that currently are set to be automatically considered
      */
-    public static List<ADDUCTS> ENABLED_ADDUCTS = new ArrayList<ADDUCTS>();
+    public static final List<ADDUCTS> ENABLED_ADDUCTS = new ArrayList<ADDUCTS>();
 
     /**
      * Common adducts that can be considered
@@ -59,7 +59,7 @@ public class MSScanAdduct {
          *
          * @return a list of cationic adducts
          */
-        public static List<ADDUCTS> GetCations() {
+        public static List<ADDUCTS> getCations() {
             List<ADDUCTS> adducts = new ArrayList<>();
             for (ADDUCTS adduct : values()) {
                 if (!adduct.isAnion) {
@@ -74,7 +74,7 @@ public class MSScanAdduct {
          *
          * @return a list of anionic adducts
          */
-        public static List<ADDUCTS> GetAnions() {
+        public static List<ADDUCTS> getAnions() {
             List<ADDUCTS> adducts = new ArrayList<>();
             for (ADDUCTS adduct : values()) {
                 if (adduct.isAnion) {
@@ -88,7 +88,7 @@ public class MSScanAdduct {
     /**
      * Prints a list of all adducts
      */
-    public static void PrintMassDeficits() {
+    public static void printMassDeficits() {
         StringBuilder result = new StringBuilder();
         for (ADDUCTS adduct : ADDUCTS.values()) {
             result.append(adduct.toString()).append("\t").append(adduct.getMassDeficit()).append(System.lineSeparator());

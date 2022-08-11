@@ -95,7 +95,7 @@ public class HistoSnapDBFile {
             for (int y = 0; y < dimensions[1]; y++) {
                 MSiPixel pixel = getPixel(x, y, min, max);
                 if (pixel != null) {
-                    frame.AddPixel(pixel);
+                    frame.addPixel(pixel);
                 }
                 i++;
                 System.out.println(i + " / " + pixelSize);
@@ -130,34 +130,32 @@ public class HistoSnapDBFile {
         long time = System.currentTimeMillis();
 
         String sql = "SELECT x,y,mz,i FROM pixels WHERE mz<=" + max + " AND mz>=" + min + ";";
-        PreparedStatement stmt = c.prepareStatement(sql);
-
-        MSiFrame frame = new MSiFrame();
-        int[] dimensions = getDimensions();
-
-        frame.setWidth(dimensions[0]);
-        frame.setHeight(dimensions[1]);
-
-        ResultSet rs = stmt.executeQuery();
-
-        int width = dimensions[0] + 1;
-        int height = dimensions[1] + 1;
-        MSiPixel[][] pixels = new MSiPixel[width][height];
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                pixels[i][j] = new MSiPixel(i, j);
+        MSiFrame frame;
+        int[] dimensions;
+        MSiPixel[][] pixels;
+        try (PreparedStatement stmt = c.prepareStatement(sql)) {
+            frame = new MSiFrame();
+            dimensions = getDimensions();
+            frame.setWidth(dimensions[0]);
+            frame.setHeight(dimensions[1]);
+            try (ResultSet rs = stmt.executeQuery()) {
+                int width = dimensions[0] + 1;
+                int height = dimensions[1] + 1;
+                pixels = new MSiPixel[width][height];
+                for (int i = 0; i < width; i++) {
+                    for (int j = 0; j < height; j++) {
+                        pixels[i][j] = new MSiPixel(i, j);
+                    }
+                }   while (rs.next()) {
+                    pixels[rs.getInt("x")][rs.getInt("y")].addDataPoint(rs.getDouble("mz"), rs.getDouble("i"));
+                }   UILogger.log("Reading HistoSnap database file...", UILogger.Level.INFO);
+                System.out.println("Executed query in " + ((System.currentTimeMillis() - time) / 1000) + " seconds");
             }
         }
-
-        while (rs.next()) {
-            pixels[rs.getInt("x")][rs.getInt("y")].addDataPoint(rs.getDouble("mz"), rs.getDouble("i"));
-        }
-        UILogger.Log("Reading HistoSnap database file...", UILogger.Level.INFO);
-        System.out.println("Executed query in " + ((System.currentTimeMillis() - time) / 1000) + " seconds");
-
+        
         for (int i = 0; i < dimensions[0]; i++) {
             for (int j = 0; j < dimensions[1]; j++) {
-                frame.AddPixel(pixels[i][j]);
+                frame.addPixel(pixels[i][j]);
             }
         }
 
@@ -177,16 +175,19 @@ public class HistoSnapDBFile {
     public MSiPixel getPixel(int x, int y, float min, float max) throws SQLException {
         String sql = "SELECT mz,i FROM pixels WHERE x=" + x + " AND y=" + y + " AND mz<=" + max + " AND mz>=" + min + ";";
 
-        PreparedStatement stmt = c.prepareStatement(sql);
-
-        ResultSet rs = stmt.executeQuery();
-        LinkedList<Double> mzValues = new LinkedList<>();
-        LinkedList<Double> iValues = new LinkedList<>();
-        while (rs.next()) {
-            mzValues.addLast(rs.getDouble("mz"));
-            iValues.addLast(rs.getDouble("i"));
+        LinkedList<Double> mzValues;
+        LinkedList<Double> iValues;
+        try (PreparedStatement stmt = c.prepareStatement(sql)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                mzValues = new LinkedList<>();
+                iValues = new LinkedList<>();
+                while (rs.next()) {
+                    mzValues.addLast(rs.getDouble("mz"));
+                    iValues.addLast(rs.getDouble("i"));
+                }
+            }
         }
-
+        
         if (mzValues.isEmpty()) {
             return null;
         }
@@ -207,11 +208,10 @@ public class HistoSnapDBFile {
      */
     public int[] getDimensions() throws SQLException {
         String sql = "SELECT MAX(x),MAX(y) FROM pixels ;";
-        PreparedStatement stmt = c.prepareStatement(sql);
-
-        ResultSet rs = stmt.executeQuery();
-        if (rs.next()) {
-            return new int[]{rs.getInt(1), rs.getInt(2)};
+        try (PreparedStatement stmt = c.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return new int[]{rs.getInt(1), rs.getInt(2)};
+            }
         }
         return new int[]{0, 0};
     }

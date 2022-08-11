@@ -23,10 +23,6 @@ public abstract class BackgroundExtractionHandler {
      */
     protected final JFrame parent;
     /**
-     * The progress bar
-     */
-    protected final ProgressBar progressFrame;
-    /**
      * The path to the data
      */
     protected final String path;
@@ -34,40 +30,21 @@ public abstract class BackgroundExtractionHandler {
      * The image label
      */
     protected final JLabel lbImage;
-    /**
-     * The scale for this background
-     */
-    protected final int currentScale;
-    /**
-     * The color range for the background
-     */
-    protected final ColorRange currentRange;
-    /**
-     * THe current image mode
-     */
-    protected final MSiImage.ImageMode currentMode;
+
 
     /**
      * Constructor for a background process
      * @param parent the parentframe
-     * @param progressFrame the progress bar
      * @param path the path to the data
      * @param lbImage the image canvas 
-     * @param currentScale the current scale
-     * @param currentRange the current color range
-     * @param currentMode  the current image mode (relative to which parameter)
      */
-    public BackgroundExtractionHandler(JFrame parent, ProgressBar progressFrame, String path, JLabel lbImage, int currentScale, ColorRange currentRange, MSiImage.ImageMode currentMode) {
+    public BackgroundExtractionHandler(JFrame parent, String path, JLabel lbImage) {
         this.parent = parent;
-        this.progressFrame = progressFrame;
         this.path = path;
         this.lbImage = lbImage;
-        this.currentScale = currentScale;
-        this.currentRange = currentRange;
-        this.currentMode = currentMode;
     }
 
-    public void Show(boolean isRandom) {
+    public void show(boolean isRandom) {
         JTextField samples = new JTextField();
         JTextField mzTolerance = new JTextField(".05");
         JTextField intensityThreshold = new JTextField("0.01");
@@ -103,12 +80,12 @@ public abstract class BackgroundExtractionHandler {
 
         int result = JOptionPane.showConfirmDialog(parent, inputArray, isRandom ? "Generate Random Images..." : "Generating DHBMatrix Clusters", JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
-            HandleImageGeneration(inputs);
+            handleImageGeneration(inputs);
         }
 
     }
 
-    protected int GetIntValue(LinkedHashMap<String, JComponent> inputs, String fieldName) {
+    protected int getIntValue(LinkedHashMap<String, JComponent> inputs, String fieldName) {
         int value;
         JTextField valueField = (JTextField) inputs.get(fieldName);
         try {
@@ -118,13 +95,13 @@ public abstract class BackgroundExtractionHandler {
                     valueField.getText() + " is an invalid entry." + fieldName + " should be an integer value > 0",
                     "Failed to calculate similarities...",
                     JOptionPane.ERROR_MESSAGE);
-            UILogger.Log("Failed to calculate similarities : invalid samplecount provided", UILogger.Level.ERROR);
+            UILogger.log("Failed to calculate similarities : invalid samplecount provided", UILogger.Level.ERROR);
             return -9999;
         }
         return value;
     }
 
-    protected float GetFloatValue(LinkedHashMap<String, JComponent> inputs, String fieldName) {
+    protected float getFloatValue(LinkedHashMap<String, JComponent> inputs, String fieldName) {
         float value;
         JTextField valueField = (JTextField) inputs.get(fieldName);
         try {
@@ -134,12 +111,12 @@ public abstract class BackgroundExtractionHandler {
                     valueField.getText() + " is an invalid entry." + fieldName + " should be an integer value > 0",
                     "Failed to calculate similarities...",
                     JOptionPane.ERROR_MESSAGE);
-            UILogger.Log("Failed to calculate similarities : invalid samplecount provided", UILogger.Level.ERROR);
+            UILogger.log("Failed to calculate similarities : invalid samplecount provided", UILogger.Level.ERROR);
             return -9999;
         }
         return value;
     }
 
-    protected abstract void HandleImageGeneration(LinkedHashMap<String, JComponent> inputs);
+    protected abstract void handleImageGeneration(LinkedHashMap<String, JComponent> inputs);
 
 }

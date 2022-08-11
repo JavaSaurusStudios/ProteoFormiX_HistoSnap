@@ -19,7 +19,7 @@ import javax.swing.JPopupMenu;
 public class ListSavePopupProvider implements ListenerProvider {
 
     @Override
-    public void SetUp(JComponent component) {
+    public void setUp(JComponent component) {
 
         if (!(component instanceof JLabel)) {
             return;
@@ -33,11 +33,8 @@ public class ListSavePopupProvider implements ListenerProvider {
         JMenuItem item = new JMenuItem("Save...");
         menu.add(item);
 
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                main.Save();
-            }
+        item.addActionListener((ActionEvent e) -> {
+            main.save();
         });
 
         lbImage.addMouseListener(new MouseListener() {
