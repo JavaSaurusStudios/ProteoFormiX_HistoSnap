@@ -18,9 +18,20 @@ import javax.swing.SwingWorker;
  */
 public class ProgressBar {
 
+    /**
+     * The progress bar
+     */
     private final JProgressBar bar;
+    /*
+    * The information label for the progress bar
+     */
     private final JLabel label;
 
+    /**
+     * The constructor for a progress bar
+     * @param bar the actual progress bar
+     * @param label the label for the progress bar
+     */
     public ProgressBar(JProgressBar bar, JLabel label) {
         this.bar = bar;
         this.label = label;
@@ -50,6 +61,11 @@ public class ProgressBar {
         label.setVisible(visible);
     }
 
+    /**
+     * This method is the starting point to run the process and feed it into the progress bar
+     * @param process the progress to be launched (for example extraction of data)
+     * @throws InterruptedException 
+     */
     public void RunExtractionProcess(Process process) throws InterruptedException {
         SwingWorker worker = new SwingWorker<Void, Float>() {
             @Override

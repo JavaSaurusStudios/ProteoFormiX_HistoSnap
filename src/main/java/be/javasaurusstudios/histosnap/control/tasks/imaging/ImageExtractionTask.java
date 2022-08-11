@@ -59,10 +59,10 @@ public class ImageExtractionTask extends WorkingTask {
     /**
      *
      * @param parent The parent JFrame
-     *
-     * @param tfInput the input file
+     * @param path The path to the data
      * @param minMZField the text field for the minimal mz
      * @param maxMZField the text for the maximal mz
+     * @param minIField the minimal intensity that is considered (threshold filter)
      * @param stepsField the field for the amount of steps (1= none)
      * @param imageIcon the icon to load the image to
      * @param scale the pixel scale
@@ -153,8 +153,7 @@ public class ImageExtractionTask extends WorkingTask {
     /**
      *
      * @param parent The parent JFrame
-     *
-     * @param tfInput the input file
+     * @param path the path to the data
      * @param minMz the minimal mz
      * @param maxMz the maximal mz
      * @param steps the amount of iterations (1 = none)
@@ -289,6 +288,7 @@ public class ImageExtractionTask extends WorkingTask {
             MSImagizer.instance.getProgressBar().setValueText(i / image.getFrames().size(),
                     "Generating heatmap for " + frame.getName(), false);
             MSImagizer.MSI_IMAGE.CreateImage(mode, range.getColors());
+
             MSImagizer.instance.getProgressBar().setValueText(i / image.getFrames().size(),
                     "Applying scale " + frame.getName(), false);
             MSImagizer.CURRENT_IMAGE = MSImagizer.MSI_IMAGE.getScaledImage(scale);
@@ -299,6 +299,7 @@ public class ImageExtractionTask extends WorkingTask {
                 imageIcon.setText("");
                 imageIcon.setSize(MSImagizer.CURRENT_IMAGE.getWidth() + 2, MSImagizer.CURRENT_IMAGE.getHeight() + 2);
             }
+            
         }
         parent.repaint();
 

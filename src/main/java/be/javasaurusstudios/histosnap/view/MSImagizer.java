@@ -1832,6 +1832,7 @@ public class MSImagizer extends javax.swing.JFrame {
         //THE ANNOTATION SHAPE BUTTON
         ImageIcon circleIcon = ButtonIcons.ANNOTATE_CIRCLE.getIcon();
         ImageIcon rectIcon = ButtonIcons.ANNOTATE_SQUARE.getIcon();
+        ImageIcon lineIcon = ButtonIcons.ANNOTATE_LINE.getIcon();
         Action selectShapeMode = new AbstractAction("") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1843,6 +1844,10 @@ public class MSImagizer extends javax.swing.JFrame {
                         button.setIcon(rectIcon);
                         break;
                     case RECTANGLE:
+                        currentShape = AnnotationShapeType.LINE;
+                        button.setIcon(lineIcon);
+                        break;
+                    case LINE:
                         currentShape = AnnotationShapeType.ARC;
                         button.setIcon(circleIcon);
                         break;
@@ -2084,7 +2089,7 @@ public class MSImagizer extends javax.swing.JFrame {
      */
     public void UpdateImage() {
         ImageIcon icon = null;
-        if (!CACHE.isEmpty()) {
+        if (MSImagizer.MSI_IMAGE != null && !CACHE.isEmpty()) {
             MSImagizer.MSI_IMAGE.CreateImage(currentMode, currentRange.getColors());
             MSImagizer.CURRENT_IMAGE = MSImagizer.MSI_IMAGE.getScaledImage(currentScale);
             icon = new ImageIcon(MSImagizer.CURRENT_IMAGE);

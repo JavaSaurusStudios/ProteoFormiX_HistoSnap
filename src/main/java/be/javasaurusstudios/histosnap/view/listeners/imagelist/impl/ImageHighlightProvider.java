@@ -14,6 +14,9 @@ import javax.swing.JComponent;
  */
 public class ImageHighlightProvider implements ListenerProvider {
 
+    /**
+     * The label to draw on
+     */
     private ImageLabel imgLabel;
 
     public ImageLabel getImgLabel() {

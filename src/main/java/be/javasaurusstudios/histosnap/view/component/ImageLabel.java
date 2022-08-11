@@ -3,6 +3,7 @@ package be.javasaurusstudios.histosnap.view.component;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import be.javasaurusstudios.histosnap.model.image.annotation.AnnotationCircle;
+import be.javasaurusstudios.histosnap.model.image.annotation.AnnotationLine;
 import be.javasaurusstudios.histosnap.model.image.annotation.AnnotationRect;
 import be.javasaurusstudios.histosnap.view.MSImagizer;
 import java.awt.Color;
@@ -18,15 +19,30 @@ import be.javasaurusstudios.histosnap.model.image.annotation.AnnotationShape;
  */
 public class ImageLabel extends JLabel {
 
+    /**
+     * The amount of steps that can be undone
+     */
     private int undoCacheSize = 30;
-    //The starting point, where the dragging started
+    /**
+     * The starting point, where the dragging started
+     */
     private Point startingPoint;
-    //The ending point, where dragging ended
+    /**
+     * The ending point, where dragging ended
+     */
     private Point endingPoint;
-    //boolean indicating if the mouse is held down
+    /**
+     * boolean indicating if the mouse is held down
+     */
     private boolean mouseDown;
+    /**
+     * List of annotation shapes that need to be drawn (active)
+     */
     private final LinkedList<AnnotationShape> annotationShapes;
-
+    /**
+     * List of annotation shapes that are in memory in case they need to be
+     * restored
+     */
     private final LinkedList<AnnotationShape> undoneAnnotationShapes;
 
     public ImageLabel() {
@@ -112,6 +128,11 @@ public class ImageLabel extends JLabel {
                 case RECTANGLE:
                     addAnnotationShape(new AnnotationRect(xRel - width, yRel - height, width, height, MSImagizer.instance.getCurrentAnnotationColor()));
                     break;
+                case LINE:
+                    int xStart = (startingPoint.x / scale) % frame.getWidth();
+                    int yStart = (startingPoint.y / scale) % frame.getHeight();
+                    addAnnotationShape(new AnnotationLine(xStart, yStart, xRel, yRel, MSImagizer.instance.getCurrentAnnotationColor()));
+                    break;
             }
         }
     }
@@ -137,17 +158,25 @@ public class ImageLabel extends JLabel {
         //   g.fillRect(0, 0, getWidth(), getHeight());
         if (MSImagizer.instance != null && MSImagizer.instance.IsAnnotationMode()) {
             if (mouseDown && startingPoint != null && endingPoint != null) {
-                if (startingPoint.x < endingPoint.x && endingPoint.y > startingPoint.y) {
-                    g.setColor(MSImagizer.instance.getCurrentAnnotationColor());
-                    switch (MSImagizer.instance.getCurrentAnnotationShapeType()) {
-                        case ARC:
+                boolean isRightDirection = (startingPoint.x < endingPoint.x && endingPoint.y > startingPoint.y);
+
+                g.setColor(MSImagizer.instance.getCurrentAnnotationColor());
+                switch (MSImagizer.instance.getCurrentAnnotationShapeType()) {
+                    case ARC:
+                        if (isRightDirection) {
                             g.drawArc(startingPoint.x, startingPoint.y, endingPoint.x - startingPoint.x, endingPoint.y - startingPoint.y, 0, 360);
-                            break;
-                        case RECTANGLE:
+                        }
+                        break;
+                    case RECTANGLE:
+                        if (isRightDirection) {
                             g.drawRect(startingPoint.x, startingPoint.y, endingPoint.x - startingPoint.x, endingPoint.y - startingPoint.y);
-                            break;
-                    }
+                        }
+                        break;
+                    case LINE:
+                        g.drawLine(startingPoint.x, startingPoint.y, endingPoint.x, endingPoint.y);
+                        break;
                 }
+
             }
         }
 

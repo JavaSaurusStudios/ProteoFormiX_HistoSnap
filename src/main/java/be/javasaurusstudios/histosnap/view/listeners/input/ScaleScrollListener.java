@@ -13,7 +13,14 @@ import javax.swing.JLabel;
  */
 public class ScaleScrollListener implements MouseWheelListener, KeyListener {
 
+    /**
+     * The parent for the scroll listener
+     */
     private final MSImagizer parent;
+    /**
+     * Boolean indicating if left ctrl is held down before scrolling
+     */
+    @Deprecated
     private boolean ctrlHeld;
 
     public ScaleScrollListener(MSImagizer parent, JLabel imgLabel) {

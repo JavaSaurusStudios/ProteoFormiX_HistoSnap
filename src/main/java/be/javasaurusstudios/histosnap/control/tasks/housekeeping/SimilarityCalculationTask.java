@@ -18,6 +18,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
+@Deprecated
 public class SimilarityCalculationTask extends WorkingTask {
 
     //The reference image

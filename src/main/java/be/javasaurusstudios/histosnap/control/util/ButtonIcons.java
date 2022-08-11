@@ -17,6 +17,7 @@ public enum ButtonIcons {
     ENABLE_ANNOTATE("/icons8-create-64.png"),
     ANNOTATE_SQUARE("/icons8-rectangle-64.png"),
     ANNOTATE_CIRCLE("/icons8-circle-50.png"),
+    ANNOTATE_LINE("/icons8-line-64.png"),
     SELECT_COLOR("/icons8-paint-palette-64.png"),
     UNDO("/icons8-undo-60.png"),
     REDO("/icons8-redo-60.png"),

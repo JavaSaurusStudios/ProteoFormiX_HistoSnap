@@ -20,6 +20,12 @@ public class MSiPixel implements Comparable, Serializable {
 
     }
 
+    /**
+     * The constructor for a pixel with metadata
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     */
     public MSiPixel(int x, int y) {
         this.x = x;
         this.y = y;
@@ -50,8 +56,6 @@ public class MSiPixel implements Comparable, Serializable {
     public void setI(LinkedList<Double> i) {
         this.i = i;
     }
-    
-    
 
     public LinkedList<Double> getMz() {
         return mz;

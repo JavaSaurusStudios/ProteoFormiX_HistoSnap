@@ -12,12 +12,19 @@ import java.io.File;
  */
 public class SessionSavingTask extends WorkingTask {
 
+    /**
+     * The output folder for the session to be saved in
+     */
     private final File outputFolder;
-
+    /**
+     * Boolean indicating a message should be broadcasted on session saving
+     */
     private final boolean silent;
 
-    /***
+    /**
+     * *
      * Constructor for a session storing task
+     *
      * @param outputFolder the folder to store the images at
      * @param silent boolean indicating if this should be stored silently
      */
@@ -30,13 +37,13 @@ public class SessionSavingTask extends WorkingTask {
     @Override
     public Object call() throws Exception {
         if (!silent) {
-             MSImagizer.instance.getProgressBar().setText("Saving session...");
+            MSImagizer.instance.getProgressBar().setText("Saving session...");
         }
         if (CACHE.getFirst() != null) {
             CACHE.getSession().setSessionFolder(outputFolder);
             CACHE.getSession().SaveSession();
         }
-         MSImagizer.instance.getProgressBar().setVisible(false);
+        MSImagizer.instance.getProgressBar().setVisible(false);
         return true;
     }
 

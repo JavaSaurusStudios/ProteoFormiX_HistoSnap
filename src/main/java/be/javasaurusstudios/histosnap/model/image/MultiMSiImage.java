@@ -30,7 +30,7 @@ public class MultiMSiImage extends MSiImage {
     public static MultiMSiImage Generate(List<MSiFrame> frames, int columns) {
         int singleWidth = frames.get(0).getWidth();
         int singleHeight = frames.get(0).getHeight();
-        int rowsNeeded = 1 + (int) Math.floor(frames.size() / columns);
+        int rowsNeeded = (int) Math.floor(frames.size() / columns) + (columns != frames.size() ? 1 : 0);
         return new MultiMSiImage(
                 frames,
                 frames.size() < columns ? frames.size() : columns,
@@ -184,7 +184,7 @@ public class MultiMSiImage extends MSiImage {
 
         DescriptiveStatistics stat = new DescriptiveStatistics();
         for (MSiPixel pixel : activeFrame.getPixels()) {
-            double frameValue = getStat(mode, pixel.getStat());
+            double frameValue = (mode == ImageMode.TOTAL_ION_CURRENT) ? pixel.getStat().getSum() : pixel.getStat().getMax();
             if (!Double.isNaN(frameValue)) {
                 stat.addValue(frameValue);
             }

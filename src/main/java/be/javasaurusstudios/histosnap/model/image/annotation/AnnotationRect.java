@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package be.javasaurusstudios.histosnap.model.image.annotation;
 
 import java.awt.Color;
@@ -10,13 +5,24 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 /**
- * This class represents a square annotaton shape
+ * This class represents a square annotation shape
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public class AnnotationRect extends Rectangle implements AnnotationShape {
 
+    /**
+     * The color for the rectangle
+     */
     private final Color color;
 
+    /**
+     * Constructor for a rectangle shaped annotation
+     * @param x the x coordinate (bot-left)
+     * @param y the y coordinate (bot-left)
+     * @param width the width of the rectangle
+     * @param height the height of the rectangle
+     * @param color the color of the rectangle
+     */
     public AnnotationRect(int x, int y, int width, int height, Color color) {
         super(x, y, width, height);
         this.color = color;

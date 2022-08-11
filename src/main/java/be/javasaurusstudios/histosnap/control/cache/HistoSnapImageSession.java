@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
 /**
- *
+ * This class represents a session to store MSiFrames in for later
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public class HistoSnapImageSession extends ArrayList<MSiFrame> {

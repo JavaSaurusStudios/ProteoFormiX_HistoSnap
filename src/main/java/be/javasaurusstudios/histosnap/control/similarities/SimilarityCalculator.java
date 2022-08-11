@@ -12,6 +12,7 @@ import javax.swing.JOptionPane;
  *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
+@Deprecated
 public class SimilarityCalculator {
 
     /**

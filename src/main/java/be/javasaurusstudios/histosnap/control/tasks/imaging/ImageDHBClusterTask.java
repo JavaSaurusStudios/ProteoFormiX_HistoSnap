@@ -111,6 +111,15 @@ public class ImageDHBClusterTask extends WorkingTask {
         }
     }
 
+    /**
+     * Generates the image
+     *
+     * @param in the input file
+     * @param extractionName the name of his project
+     * @param generateBackground indicating if a background needs to be
+     * generated
+     * @throws Exception
+     */
     private void ExecuteImage(String in, String extractionName, boolean generateBackground) throws Exception {
 
         ProgressBar bar = MSImagizer.instance.getProgressBar();

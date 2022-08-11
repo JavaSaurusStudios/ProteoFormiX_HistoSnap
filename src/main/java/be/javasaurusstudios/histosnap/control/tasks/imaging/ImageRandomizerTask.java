@@ -45,6 +45,16 @@ public class ImageRandomizerTask extends WorkingTask {
     //the random
     private final Random rnd;
 
+    /**
+     * Constructor for a randomizer task
+     * @param parent the parent frame
+     * @param path the path to the input data
+     * @param imageIcon the icon (image) that will be displayed
+     * @param minMz the minimal mz value
+     * @param maxMz the maximal mz value
+     * @param minI the intensity threshold
+     * @param samples the amount of samples to be considered
+     */
     public ImageRandomizerTask(JFrame parent, String path, JLabel imageIcon, float minMz, float maxMz, float minI, int samples) {
         super();
         this.parent = parent;
@@ -114,6 +124,12 @@ public class ImageRandomizerTask extends WorkingTask {
         }
     }
 
+    /**
+     * Generates the image
+     * @param in the input data
+     * @param extractionName the name for this extraction
+     * @throws Exception 
+     */
     private void ExecuteImage(String in, String extractionName) throws Exception {
 
         TreeSet<Float> randomPoints = new TreeSet<>();

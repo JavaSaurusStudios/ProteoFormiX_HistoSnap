@@ -47,17 +47,30 @@ public class MSiFrame implements Serializable {
     /**
      * The name of the frame
      */
-
+    /**
+     * The xCoordinate of this frame in a composite image
+     */
     private int xCoordinate;
+    /**
+     * The yCoordiante of this image in a composite image
+     */
     private int yCoordinate;
-    boolean isHighlighted;
-
+    /**
+     * Status indicating this frame is highlighted
+     */
+    private boolean isHighlighted;
+    /**
+     * The name of this frame
+     */
     private String name;
 
     /**
      * A helper object to keep track of frame statistics
      */
     private final DescriptiveStatistics stat;
+    /**
+     * The rectangle this frame is contained in
+     */
     private Rectangle rectangle;
 
     /**

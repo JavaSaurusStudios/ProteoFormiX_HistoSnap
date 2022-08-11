@@ -5,6 +5,7 @@ import java.awt.Graphics;
 
 /**
  * This class represents a circle shaped annotation area
+ *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
 public class AnnotationCircle implements AnnotationShape {
@@ -15,6 +16,14 @@ public class AnnotationCircle implements AnnotationShape {
     private final int width;
     private final int height;
 
+    /**
+     * The circle shaped annotation
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @param radius the circle radius
+     * @param color the circle color
+     */
     public AnnotationCircle(int x, int y, int radius, Color color) {
         this.x = x;
         this.y = y;
@@ -23,6 +32,15 @@ public class AnnotationCircle implements AnnotationShape {
         this.color = color;
     }
 
+    /**
+     * The circle shaped annotation (constructor for ellipsoids)
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @param width the circle width
+     * * @param width the circle height
+     * @param color the circle color
+     */
     public AnnotationCircle(int x, int y, int width, int height, Color color) {
         this.x = x;
         this.y = y;
