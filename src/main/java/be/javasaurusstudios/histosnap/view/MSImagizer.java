@@ -1482,7 +1482,7 @@ public class MSImagizer extends javax.swing.JFrame {
 
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             try {
-                Desktop.getDesktop().browse(new URI("https://github.com/JavaSaurusStudios/ProteoFormiX_HistoSnap/tree/master"));
+                Desktop.getDesktop().browse(new URI("https://www.proteoformix.com/"));
             } catch (URISyntaxException | IOException ex) {
                 JOptionPane.showMessageDialog(this,
                         "Could not open the webpage. Are you online?",
