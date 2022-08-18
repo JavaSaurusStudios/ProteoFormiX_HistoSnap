@@ -3,7 +3,7 @@ package be.javasaurusstudios.histosnap.control.tasks.housekeeping;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.SimilarityResult;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -140,7 +140,7 @@ public class SimilarityCalculationTask extends WorkingTask {
         List<SimilarityResult> results = new ArrayList<>();
         for (int i = 0; i < images.length - 1; i++) {
             if (!referenceName.equalsIgnoreCase(names[i])) {
-                 MSImagizer.instance.getProgressBar().setText("Calculating similarities (" + i + "/" + images.length + ")");
+                 HistoSnap.instance.getProgressBar().setText("Calculating similarities (" + i + "/" + images.length + ")");
                 double percentage = compare(refImage == null ? images[0] : refImage, images[i + 1]);
                 if (percentage >= threshold) {
                     stats.addValue(percentage);

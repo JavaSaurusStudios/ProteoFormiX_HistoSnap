@@ -5,7 +5,7 @@ import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import be.javasaurusstudios.histosnap.model.image.annotation.AnnotationCircle;
 import be.javasaurusstudios.histosnap.model.image.annotation.AnnotationLine;
 import be.javasaurusstudios.histosnap.model.image.annotation.AnnotationRect;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -57,7 +57,7 @@ public class ImageLabel extends JLabel {
 
     public void addAnnotationShape(AnnotationShape shape) {
         annotationShapes.add(shape);
-        MSImagizer.instance.updateImage();
+        HistoSnap.instance.updateImage();
     }
 
     public void undo() {
@@ -67,14 +67,14 @@ public class ImageLabel extends JLabel {
                 undoneAnnotationShapes.pollFirst();
             }
         }
-        MSImagizer.instance.updateImage();
+        HistoSnap.instance.updateImage();
     }
 
     public void redo() {
         if (!undoneAnnotationShapes.isEmpty()) {
             annotationShapes.addLast(undoneAnnotationShapes.pollLast());
         }
-        MSImagizer.instance.updateImage();
+        HistoSnap.instance.updateImage();
     }
 
     public void setHighlightStart(Point point) {
@@ -86,13 +86,13 @@ public class ImageLabel extends JLabel {
     }
 
     public MSiFrame getHoveredFrame(Point e) {
-        if (MSImagizer.MSI_IMAGE == null) {
+        if (HistoSnap.MSI_IMAGE == null) {
             return null;
         }
-        if (!(MSImagizer.MSI_IMAGE instanceof MultiMSiImage)) {
-            return MSImagizer.MSI_IMAGE.getFrame();
+        if (!(HistoSnap.MSI_IMAGE instanceof MultiMSiImage)) {
+            return HistoSnap.MSI_IMAGE.getFrame();
         } else {
-            MultiMSiImage img = (MultiMSiImage) MSImagizer.MSI_IMAGE;
+            MultiMSiImage img = (MultiMSiImage) HistoSnap.MSI_IMAGE;
             for (MSiFrame frame : img.getFrames()) {
                 if (frame.getRect().contains(e) || frame.getRect().contains(e.getLocation())) {
                     return frame;
@@ -103,7 +103,7 @@ public class ImageLabel extends JLabel {
     }
 
     public void createAnnotation(Point endPoint) {
-        if (MSImagizer.MSI_IMAGE == null) {
+        if (HistoSnap.MSI_IMAGE == null) {
             return;
         }
 
@@ -111,7 +111,7 @@ public class ImageLabel extends JLabel {
         if (frame != null && startingPoint != null) {
             //this all works on scale 1 so we need to divide everything to the scale ?
 
-            int scale = MSImagizer.instance.getCurrentScale();
+            int scale = HistoSnap.instance.getCurrentScale();
             int x = endPoint.x / scale;
             int y = endPoint.y / scale;
             int xRel = x % frame.getWidth();
@@ -121,17 +121,17 @@ public class ImageLabel extends JLabel {
             int width = (x - (startingPoint.x / scale));
             int height = (y - (startingPoint.y / scale));
 
-            switch (MSImagizer.instance.getCurrentAnnotationShapeType()) {
+            switch (HistoSnap.instance.getCurrentAnnotationShapeType()) {
                 case ARC:
-                    addAnnotationShape(new AnnotationCircle(xRel - width, yRel - height, width, height, MSImagizer.instance.getCurrentAnnotationColor()));
+                    addAnnotationShape(new AnnotationCircle(xRel - width, yRel - height, width, height, HistoSnap.instance.getCurrentAnnotationColor()));
                     break;
                 case RECTANGLE:
-                    addAnnotationShape(new AnnotationRect(xRel - width, yRel - height, width, height, MSImagizer.instance.getCurrentAnnotationColor()));
+                    addAnnotationShape(new AnnotationRect(xRel - width, yRel - height, width, height, HistoSnap.instance.getCurrentAnnotationColor()));
                     break;
                 case LINE:
                     int xStart = (startingPoint.x / scale) % frame.getWidth();
                     int yStart = (startingPoint.y / scale) % frame.getHeight();
-                    addAnnotationShape(new AnnotationLine(xStart, yStart, xRel, yRel, MSImagizer.instance.getCurrentAnnotationColor()));
+                    addAnnotationShape(new AnnotationLine(xStart, yStart, xRel, yRel, HistoSnap.instance.getCurrentAnnotationColor()));
                     break;
             }
         }
@@ -156,12 +156,12 @@ public class ImageLabel extends JLabel {
         g.drawRect(getX() + 1, getY() + 1, getWidth() - 2, getHeight() - 2);
 
         //   g.fillRect(0, 0, getWidth(), getHeight());
-        if (MSImagizer.instance != null && MSImagizer.instance.iAnnotationMode()) {
+        if (HistoSnap.instance != null && HistoSnap.instance.iAnnotationMode()) {
             if (mouseDown && startingPoint != null && endingPoint != null) {
                 boolean isRightDirection = (startingPoint.x < endingPoint.x && endingPoint.y > startingPoint.y);
 
-                g.setColor(MSImagizer.instance.getCurrentAnnotationColor());
-                switch (MSImagizer.instance.getCurrentAnnotationShapeType()) {
+                g.setColor(HistoSnap.instance.getCurrentAnnotationColor());
+                switch (HistoSnap.instance.getCurrentAnnotationShapeType()) {
                     case ARC:
                         if (isRightDirection) {
                             g.drawArc(startingPoint.x, startingPoint.y, endingPoint.x - startingPoint.x, endingPoint.y - startingPoint.y, 0, 360);

@@ -4,7 +4,7 @@ import be.javasaurusstudios.histosnap.control.tasks.housekeeping.SimilarityCalcu
 import be.javasaurusstudios.histosnap.control.tasks.WorkingTaskPostProcess;
 import be.javasaurusstudios.histosnap.control.tasks.WorkingThread;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import java.awt.image.BufferedImage;
 import javax.swing.JOptionPane;
 
@@ -37,10 +37,10 @@ public class SimilarityCalculator {
             for (WorkingTaskPostProcess postProcess : postProcessing) {
                 task.addPostProcessing(postProcess);
             }
-            new WorkingThread(MSImagizer.instance, task).execute();
+            new WorkingThread(HistoSnap.instance, task).execute();
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(MSImagizer.instance,
+            JOptionPane.showMessageDialog(HistoSnap.instance,
                     "Something went wrong..." + ex.getMessage(),
                     "Failed to calculate similarities...",
                     JOptionPane.ERROR_MESSAGE);
@@ -77,10 +77,10 @@ public class SimilarityCalculator {
             for (WorkingTaskPostProcess postProcess : postProcessing) {
                 task.addPostProcessing(postProcess);
             }
-            new WorkingThread(MSImagizer.instance, task).execute();
+            new WorkingThread(HistoSnap.instance, task).execute();
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(MSImagizer.instance,
+            JOptionPane.showMessageDialog(HistoSnap.instance,
                     "Something went wrong..." + ex.getMessage(),
                     "Failed to calculate similarities...",
                     JOptionPane.ERROR_MESSAGE);

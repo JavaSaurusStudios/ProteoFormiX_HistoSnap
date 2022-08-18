@@ -7,7 +7,7 @@ import be.javasaurusstudios.histosnap.control.util.PythonExtractor;
 import be.javasaurusstudios.histosnap.control.util.SystemUtils;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -59,11 +59,11 @@ public class MzRangeExtractor {
      */
     public MultiMSiImage extractImageRange(List<float[]> ranges, float minI) throws IOException, URISyntaxException, Exception {
 
-        MSImagizer.instance.getProgressBar().setValueText(0, "Starting extraction in " + SystemUtils.getMemoryState(), true);
+        HistoSnap.instance.getProgressBar().setValueText(0, "Starting extraction in " + SystemUtils.getMemoryState(), true);
 
         Collections.sort(ranges, (float[] o1, float[] o2) -> Float.compare(o1[0], o2[0]));
 
-        if (MSImagizer.instance == null || MSImagizer.instance.isHighMemory()) {
+        if (HistoSnap.instance == null || HistoSnap.instance.isHighMemory()) {
             SystemUtils.MemoryState memoryState = SystemUtils.getMemoryState();
             DecimalFormat df = new DecimalFormat("#.##");
             String memory = df.format(SystemUtils.getMaxMemory());
@@ -72,8 +72,7 @@ public class MzRangeExtractor {
                 case HIGH:
                     return extractImageRangeMem(ranges, minI);
                 case MEDIUM:
-                    dialogResult = JOptionPane.showConfirmDialog(
-                            MSImagizer.instance,
+                    dialogResult = JOptionPane.showConfirmDialog(HistoSnap.instance,
                             memory + " GB available memory was detected. This might be insufficient. Please consider System Settings > Low Memory Mode if the process times out. Do you wish to continue?",
                             "Memory Settings",
                             JOptionPane.YES_NO_OPTION);
@@ -83,8 +82,7 @@ public class MzRangeExtractor {
                         return null;
                     }
                 case LOW:
-                    dialogResult = JOptionPane.showConfirmDialog(
-                            MSImagizer.instance,
+                    dialogResult = JOptionPane.showConfirmDialog(HistoSnap.instance,
                             memory + " GB available memory was detected. This will likely be insufficient, even for small projects. Please use System Settings > Low Memory Mode if the process times out. Do you wish to continue (not recommended)?",
                             "Memory Settings",
                             JOptionPane.YES_NO_OPTION);
@@ -94,8 +92,7 @@ public class MzRangeExtractor {
                         return null;
                     }
                 default:
-                    JOptionPane.showMessageDialog(
-                            MSImagizer.instance,
+                    JOptionPane.showMessageDialog(HistoSnap.instance,
                             "Insufficient memory (" + memory + " GB) available. Please enable System Settings > Low Memory Mode",
                             "Memory Settings",
                             JOptionPane.PLAIN_MESSAGE);
@@ -123,14 +120,14 @@ public class MzRangeExtractor {
 
         File dbFile = new File(in + ".db");
         if (!dbFile.exists()) {
-            MSImagizer.instance.getProgressBar().setText("Generating database file...");
+            HistoSnap.instance.getProgressBar().setText("Generating database file...");
             UILogger.log("Creating database, this may take a while...", UILogger.Level.INFO);
             String pythonFile = PythonExtractor.getPythonScript("CreateDB.py").getAbsolutePath();
 
             //TODO add intensity limiter
             String[] cmds = new String[]{"python", pythonFile, "--input", in};
             ProcessBuilder builder = new ProcessBuilder(cmds);
-            MSImagizer.instance.getProgressBar().runExtractionProcess(builder.start());
+            HistoSnap.instance.getProgressBar().runExtractionProcess(builder.start());
         }
         HistoSnapDBFile file = new HistoSnapDBFile(dbFile);
         UILogger.log("Processing between " + minMz + " and " + maxMz, UILogger.Level.INFO);
@@ -163,7 +160,7 @@ public class MzRangeExtractor {
         File tmp = new File(out);
         if (tmp.exists()) {
             if (!tmp.delete()) {
-                JOptionPane.showMessageDialog(MSImagizer.instance,
+                JOptionPane.showMessageDialog(HistoSnap.instance,
                         "Could not delete " + tmp.getAbsolutePath(),
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
@@ -178,7 +175,7 @@ public class MzRangeExtractor {
     private MultiMSiImage extractImageRangeMem(List<float[]> ranges, float minI) throws Exception {
 
         if (ranges.isEmpty()) {
-            JOptionPane.showMessageDialog(MSImagizer.instance, "There is no range available");
+            JOptionPane.showMessageDialog(HistoSnap.instance, "There is no range available");
             return null;
         }
 
@@ -214,7 +211,7 @@ public class MzRangeExtractor {
 
         ProcessBuilder builder = new ProcessBuilder(cmds);
         //  builder.inheritIO();
-        MSImagizer.instance.getProgressBar().runExtractionProcess(builder.start());
+        HistoSnap.instance.getProgressBar().runExtractionProcess(builder.start());
 
         MSiFrame frame = new SpectralDataImporter().readFile(new File(out));
 
@@ -249,8 +246,7 @@ public class MzRangeExtractor {
         File tmp = new File(out);
         if (tmp.exists()) {
             if (!tmp.delete()) {
-                JOptionPane.showMessageDialog(
-                        MSImagizer.instance, 
+                JOptionPane.showMessageDialog(HistoSnap.instance, 
                         "Could not delete " + tmp.getAbsolutePath(), 
                         "Error",
                         JOptionPane.ERROR_MESSAGE);

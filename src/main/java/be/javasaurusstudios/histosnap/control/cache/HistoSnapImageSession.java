@@ -1,7 +1,7 @@
 package be.javasaurusstudios.histosnap.control.cache;
 
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -33,7 +33,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
         this.sessionFolder = new File(location);
         if (!this.sessionFolder.exists()) {
             if (!this.sessionFolder.mkdirs()) {
-                JOptionPane.showMessageDialog(MSImagizer.instance, "Can not create required directories at " + location, "Error ",
+                JOptionPane.showMessageDialog(HistoSnap.instance, "Can not create required directories at " + location, "Error ",
                         JOptionPane.ERROR_MESSAGE);
 
             }
@@ -84,7 +84,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
      */
     public void saveSession() {
         for (MSiFrame frame : this) {
-            MSImagizer.instance.getProgressBar().setText("Saving " + frame.getName() + " ...");
+            HistoSnap.instance.getProgressBar().setText("Saving " + frame.getName() + " ...");
             storeInSession(frame);
         }
     }
@@ -96,7 +96,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
         File[] files = sessionFolder.listFiles((File dir, String name) -> name.endsWith(".hsi"));
 
         for (File file : files) {
-            MSImagizer.instance.getProgressBar().setText("Loading " + file.getName());
+            HistoSnap.instance.getProgressBar().setText("Loading " + file.getName());
             MSiFrame tmp = getFromSession(file.getName());
             add(tmp);
         }
@@ -112,7 +112,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
     public MSiFrame getFromSession(String name) {
         MSiFrame sessionImage = deSerialize(sessionFolder.getAbsolutePath(), name);
         if (sessionImage == null) {
-            JOptionPane.showConfirmDialog(MSImagizer.instance, name + " could not be found in the current session !");
+            JOptionPane.showConfirmDialog(HistoSnap.instance, name + " could not be found in the current session !");
         }
         return sessionImage;
     }
@@ -126,7 +126,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
         File t = new File(sessionFolder, name + ".hsi");
         if (t.exists()) {
             if (!t.delete()) {
-                JOptionPane.showMessageDialog(MSImagizer.instance, "Could not delete session : " + name, "Dialog",
+                JOptionPane.showMessageDialog(HistoSnap.instance, "Could not delete session : " + name, "Dialog",
                         JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -146,7 +146,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
             oos.writeObject(image);
             oos.flush();
         } catch (IOException ex) {
-            JOptionPane.showConfirmDialog(MSImagizer.instance, ex.getMessage());
+            JOptionPane.showConfirmDialog(HistoSnap.instance, ex.getMessage());
         }
     }
 
@@ -165,7 +165,7 @@ public class HistoSnapImageSession extends ArrayList<MSiFrame> {
             System.out.println("READING FROM " + location + "/" + name + ".hsi");
             readCase = (MSiFrame) objectinputstream.readObject();
         } catch (Exception ex) {
-            JOptionPane.showConfirmDialog(MSImagizer.instance, ex.getMessage());
+            JOptionPane.showConfirmDialog(HistoSnap.instance, ex.getMessage());
         }
         return readCase;
     }

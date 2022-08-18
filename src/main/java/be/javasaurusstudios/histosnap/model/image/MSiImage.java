@@ -2,7 +2,7 @@ package be.javasaurusstudios.histosnap.model.image;
 
 import be.javasaurusstudios.histosnap.control.util.ImageUtils;
 import be.javasaurusstudios.histosnap.control.util.color.ColorUtils;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -74,21 +74,20 @@ public class MSiImage extends BufferedImage implements Serializable {
     protected void annotateFrame(MSiFrame frame, int fontSize, int xOffset, int yOffset) {
         Graphics g = getGraphics();
 
-        g.setColor(MSImagizer.instance.getCurrentAnnotationColor());
+        g.setColor(HistoSnap.instance.getCurrentAnnotationColor());
 
-        MSImagizer.instance.getLbImage().getAnnotationShapes().forEach((annotation) -> {
+        HistoSnap.instance.getLbImage().getAnnotationShapes().forEach((annotation) -> {
             annotation.draw(g, xOffset, yOffset);
         });
 
-        if (MSImagizer.instance.isDrawTitle()) {
+        if (HistoSnap.instance.isDrawTitle()) {
 
             int titleX = (int) (xOffset + Math.ceil(frame.getWidth() / 2));
             int titleY = yOffset + frame.getHeight() - 5;
 
-            BufferedImage tmp = ImageUtils.setImageSubTitle(
-                    this,
+            BufferedImage tmp = ImageUtils.setImageSubTitle(this,
                     frame.getName(),
-                    (int) (Math.max(fontSize, Math.ceil((double) fontSize / MSImagizer.instance.getCurrentScale()))),
+                    (int) (Math.max(fontSize, Math.ceil((double) fontSize / HistoSnap.instance.getCurrentScale()))),
                     titleX,
                     titleY);
 
@@ -159,7 +158,7 @@ public class MSiImage extends BufferedImage implements Serializable {
      */
     public void createImage(ImageMode mode, Color... range) {
 
-        ProgressBar progressBar = MSImagizer.instance.getProgressBar();
+        ProgressBar progressBar = HistoSnap.instance.getProgressBar();
 
         progressBar.setValueText(0, "Generating image...", true);
         //clear background
@@ -196,7 +195,7 @@ public class MSiImage extends BufferedImage implements Serializable {
             double check = getStat(mode, pixel.getStat());
             double rel = Math.min(1, Math.max(0, check / reference));
             rel = mode == ImageMode.TOTAL_ION_CURRENT ? 1 - rel : rel;
-            Color color = rel == 0 ? range[0] : MSImagizer.instance.isUseInvertedScale() ? ColorUtils.getHeatMapColorInverse(rel, range) : ColorUtils.getHeatMapColor(rel, range);
+            Color color = rel == 0 ? range[0] : HistoSnap.instance.isUseInvertedScale() ? ColorUtils.getHeatMapColorInverse(rel, range) : ColorUtils.getHeatMapColor(rel, range);
 
             if (pixel.getX() > 0 && pixel.getX() < this.getWidth() && pixel.getY() > 0 && pixel.getY() < this.getHeight()) {
                 this.setRGB(pixel.getX(), pixel.getY(), color.getRGB());
@@ -214,7 +213,7 @@ public class MSiImage extends BufferedImage implements Serializable {
      * @return a new scaled image
      */
     public BufferedImage getScaledImage(int scale) {
-        ProgressBar progressBar = MSImagizer.instance.getProgressBar();
+        ProgressBar progressBar = HistoSnap.instance.getProgressBar();
         progressBar.setValueText(0, "Applying scale...", true);
 
         BufferedImage before = this;
@@ -276,7 +275,7 @@ public class MSiImage extends BufferedImage implements Serializable {
 
     protected void drawGrid(int singleWidth, int singleHeight, int cols, int rows) {
         //draw grid on top
-        if (MSImagizer.instance.isDrawGrid()) {
+        if (HistoSnap.instance.isDrawGrid()) {
             for (int i = 0; i <= cols; i++) {
                 int startingX = i * singleWidth;
                 for (int j = startingX - 1; j < startingX + 1; j++) {
@@ -326,7 +325,7 @@ public class MSiImage extends BufferedImage implements Serializable {
         frame.setWidth(images.get(0).getFrame().getWidth());
         frame.setHeight(images.get(0).getFrame().getHeight());
 
-        ProgressBar progressBar = MSImagizer.instance.getProgressBar();
+        ProgressBar progressBar = HistoSnap.instance.getProgressBar();
 
         progressBar.setValueText(0, "Combining images...", true);
 

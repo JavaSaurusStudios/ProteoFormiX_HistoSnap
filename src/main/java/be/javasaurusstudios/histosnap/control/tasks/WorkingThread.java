@@ -2,7 +2,7 @@ package be.javasaurusstudios.histosnap.control.tasks;
 
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -33,7 +33,7 @@ public class WorkingThread extends SwingWorker {
      */
     public WorkingThread(JFrame parent, WorkingTask... tasks) {
         this.parent = parent;
-        this.progressFrame =  MSImagizer.instance.getProgressBar();
+        this.progressFrame =  HistoSnap.instance.getProgressBar();
         this.tasks = tasks;
     }
 
@@ -46,7 +46,7 @@ public class WorkingThread extends SwingWorker {
      */
     public WorkingThread(JFrame parent, boolean hotStart, WorkingTask... tasks) {
         this.parent = parent;
-        this.progressFrame =  MSImagizer.instance.getProgressBar();
+        this.progressFrame =  HistoSnap.instance.getProgressBar();
         this.tasks = tasks;
         this.working = hotStart;
     }

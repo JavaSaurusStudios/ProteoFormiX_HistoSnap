@@ -3,10 +3,10 @@ package be.javasaurusstudios.histosnap.control.tasks.housekeeping;
 import be.javasaurusstudios.histosnap.control.cache.HistoSnapImageSession;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
-import static be.javasaurusstudios.histosnap.view.MSImagizer.CACHE;
-import static be.javasaurusstudios.histosnap.view.MSImagizer.instance;
-import static be.javasaurusstudios.histosnap.view.MSImagizer.lastDirectory;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
+import static be.javasaurusstudios.histosnap.view.HistoSnap.CACHE;
+import static be.javasaurusstudios.histosnap.view.HistoSnap.instance;
+import static be.javasaurusstudios.histosnap.view.HistoSnap.lastDirectory;
 import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.io.File;
 import javax.swing.JOptionPane;
@@ -34,15 +34,15 @@ public class SessionLoadingTask extends WorkingTask {
 
     @Override
     public Object call() throws Exception {
-        MSImagizer.instance.getProgressBar().setText("Changing sessions...");
+        HistoSnap.instance.getProgressBar().setText("Changing sessions...");
         CACHE.setSession(new HistoSnapImageSession(inputFolder.getAbsolutePath()));
-        MSImagizer.MSI_IMAGE = CACHE.getFirst();
-        MSImagizer.updateCacheUI();
-        MSImagizer.instance.updateImage();
+        HistoSnap.MSI_IMAGE = CACHE.getFirst();
+        HistoSnap.updateCacheUI();
+        HistoSnap.instance.updateImage();
 
         if (CACHE.getFirst() != null) {
             File selectedFile = new File(CACHE.getFirst().getFrame().getParentFile());
-         MSImagizer.instance.setPath(selectedFile.getAbsolutePath());
+         HistoSnap.instance.setPath(selectedFile.getAbsolutePath());
             lastDirectory = selectedFile.getParentFile();
             if (selectedFile.exists()) {
                    UILogger.log("Done...", UILogger.Level.INFO);
@@ -53,7 +53,7 @@ public class SessionLoadingTask extends WorkingTask {
                         JOptionPane.ERROR_MESSAGE);
             }
         }
-        MSImagizer.instance.getProgressBar().setVisible(false);
+        HistoSnap.instance.getProgressBar().setVisible(false);
 
         return true;
     }

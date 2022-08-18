@@ -1,8 +1,8 @@
 package be.javasaurusstudios.histosnap.control.tasks.housekeeping;
 
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
-import static be.javasaurusstudios.histosnap.view.MSImagizer.CACHE;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
+import static be.javasaurusstudios.histosnap.view.HistoSnap.CACHE;
 import java.io.File;
 
 /**
@@ -37,13 +37,13 @@ public class SessionSavingTask extends WorkingTask {
     @Override
     public Object call() throws Exception {
         if (!silent) {
-            MSImagizer.instance.getProgressBar().setText("Saving session...");
+            HistoSnap.instance.getProgressBar().setText("Saving session...");
         }
         if (CACHE.getFirst() != null) {
             CACHE.getSession().setSessionFolder(outputFolder);
             CACHE.getSession().saveSession();
         }
-        MSImagizer.instance.getProgressBar().setVisible(false);
+        HistoSnap.instance.getProgressBar().setVisible(false);
         return true;
     }
 

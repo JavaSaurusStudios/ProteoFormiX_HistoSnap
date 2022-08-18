@@ -4,7 +4,7 @@ import be.javasaurusstudios.histosnap.control.MzRangeExtractor;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
 import java.io.File;
 import java.util.LinkedList;
@@ -96,7 +96,7 @@ public class ImageRandomizerTask extends WorkingTask {
 
             File inFile = new File(in);
             if (!inFile.exists()) {
-                MSImagizer.instance.getProgressBar().setVisible(false);
+                HistoSnap.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "Please specify an input imzml file",
                         "Invalid input file",
@@ -107,7 +107,7 @@ public class ImageRandomizerTask extends WorkingTask {
 
             File idbFile = new File(inFile.getAbsolutePath().replace(".imzml", ".ibd"));
             if (!idbFile.exists()) {
-                MSImagizer.instance.getProgressBar().setVisible(false);
+                HistoSnap.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "The corresponding ibd file could not be found in the provided file directory./nPlease verify that an idb file exist with the EXACT same name as the provided imzml.",
                         "Invalid input file",
@@ -119,7 +119,7 @@ public class ImageRandomizerTask extends WorkingTask {
             executeImage(in, "Background");
 
         } catch (Exception ex) {
-            MSImagizer.instance.getProgressBar().setVisible(false);
+            HistoSnap.instance.getProgressBar().setVisible(false);
             ex.printStackTrace();
         }
     }
@@ -148,10 +148,10 @@ public class ImageRandomizerTask extends WorkingTask {
         MultiMSiImage extractImageRange = extractor.extractImageRange(randomRanges, minI);
 
         MSiImage compiledImage = MSiImage.createCombinedImage(extractImageRange);
-        MSImagizer.addToCache(compiledImage);
+        HistoSnap.addToCache(compiledImage);
         compiledImage.setName(extractionName);
-        compiledImage.createImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
-        MSImagizer.CURRENT_IMAGE = compiledImage.getScaledImage(MSImagizer.instance.getExportScale());
+        compiledImage.createImage(HistoSnap.instance.getCurrentMode(), HistoSnap.instance.getCurrentRange().getColors());
+        HistoSnap.CURRENT_IMAGE = compiledImage.getScaledImage(HistoSnap.instance.getExportScale());
         if (imageIcon != null) {
             ImageIcon icon = new ImageIcon(compiledImage);
             imageIcon.setIcon(icon);

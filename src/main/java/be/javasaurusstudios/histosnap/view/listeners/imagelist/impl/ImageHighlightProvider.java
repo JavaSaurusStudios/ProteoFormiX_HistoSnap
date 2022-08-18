@@ -1,6 +1,6 @@
 package be.javasaurusstudios.histosnap.view.listeners.imagelist.impl;
 
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import be.javasaurusstudios.histosnap.view.component.ImageLabel;
 import be.javasaurusstudios.histosnap.view.listeners.imagelist.ListenerProvider;
 import java.awt.event.MouseEvent;
@@ -40,7 +40,7 @@ public class ImageHighlightProvider implements ListenerProvider {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                if (!MSImagizer.instance.iAnnotationMode()) {
+                if (!HistoSnap.instance.iAnnotationMode()) {
                     return;
                 }
                 imgLabel.setHighlightStart(e.getPoint());
@@ -49,7 +49,7 @@ public class ImageHighlightProvider implements ListenerProvider {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (!MSImagizer.instance.iAnnotationMode()) {
+                if (!HistoSnap.instance.iAnnotationMode()) {
                     return;
                 }
                 imgLabel.setMouseDown(false);
@@ -69,11 +69,11 @@ public class ImageHighlightProvider implements ListenerProvider {
         imgLabel.addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (!MSImagizer.instance.iAnnotationMode()) {
+                if (!HistoSnap.instance.iAnnotationMode()) {
                     return;
                 }
                 imgLabel.setHighLightEnd(e.getPoint());
-                MSImagizer.instance.repaint();
+                HistoSnap.instance.repaint();
 
             }
 

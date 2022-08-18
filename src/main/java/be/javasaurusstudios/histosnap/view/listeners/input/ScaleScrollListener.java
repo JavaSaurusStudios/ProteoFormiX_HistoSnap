@@ -1,6 +1,6 @@
 package be.javasaurusstudios.histosnap.view.listeners.input;
 
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseWheelEvent;
@@ -16,14 +16,14 @@ public class ScaleScrollListener implements MouseWheelListener, KeyListener {
     /**
      * The parent for the scroll listener
      */
-    private final MSImagizer parent;
+    private final HistoSnap parent;
     /**
      * Boolean indicating if left ctrl is held down before scrolling
      */
     @Deprecated
     private boolean ctrlHeld;
 
-    public ScaleScrollListener(MSImagizer parent, JLabel imgLabel) {
+    public ScaleScrollListener(HistoSnap parent, JLabel imgLabel) {
         this.parent = parent;
         imgLabel.addMouseWheelListener(this);
         this.parent.addKeyListener(this);

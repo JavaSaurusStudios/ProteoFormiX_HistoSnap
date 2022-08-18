@@ -3,7 +3,7 @@ package be.javasaurusstudios.histosnap.control;
 import be.javasaurusstudios.histosnap.control.cache.HistoSnapImageSession;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,7 +48,7 @@ public class MSiImageCache extends ArrayList<String> {
         session.restoreSession();
         clear();
         for (MSiFrame frame : session) {
-            MSImagizer.instance.getProgressBar().setText("Loading " + frame.getName());
+            HistoSnap.instance.getProgressBar().setText("Loading " + frame.getName());
             add(frame.getName());
             images.put(frame.getName(), new MSiImage(frame));
         }

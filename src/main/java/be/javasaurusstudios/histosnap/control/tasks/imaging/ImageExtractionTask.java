@@ -4,7 +4,7 @@ import be.javasaurusstudios.histosnap.control.MzRangeExtractor;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.MSScanAdduct;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
 import be.javasaurusstudios.histosnap.control.util.color.ColorRange;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
@@ -89,7 +89,7 @@ public class ImageExtractionTask extends WorkingTask {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            MSImagizer.instance.getProgressBar().setVisible(false);
+            HistoSnap.instance.getProgressBar().setVisible(false);
             JOptionPane.showMessageDialog(parent,
                     "The minimal MZ value should be a real number >=0",
                     "Invalid mass to charge range",
@@ -104,7 +104,7 @@ public class ImageExtractionTask extends WorkingTask {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            MSImagizer.instance.getProgressBar().setVisible(false);
+            HistoSnap.instance.getProgressBar().setVisible(false);
             JOptionPane.showMessageDialog(parent,
                     "The maximal MZ value should be a real number >0",
                     "Invalid mass to charge range",
@@ -119,7 +119,7 @@ public class ImageExtractionTask extends WorkingTask {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            MSImagizer.instance.getProgressBar().setVisible(false);
+            HistoSnap.instance.getProgressBar().setVisible(false);
             JOptionPane.showMessageDialog(parent,
                     "The minimal intensity value should be a real number >=0",
                     "Invalid mass to charge range",
@@ -140,7 +140,7 @@ public class ImageExtractionTask extends WorkingTask {
                 interval = (maxMZ - minMZ) / stepCount;
 
             } catch (NumberFormatException e) {
-                MSImagizer.instance.getProgressBar().setVisible(false);
+                HistoSnap.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "The step count >=1",
                         "Invalid step size",
@@ -203,7 +203,7 @@ public class ImageExtractionTask extends WorkingTask {
     protected void process(String path, JLabel imageIcon, int scale, ColorRange range, boolean autoSave) throws Exception {
 
         if (!imageName.isEmpty()) {
-            MSImagizer.instance.getProgressBar().setText("Extracting " + imageName);
+            HistoSnap.instance.getProgressBar().setText("Extracting " + imageName);
         }
 
         if (minMZ == -1 || maxMZ == -1) {
@@ -216,7 +216,7 @@ public class ImageExtractionTask extends WorkingTask {
 
             File inFile = new File(in);
             if (!inFile.exists()) {
-                MSImagizer.instance.getProgressBar().setVisible(false);
+                HistoSnap.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "Please specify an input imzml file",
                         "Invalid input file",
@@ -227,7 +227,7 @@ public class ImageExtractionTask extends WorkingTask {
 
             File idbFile = new File(inFile.getAbsolutePath().replace(".imzml", ".ibd"));
             if (!idbFile.exists()) {
-                MSImagizer.instance.getProgressBar().setVisible(false);
+                HistoSnap.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "The corresponding ibd file could not be found in the provided file directory./nPlease verify that an idb file exist with the EXACT same name as the provided imzml.",
                         "Invalid input file",
@@ -248,7 +248,7 @@ public class ImageExtractionTask extends WorkingTask {
 
         } catch (Exception ex) {
             if (!imageName.isEmpty()) {
-                MSImagizer.instance.getProgressBar().setText(imageName + " extraction has failed. Please verify if the requested mass range is present in the input data");
+                HistoSnap.instance.getProgressBar().setText(imageName + " extraction has failed. Please verify if the requested mass range is present in the input data");
             }
             ex.printStackTrace();
         }
@@ -257,7 +257,7 @@ public class ImageExtractionTask extends WorkingTask {
     private void executeImage(String in, int scale, float minI, String extractionName, ColorRange range, float massOffset, boolean autoSave) throws Exception {
 
         if (minMZ >= maxMZ) {
-            JOptionPane.showMessageDialog(MSImagizer.instance, "The minimal mz values should be less than the maximal mz value");
+            JOptionPane.showMessageDialog(HistoSnap.instance, "The minimal mz values should be less than the maximal mz value");
             return;
         }
 
@@ -282,23 +282,23 @@ public class ImageExtractionTask extends WorkingTask {
         float i = 0;
         for (MSiFrame frame : image.getFrames()) {
             i++;
-            MSImagizer.addToCache(new MSiImage(frame));
-            MSImagizer.instance.getProgressBar().setValueText(i / image.getFrames().size(),
+            HistoSnap.addToCache(new MSiImage(frame));
+            HistoSnap.instance.getProgressBar().setValueText(i / image.getFrames().size(),
                     "Removing hotspots for " + frame.getName(), false);
-            MSImagizer.MSI_IMAGE.removeHotSpots(99);
-            MSImagizer.instance.getProgressBar().setValueText(i / image.getFrames().size(),
+            HistoSnap.MSI_IMAGE.removeHotSpots(99);
+            HistoSnap.instance.getProgressBar().setValueText(i / image.getFrames().size(),
                     "Generating heatmap for " + frame.getName(), false);
-            MSImagizer.MSI_IMAGE.createImage(mode, range.getColors());
+            HistoSnap.MSI_IMAGE.createImage(mode, range.getColors());
 
-            MSImagizer.instance.getProgressBar().setValueText(i / image.getFrames().size(),
+            HistoSnap.instance.getProgressBar().setValueText(i / image.getFrames().size(),
                     "Applying scale " + frame.getName(), false);
-            MSImagizer.CURRENT_IMAGE = MSImagizer.MSI_IMAGE.getScaledImage(scale);
+            HistoSnap.CURRENT_IMAGE = HistoSnap.MSI_IMAGE.getScaledImage(scale);
 
             if (imageIcon != null) {
-                ImageIcon icon = new ImageIcon(MSImagizer.CURRENT_IMAGE);
+                ImageIcon icon = new ImageIcon(HistoSnap.CURRENT_IMAGE);
                 imageIcon.setIcon(icon);
                 imageIcon.setText("");
-                imageIcon.setSize(MSImagizer.CURRENT_IMAGE.getWidth() + 2, MSImagizer.CURRENT_IMAGE.getHeight() + 2);
+                imageIcon.setSize(HistoSnap.CURRENT_IMAGE.getWidth() + 2, HistoSnap.CURRENT_IMAGE.getHeight() + 2);
             }
 
         }
@@ -309,13 +309,13 @@ public class ImageExtractionTask extends WorkingTask {
             File tmpFile = new File(tmp);
             if (!outputDir.exists()) {
                 if (!outputDir.mkdirs()) {
-                    JOptionPane.showMessageDialog(MSImagizer.instance, "Could not create folder : " + outputDir.getAbsolutePath(), "Error",
+                    JOptionPane.showMessageDialog(HistoSnap.instance, "Could not create folder : " + outputDir.getAbsolutePath(), "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }
             File outputFile = new File(outputDir, tmpFile.getName().replace(".tmp.txt", ".png"));
-            MSImagizer.instance.getProgressBar().setValueText(0, "Saving to " + outputFile, true);
-            ImageIO.write(MSImagizer.CURRENT_IMAGE, "png", outputFile);
+            HistoSnap.instance.getProgressBar().setValueText(0, "Saving to " + outputFile, true);
+            ImageIO.write(HistoSnap.CURRENT_IMAGE, "png", outputFile);
         }
 
     }

@@ -145,7 +145,7 @@ public class SplashScreen extends javax.swing.JFrame {
                     splash.setVisible(false);
                     splash.dispose();
 
-                    MSImagizer msImagizer = new MSImagizer();
+                    HistoSnap msImagizer = new HistoSnap();
                     msImagizer.setVisible(true);
                     msImagizer.setLocationRelativeTo(splash);
                 }).start();

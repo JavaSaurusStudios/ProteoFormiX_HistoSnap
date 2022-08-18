@@ -3,9 +3,9 @@ package be.javasaurusstudios.histosnap.view.listeners.imagelist.impl;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.view.listeners.imagelist.ListenerProvider;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
-import static be.javasaurusstudios.histosnap.view.MSImagizer.CACHE;
-import static be.javasaurusstudios.histosnap.view.MSImagizer.MSI_IMAGE;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
+import static be.javasaurusstudios.histosnap.view.HistoSnap.CACHE;
+import static be.javasaurusstudios.histosnap.view.HistoSnap.MSI_IMAGE;
 import be.javasaurusstudios.histosnap.view.component.ImageLabel;
 import be.javasaurusstudios.histosnap.view.prompt.impl.SaveAnimationDialog;
 import be.javasaurusstudios.histosnap.view.prompt.impl.SaveFramesDialog;
@@ -41,7 +41,7 @@ public class ListActionPopupProvider implements ListenerProvider {
     @Override
     public void setUp(JComponent component) {
 
-        final MSImagizer parent = MSImagizer.instance;
+        final HistoSnap parent = HistoSnap.instance;
 
         if (!(component instanceof JList)) {
             return;
@@ -56,7 +56,7 @@ public class ListActionPopupProvider implements ListenerProvider {
             List<String> selectedImageNames = imageCacheList.getSelectedValuesList();
             CACHE.removeImagesFromCacheByName(selectedImageNames);
             UILogger.log("Deleted " + selectedImageNames.size() + " image(s)", UILogger.Level.INFO);
-            MSImagizer.updateCacheUI();
+            HistoSnap.updateCacheUI();
             if (!CACHE.isEmpty()) {
                 MSI_IMAGE = CACHE.getFirst();
                 imageCacheList.setSelectedIndex(0);
@@ -91,21 +91,21 @@ public class ListActionPopupProvider implements ListenerProvider {
             try {
                 UILogger.log("Creating combined image for " + selectedImageNames.size() + " images...", UILogger.Level.INFO);
                 
-                MSImagizer.instance.getProgressFrame().setVisible(true);
+                HistoSnap.instance.getProgressFrame().setVisible(true);
                 
-                MSImagizer.instance.getProgressFrame().setText("Generating combined image...");
+                HistoSnap.instance.getProgressFrame().setText("Generating combined image...");
                 MSiImage image = MSiImage.createCombinedImage(CACHE.getCachedImages(selectedImageNames));
                 
-                MSImagizer.addToCache(image);
+                HistoSnap.addToCache(image);
                 
-                MSImagizer.MSI_IMAGE = image;
-                MSImagizer.instance.getProgressFrame().setText("Removing hotspots");
-                MSImagizer.MSI_IMAGE.removeHotSpots(99);
-                MSImagizer.instance.getProgressFrame().setText("Generating heatmap...");
-                MSImagizer.MSI_IMAGE.createImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
-                MSImagizer.CURRENT_IMAGE = MSImagizer.MSI_IMAGE.getScaledImage(MSImagizer.instance.getCurrentScale());
+                HistoSnap.MSI_IMAGE = image;
+                HistoSnap.instance.getProgressFrame().setText("Removing hotspots");
+                HistoSnap.MSI_IMAGE.removeHotSpots(99);
+                HistoSnap.instance.getProgressFrame().setText("Generating heatmap...");
+                HistoSnap.MSI_IMAGE.createImage(HistoSnap.instance.getCurrentMode(), HistoSnap.instance.getCurrentRange().getColors());
+                HistoSnap.CURRENT_IMAGE = HistoSnap.MSI_IMAGE.getScaledImage(HistoSnap.instance.getCurrentScale());
             } finally {
-                MSImagizer.instance.getProgressFrame().setVisible(false);
+                HistoSnap.instance.getProgressFrame().setVisible(false);
             }
         });
 

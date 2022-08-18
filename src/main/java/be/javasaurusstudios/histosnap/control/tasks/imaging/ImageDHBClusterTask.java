@@ -6,7 +6,7 @@ import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
 import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.io.File;
@@ -83,7 +83,7 @@ public class ImageDHBClusterTask extends WorkingTask {
 
             File inFile = new File(in);
             if (!inFile.exists()) {
-                MSImagizer.instance.getProgressBar().setVisible(false);
+                HistoSnap.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "Please specify an input imzml file",
                         "Invalid input file",
@@ -94,7 +94,7 @@ public class ImageDHBClusterTask extends WorkingTask {
 
             File idbFile = new File(inFile.getAbsolutePath().replace(".imzml", ".ibd"));
             if (!idbFile.exists()) {
-                MSImagizer.instance.getProgressBar().setVisible(false);
+                HistoSnap.instance.getProgressBar().setVisible(false);
                 JOptionPane.showMessageDialog(parent,
                         "The corresponding ibd file could not be found in the provided file directory./nPlease verify that an idb file exist with the EXACT same name as the provided imzml.",
                         "Invalid input file",
@@ -106,7 +106,7 @@ public class ImageDHBClusterTask extends WorkingTask {
             ExecuteImage(in, "Background", makeBackground);
 
         } catch (Exception ex) {
-            MSImagizer.instance.getProgressBar().setVisible(false);
+            HistoSnap.instance.getProgressBar().setVisible(false);
             ex.printStackTrace();
         }
     }
@@ -122,7 +122,7 @@ public class ImageDHBClusterTask extends WorkingTask {
      */
     private void ExecuteImage(String in, String extractionName, boolean generateBackground) throws Exception {
 
-        ProgressBar bar = MSImagizer.instance.getProgressBar();
+        ProgressBar bar = HistoSnap.instance.getProgressBar();
 
         List<float[]> ranges = new LinkedList<>();
         List<DHBMatrixClusterMasses> masses = new LinkedList<>();
@@ -157,7 +157,7 @@ public class ImageDHBClusterTask extends WorkingTask {
             image.setName(name);
             bar.setValueText(value, "Processing...", true);
             image.removeHotSpots(99);
-            MSImagizer.addToCache(image);
+            HistoSnap.addToCache(image);
         }
 
         MSiImage displayImage;
@@ -165,8 +165,8 @@ public class ImageDHBClusterTask extends WorkingTask {
             bar.setValueText(value, "Combining images...", true);
             displayImage = MSiImage.createCombinedImage(extractImageRange);
             displayImage.setName(extractionName);
-            displayImage.createImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
-            MSImagizer.addToCache(displayImage);
+            displayImage.createImage(HistoSnap.instance.getCurrentMode(), HistoSnap.instance.getCurrentRange().getColors());
+            HistoSnap.addToCache(displayImage);
         }
 
         parent.repaint();

@@ -3,8 +3,8 @@ package be.javasaurusstudios.histosnap.view.prompt.impl;
 import be.javasaurusstudios.histosnap.control.MSiImageCache;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
-import static be.javasaurusstudios.histosnap.view.MSImagizer.lastDirectory;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
+import static be.javasaurusstudios.histosnap.view.HistoSnap.lastDirectory;
 import be.javasaurusstudios.histosnap.view.prompt.UserPrompt;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
@@ -41,8 +41,7 @@ public class SaveFramesDialog implements UserPrompt {
         JTextField outputFile = new JTextField();
         JButton saveFramesLocationButton = new JButton("...");
 
-        saveFramesLocationButton.addActionListener(
-                new ActionListener() {
+        saveFramesLocationButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e
             ) {
@@ -61,7 +60,7 @@ public class SaveFramesDialog implements UserPrompt {
                         return "Output directory";
                     }
                 });
-                int userSelection = fileChooser.showSaveDialog(MSImagizer.instance);
+                int userSelection = fileChooser.showSaveDialog(HistoSnap.instance);
 
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                     outputFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
@@ -76,7 +75,7 @@ public class SaveFramesDialog implements UserPrompt {
             outputFile,
             saveFramesLocationButton,};
 
-        int result = JOptionPane.showConfirmDialog(MSImagizer.instance, inputs, "Save frames...", JOptionPane.PLAIN_MESSAGE);
+        int result = JOptionPane.showConfirmDialog(HistoSnap.instance, inputs, "Save frames...", JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
             File fileToStore = new File(outputFile.getText());
 
@@ -84,7 +83,7 @@ public class SaveFramesDialog implements UserPrompt {
                 //check if folder is approved
             } else {
                 if (!fileToStore.mkdirs()) {
-                    JOptionPane.showMessageDialog(MSImagizer.instance, "Failed to create directory : " + fileToStore.getAbsolutePath(), "Warning",
+                    JOptionPane.showMessageDialog(HistoSnap.instance, "Failed to create directory : " + fileToStore.getAbsolutePath(), "Warning",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -93,7 +92,7 @@ public class SaveFramesDialog implements UserPrompt {
 
                 for (int i = 0; i < selectedImageNames.size(); i++) {
                     MSiImage tmp = cache.getImage(selectedImageNames.get(i));
-                    tmp.createImage(MSImagizer.instance.getCurrentMode(), MSImagizer.instance.getCurrentRange().getColors());
+                    tmp.createImage(HistoSnap.instance.getCurrentMode(), HistoSnap.instance.getCurrentRange().getColors());
                     File fileToSave = new File(fileToStore, selectedImageNames.get(i) + ".png");
                     /*  BufferedImage bImage = ImageUtils.SetImageTitle(
                             
@@ -101,12 +100,12 @@ public class SaveFramesDialog implements UserPrompt {
                     
                     );
                     ImageIO.write(bImage, "png", fileToSave);*/
-                    ImageIO.write(tmp.getScaledImage(MSImagizer.instance.getExportScale()), "png", fileToSave);
+                    ImageIO.write(tmp.getScaledImage(HistoSnap.instance.getExportScale()), "png", fileToSave);
                 }
                 UILogger.log("Exported " + selectedImageNames.size() + " frames to " + fileToStore.getAbsolutePath(), UILogger.Level.INFO);
-                JOptionPane.showMessageDialog(MSImagizer.instance, "Exported " + selectedImageNames.size() + " frames to " + fileToStore.getAbsolutePath());
+                JOptionPane.showMessageDialog(HistoSnap.instance, "Exported " + selectedImageNames.size() + " frames to " + fileToStore.getAbsolutePath());
             } catch (HeadlessException | IOException ex) {
-                JOptionPane.showMessageDialog(MSImagizer.instance,
+                JOptionPane.showMessageDialog(HistoSnap.instance,
                         "Could not save this file : " + ex.getMessage(),
                         "Failed to export frames...",
                         JOptionPane.ERROR_MESSAGE);

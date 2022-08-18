@@ -1,7 +1,7 @@
 package be.javasaurusstudios.histosnap.view.component;
 
 import be.javasaurusstudios.histosnap.control.MzRangeExtractor;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -79,12 +79,14 @@ public class ProgressBar {
                                 float value = Float.parseFloat(tmp);
                                 publish(value);
                             } catch (NumberFormatException e) {
-                                MSImagizer.instance.getProgressBar().setValueText(0, "Working...", true);
+                                HistoSnap.instance.getProgressBar().setValueText(0, "Working...", true);
                             }
                             
                             //                        UILogger.Log(line);
+                            
+                            //                        UILogger.Log(line);
                         }
-                        MSImagizer.instance.getProgressBar().setValueText(0, "Finalizing", true);
+                        HistoSnap.instance.getProgressBar().setValueText(0, "Finalizing", true);
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(MzRangeExtractor.class.getName()).log(Level.SEVERE, null, ex);
@@ -95,7 +97,7 @@ public class ProgressBar {
             @Override
             protected void process(List<Float> chunks) {
                 for (Float value : chunks) {
-                    MSImagizer.instance.getProgressBar().setValueText(value / 100, "Processing Spectra : " + Math.round(value) + "%", false);
+                    HistoSnap.instance.getProgressBar().setValueText(value / 100, "Processing Spectra : " + Math.round(value) + "%", false);
                 }
             }
         };

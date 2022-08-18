@@ -1,6 +1,6 @@
 package be.javasaurusstudios.histosnap.control.util;
 
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import javax.swing.DefaultListModel;
@@ -30,11 +30,11 @@ public class UILogger {
 
         System.out.println(logMessage);
 
-        if (MSImagizer.instance == null) {
+        if (HistoSnap.instance == null) {
             return;
         }
 
-        MSImagizer.instance.getProgressBar().setText(msg);
+        HistoSnap.instance.getProgressBar().setText(msg);
 
         if (LOGGING_AREA == null) {
             return;

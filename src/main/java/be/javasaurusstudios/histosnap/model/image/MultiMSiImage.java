@@ -1,7 +1,7 @@
 package be.javasaurusstudios.histosnap.model.image;
 
 import be.javasaurusstudios.histosnap.control.util.color.ColorUtils;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import java.awt.Color;
 import java.awt.Font;
@@ -46,7 +46,7 @@ public class MultiMSiImage extends MSiImage {
      * @return a new instance of a multi image
      */
     public static MultiMSiImage generate(List<MSiFrame> frames) {
-        return MultiMSiImage.generate(frames, MSImagizer.instance.getColumnCount());
+        return MultiMSiImage.generate(frames, HistoSnap.instance.getColumnCount());
     }
     private final int cols;
     private final int rows;
@@ -72,7 +72,7 @@ public class MultiMSiImage extends MSiImage {
     @Override
     public void createImage(ImageMode mode, Color... range) {
 
-        ProgressBar bar = MSImagizer.instance.getProgressBar();
+        ProgressBar bar = HistoSnap.instance.getProgressBar();
 
         bar.setValueText(0, "Generating image...", true);
 
@@ -115,7 +115,7 @@ public class MultiMSiImage extends MSiImage {
                 double check = getStat(mode, pixel.getStat());
                 double rel = Math.min(1, Math.max(0, check / reference));
                 rel = mode == ImageMode.TOTAL_ION_CURRENT ? 1 - rel : rel;
-                Color color = rel == 0 ? range[0] : MSImagizer.instance.isUseInvertedScale() ? ColorUtils.getHeatMapColorInverse(rel, range) : ColorUtils.getHeatMapColor(rel, range);
+                Color color = rel == 0 ? range[0] : HistoSnap.instance.isUseInvertedScale() ? ColorUtils.getHeatMapColorInverse(rel, range) : ColorUtils.getHeatMapColor(rel, range);
 
                 //THIS IS THE TRICKY PART, THIS IS WHERE IT ACTUALLY GETS PUT ON SCREEN...
                 int fullPixelX = pixel.getX() + xOffset;
@@ -197,7 +197,7 @@ public class MultiMSiImage extends MSiImage {
             double check = getStat(mode, pixel.getStat());
             double rel = Math.min(1, Math.max(0, check / reference));
             rel = mode == ImageMode.TOTAL_ION_CURRENT ? 1 - rel : rel;
-            Color color = rel == 0 ? range[0] : MSImagizer.instance.isUseInvertedScale() ? ColorUtils.getHeatMapColorInverse(rel, range) : ColorUtils.getHeatMapColor(rel, range);
+            Color color = rel == 0 ? range[0] : HistoSnap.instance.isUseInvertedScale() ? ColorUtils.getHeatMapColorInverse(rel, range) : ColorUtils.getHeatMapColor(rel, range);
 
             if (pixel.getX() > 0 && pixel.getX() < activeFrame.getWidth() && pixel.getY() > 0 && pixel.getY() < activeFrame.getHeight()) {
                 this.setRGB(pixel.getX(), pixel.getY(), color.getRGB());

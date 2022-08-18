@@ -1,7 +1,7 @@
 package be.javasaurusstudios.histosnap.view.listeners.imagelist.impl;
 
 import be.javasaurusstudios.histosnap.view.listeners.imagelist.ListenerProvider;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -25,7 +25,7 @@ public class ListSavePopupProvider implements ListenerProvider {
             return;
         }
 
-        MSImagizer main = MSImagizer.instance;
+        HistoSnap main = HistoSnap.instance;
         
         JLabel lbImage = (JLabel) component;
 
@@ -45,7 +45,7 @@ public class ListSavePopupProvider implements ListenerProvider {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                if (MSImagizer.CURRENT_IMAGE != null && (e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
+                if (HistoSnap.CURRENT_IMAGE != null && (e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
                     menu.show(e.getComponent(), e.getX(), e.getY());
                 }
             }

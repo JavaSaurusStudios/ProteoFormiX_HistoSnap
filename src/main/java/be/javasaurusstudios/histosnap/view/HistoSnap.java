@@ -67,12 +67,12 @@ import javax.swing.filechooser.FileFilter;
  *
  * @author Dr. Kenneth Verheggen <kenneth.verheggen@proteoformix.com>
  */
-public class MSImagizer extends javax.swing.JFrame {
+public class HistoSnap extends javax.swing.JFrame {
 
     private static final int HighMemThreshold = 8;
 
     //The singleton instance
-    public static MSImagizer instance;
+    public static HistoSnap instance;
     //The last directory that was used by the user interface
     public static File lastDirectory = new File(System.getProperty("user.home"));
     //The currently active MSI_Image
@@ -118,7 +118,7 @@ public class MSImagizer extends javax.swing.JFrame {
     /**
      * Creates new form MSImagizer
      */
-    public MSImagizer() {
+    public HistoSnap() {
 
         super.setTitle("ProteoFormiX HistoSnap");
         super.setLocationRelativeTo(null);
@@ -1817,9 +1817,9 @@ public class MSImagizer extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 AbstractButton button = (AbstractButton) e.getSource();
                 logPanel.setVisible(button.isSelected());
-                Dimension dimension = MSImagizer.instance.getSize();
-                MSImagizer.instance.pack();
-                MSImagizer.instance.setSize(dimension);
+                Dimension dimension = HistoSnap.instance.getSize();
+                HistoSnap.instance.pack();
+                HistoSnap.instance.setSize(dimension);
                 updateImage();
             }
         };
@@ -1883,7 +1883,7 @@ public class MSImagizer extends javax.swing.JFrame {
         Action selectColorMode = new AbstractAction("") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                currentAnnotationColor = JColorChooser.showDialog(MSImagizer.instance, "Select the annotation color", currentAnnotationColor);
+                currentAnnotationColor = JColorChooser.showDialog(HistoSnap.instance, "Select the annotation color", currentAnnotationColor);
                 updateImage();
                 selectColorField.setBackground(currentAnnotationColor);
             }
@@ -2094,10 +2094,10 @@ public class MSImagizer extends javax.swing.JFrame {
      */
     public void updateImage() {
         ImageIcon icon = null;
-        if (MSImagizer.MSI_IMAGE != null && !CACHE.isEmpty()) {
-            MSImagizer.MSI_IMAGE.createImage(currentMode, currentRange.getColors());
-            MSImagizer.CURRENT_IMAGE = MSImagizer.MSI_IMAGE.getScaledImage(currentScale);
-            icon = new ImageIcon(MSImagizer.CURRENT_IMAGE);
+        if (HistoSnap.MSI_IMAGE != null && !CACHE.isEmpty()) {
+            HistoSnap.MSI_IMAGE.createImage(currentMode, currentRange.getColors());
+            HistoSnap.CURRENT_IMAGE = HistoSnap.MSI_IMAGE.getScaledImage(currentScale);
+            icon = new ImageIcon(HistoSnap.CURRENT_IMAGE);
         }
         lbImage.setIcon(icon);
         lbImage.setText("");

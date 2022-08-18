@@ -5,9 +5,9 @@ import be.javasaurusstudios.histosnap.control.util.AnimationExporter;
 import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MSiImage;
 import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
-import static be.javasaurusstudios.histosnap.view.MSImagizer.CACHE;
-import static be.javasaurusstudios.histosnap.view.MSImagizer.lastDirectory;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
+import static be.javasaurusstudios.histosnap.view.HistoSnap.CACHE;
+import static be.javasaurusstudios.histosnap.view.HistoSnap.lastDirectory;
 import be.javasaurusstudios.histosnap.view.prompt.UserPrompt;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -59,7 +59,7 @@ public class SaveAnimationDialog implements UserPrompt {
                     return "Output gif animation";
                 }
             });
-            int userSelection = fileChooser.showSaveDialog(MSImagizer.instance);
+            int userSelection = fileChooser.showSaveDialog(HistoSnap.instance);
             
             if (userSelection == JFileChooser.APPROVE_OPTION) {
                 outputFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
@@ -74,7 +74,7 @@ public class SaveAnimationDialog implements UserPrompt {
             outputFile,
             saveAnimationLocationButton,};
         
-        int result = JOptionPane.showConfirmDialog(MSImagizer.instance, inputs, "Save animation...", JOptionPane.PLAIN_MESSAGE);
+        int result = JOptionPane.showConfirmDialog(HistoSnap.instance, inputs, "Save animation...", JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
             File fileToStore = new File(outputFile.getText());
             
@@ -83,7 +83,7 @@ public class SaveAnimationDialog implements UserPrompt {
             }
             
             if (fileToStore.exists()) {
-                int response = JOptionPane.showConfirmDialog(MSImagizer.instance, "File already exists. Override?", "Saving...",
+                int response = JOptionPane.showConfirmDialog(HistoSnap.instance, "File already exists. Override?", "Saving...",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE);
                 if (response != JOptionPane.YES_OPTION) {
@@ -96,15 +96,15 @@ public class SaveAnimationDialog implements UserPrompt {
                 UILogger.log("Reading images from session...", UILogger.Level.INFO);
                 
                 BufferedImage[] images;
-                MSiImage currentImage = MSImagizer.MSI_IMAGE;
+                MSiImage currentImage = HistoSnap.MSI_IMAGE;
                 
                 if (currentImage instanceof MultiMSiImage) {
                     MultiMSiImage img = (MultiMSiImage) currentImage;
                     images = new BufferedImage[img.getFrames().size()];
                     for (int i = 0; i < images.length; i++) {
                         images[i] = img.createSingleImage(i, 
-                                MSImagizer.instance.getCurrentMode(),
-                                MSImagizer.instance.getCurrentRange().getColors());
+                                HistoSnap.instance.getCurrentMode(),
+                                HistoSnap.instance.getCurrentRange().getColors());
                     }
                 } else {
                     List<MSiImage> selectedImages = CACHE.getCachedImages(selectedImageNames);
@@ -113,9 +113,8 @@ public class SaveAnimationDialog implements UserPrompt {
                     }
                     images = new BufferedImage[selectedImages.size()];
                     for (int i = 0; i < images.length; i++) {
-                        selectedImages.get(i).createImage(
-                                MSImagizer.instance.getCurrentMode(),
-                                MSImagizer.instance.getCurrentRange().getColors());
+                        selectedImages.get(i).createImage(HistoSnap.instance.getCurrentMode(),
+                                HistoSnap.instance.getCurrentRange().getColors());
                     }
 
              
@@ -123,9 +122,9 @@ public class SaveAnimationDialog implements UserPrompt {
                 
                 AnimationExporter.save(images, fileToStore, ms, true);
                 UILogger.log("Exported animation to " + fileToStore.getAbsolutePath(), UILogger.Level.INFO);
-                JOptionPane.showMessageDialog(MSImagizer.instance, "Exported animation to " + fileToStore.getAbsolutePath());
+                JOptionPane.showMessageDialog(HistoSnap.instance, "Exported animation to " + fileToStore.getAbsolutePath());
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(MSImagizer.instance,
+                JOptionPane.showMessageDialog(HistoSnap.instance,
                         "Could not save this file : " + ex.getMessage(),
                         "Failed to export animation...",
                         JOptionPane.ERROR_MESSAGE);

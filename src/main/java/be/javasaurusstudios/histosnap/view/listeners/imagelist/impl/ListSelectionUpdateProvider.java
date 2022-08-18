@@ -3,8 +3,8 @@ package be.javasaurusstudios.histosnap.view.listeners.imagelist.impl;
 import be.javasaurusstudios.histosnap.model.image.MSiFrame;
 import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import be.javasaurusstudios.histosnap.view.listeners.imagelist.ListenerProvider;
-import be.javasaurusstudios.histosnap.view.MSImagizer;
-import static be.javasaurusstudios.histosnap.view.MSImagizer.MSI_IMAGE;
+import be.javasaurusstudios.histosnap.view.HistoSnap;
+import static be.javasaurusstudios.histosnap.view.HistoSnap.MSI_IMAGE;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
@@ -27,17 +27,17 @@ public class ListSelectionUpdateProvider implements ListenerProvider {
 
         JList imageCacheList = (JList) component;
 
-        MSImagizer main = MSImagizer.instance;
+        HistoSnap main = HistoSnap.instance;
 
         imageCacheList.addListSelectionListener((ListSelectionEvent e) -> {
             if (imageCacheList.getSelectedValuesList().size() == 1) {
-                MSI_IMAGE = MSImagizer.CACHE.getImage((String) imageCacheList.getSelectedValue());
+                MSI_IMAGE = HistoSnap.CACHE.getImage((String) imageCacheList.getSelectedValue());
                 main.updateImage();
             } else {
                 if (imageCacheList.getSelectedValuesList().size() > 1) {
                     List<MSiFrame> frames = new ArrayList<>();
                     for (Object value : imageCacheList.getSelectedValuesList()) {
-                        frames.add(MSImagizer.CACHE.getImage((String) value).getFrame());
+                        frames.add(HistoSnap.CACHE.getImage((String) value).getFrame());
                     }
                     if (!frames.isEmpty()) {
                         MSI_IMAGE = MultiMSiImage.generate(frames);
