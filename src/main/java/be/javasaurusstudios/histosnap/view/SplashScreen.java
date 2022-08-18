@@ -1,5 +1,8 @@
 package be.javasaurusstudios.histosnap.view;
 
+import be.javasaurusstudios.histosnap.control.Installer;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JProgressBar;
@@ -106,15 +109,23 @@ public class SplashScreen extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(SplashScreen.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        try {
+            /*Check previous install*/
+            if (!Installer.getCheckFile().exists()) {
+                Installer.install();
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(SplashScreen.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 int maxSteps = 5;
                 SplashScreen splash = new SplashScreen();
-                
+
                 splash.dispose();
-                splash.setSize(586,640);
+                splash.setSize(586, 640);
                 splash.setLocationRelativeTo(null);
                 splash.setUndecorated(true);
                 splash.setVisible(true);

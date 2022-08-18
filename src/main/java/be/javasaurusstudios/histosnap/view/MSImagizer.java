@@ -1,5 +1,6 @@
 package be.javasaurusstudios.histosnap.view;
 
+import be.javasaurusstudios.histosnap.control.Installer;
 import be.javasaurusstudios.histosnap.control.tasks.WorkingThread;
 import be.javasaurusstudios.histosnap.control.MSiImageCache;
 import be.javasaurusstudios.histosnap.control.tasks.imaging.ImageExtractionTask;
@@ -238,7 +239,7 @@ public class MSImagizer extends javax.swing.JFrame {
             case 3:
                 showExtractBackgroundDialog();
                 break;
-            default :
+            default:
                 break;
         }
     }
@@ -352,6 +353,7 @@ public class MSImagizer extends javax.swing.JFrame {
         btnShowLog = new javax.swing.JCheckBoxMenuItem();
         btnHelp = new javax.swing.JMenu();
         btnAbout = new javax.swing.JMenuItem();
+        btnDependencies = new javax.swing.JMenuItem();
         btnHelpText = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -987,6 +989,14 @@ public class MSImagizer extends javax.swing.JFrame {
         });
         btnHelp.add(btnAbout);
 
+        btnDependencies.setText("Fix Dependencies...");
+        btnDependencies.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDependenciesActionPerformed(evt);
+            }
+        });
+        btnHelp.add(btnDependencies);
+
         btnHelpText.setText("Help");
         btnHelpText.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1602,6 +1612,17 @@ public class MSImagizer extends javax.swing.JFrame {
         updateImage();
     }//GEN-LAST:event_btnInvertedColorScaleActionPerformed
 
+    private void btnDependenciesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDependenciesActionPerformed
+        try {
+            Installer.install();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Could not update dependencies due to an unforeseen error : "+ex.getMessage(),
+                    "Error updating dependencies",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnDependenciesActionPerformed
+
     /**
      * Adds a new image into the cache
      *
@@ -1700,7 +1721,7 @@ public class MSImagizer extends javax.swing.JFrame {
         //THE IMPORT BUTTON
         Action importFile = new AbstractAction("") {
             @Override
-            public void actionPerformed(ActionEvent e) {         
+            public void actionPerformed(ActionEvent e) {
                 load();
             }
         };
@@ -1970,7 +1991,7 @@ public class MSImagizer extends javax.swing.JFrame {
         Action colDecreaseAction = new AbstractAction("") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                  if (columnCount > 1) {
+                if (columnCount > 1) {
                     columnCount--;
                     if (MSI_IMAGE instanceof MultiMSiImage) {
                         MSI_IMAGE = MultiMSiImage.generate(((MultiMSiImage) MSI_IMAGE).getFrames(), columnCount);
@@ -2247,6 +2268,7 @@ public class MSImagizer extends javax.swing.JFrame {
     private javax.swing.JMenuItem btnClearAnnotations;
     private javax.swing.JMenu btnColor;
     private javax.swing.JMenuItem btnColumns;
+    private javax.swing.JMenuItem btnDependencies;
     private javax.swing.JMenuItem btnExit;
     private javax.swing.JMenuItem btnExtractDHBMatrix;
     private javax.swing.JMenuItem btnExtractMz;
