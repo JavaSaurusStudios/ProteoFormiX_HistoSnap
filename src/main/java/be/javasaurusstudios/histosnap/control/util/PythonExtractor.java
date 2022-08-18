@@ -17,20 +17,38 @@ public class PythonExtractor {
      * Extracts a script from the jar resources into the local folder
      *
      * @param scriptName the name of the script that needs to be exported
+     * @param autoDelete indicating the file to be deleted post extraction (one
+     * time use files)
+     * @return the file location of the exported script
+     * @throws Exception
+     */
+    public static File getPythonScript(String scriptName, boolean autoDelete) throws Exception {
+
+        File jarLocation = new File(PythonExtractor.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        File python = new File(jarLocation.getParentFile(), scriptName);
+
+        if (python.exists()) {
+            System.out.println("Python script detected...");
+
+        } else {
+            UILogger.log("Extracting python script to " + python.getAbsolutePath(), UILogger.Level.INFO);
+            python = new File(exportSource("/" + scriptName));
+        }
+        if (autoDelete) {
+            python.deleteOnExit();
+        }
+        return python;
+    }
+
+    /**
+     * Extracts a script from the jar resources into the local folder
+     *
+     * @param scriptName the name of the script that needs to be exported
      * @return the file location of the exported script
      * @throws Exception
      */
     public static File getPythonScript(String scriptName) throws Exception {
-
-        File jarLocation = new File(PythonExtractor.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        File python = new File(jarLocation.getParentFile(), scriptName);
-        if (python.exists()) {
-            System.out.println("Python script detected...");
-            return python;
-        } else {
-            UILogger.log("Extracting python script to " + python.getAbsolutePath(), UILogger.Level.INFO);
-            return new File(exportSource("/" + scriptName));
-        }
+        return getPythonScript(scriptName, false);
     }
 
     /**

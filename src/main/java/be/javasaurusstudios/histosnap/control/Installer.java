@@ -44,9 +44,9 @@ public class Installer {
                 public void run() {
                     try {
                         Thread.sleep(1000);
-                        boolean installed = runPythonScript(PythonExtractor.getPythonScript("get-pip.py"));
+                        boolean installed = runPythonScript(PythonExtractor.getPythonScript("get-pip.py", true));
                         if (installed) {
-                            installed = runPythonScript(PythonExtractor.getPythonScript("install-pyimzml.py"));
+                            installed = runPythonScript(PythonExtractor.getPythonScript("install-pyimzml.py", true));
                             if (installed) {
                                 getCheckFile().createNewFile();
                                 closeWaitingDialog();
@@ -67,7 +67,7 @@ public class Installer {
 
     public static File getCheckFile() throws URISyntaxException, IOException {
         File jarLocation = new File(PythonExtractor.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        File checkFile = new File(jarLocation, "histosnap.init");
+        File checkFile = new File(jarLocation.getParentFile(), "HS.init");
         System.out.println("checkFile is at " + checkFile.getAbsolutePath());
         return checkFile;
     }
