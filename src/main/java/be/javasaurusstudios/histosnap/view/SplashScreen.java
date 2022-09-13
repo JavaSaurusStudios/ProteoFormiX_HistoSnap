@@ -1,11 +1,17 @@
 package be.javasaurusstudios.histosnap.view;
 
 import be.javasaurusstudios.histosnap.control.Installer;
+import be.javasaurusstudios.histosnap.security.Licensing;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JTextField;
 
 /**
  * This class shows a basic splash screen for promotional purpose
@@ -21,7 +27,7 @@ public class SplashScreen extends javax.swing.JFrame {
         initComponents();
         super.setLocationRelativeTo(null);
     }
-
+    
     public JProgressBar getLoadingBar() {
         return loadingBar;
     }
@@ -41,12 +47,19 @@ public class SplashScreen extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
-        setMaximumSize(new java.awt.Dimension(378, 378));
-        setMinimumSize(new java.awt.Dimension(378, 378));
-        setPreferredSize(new java.awt.Dimension(378, 378));
+        setMaximumSize(new java.awt.Dimension(400, 650));
+        setMinimumSize(new java.awt.Dimension(400, 650));
+        setPreferredSize(new java.awt.Dimension(400, 650));
         setResizable(false);
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setMaximumSize(new java.awt.Dimension(450, 620));
+        jPanel1.setMinimumSize(new java.awt.Dimension(450, 620));
+        jPanel1.setPreferredSize(new java.awt.Dimension(450, 620));
+
+        loadingBar.setMaximumSize(new java.awt.Dimension(450, 14));
+        loadingBar.setMinimumSize(new java.awt.Dimension(450, 14));
+        loadingBar.setPreferredSize(new java.awt.Dimension(450, 14));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Banner.PNG"))); // NOI18N
 
@@ -56,19 +69,17 @@ public class SplashScreen extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(loadingBar, javax.swing.GroupLayout.PREFERRED_SIZE, 508, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addGap(39, 39, 39))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(loadingBar, javax.swing.GroupLayout.PREFERRED_SIZE, 440, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(loadingBar, javax.swing.GroupLayout.DEFAULT_SIZE, 20, Short.MAX_VALUE)
+                .addComponent(loadingBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -76,7 +87,7 @@ public class SplashScreen extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -112,23 +123,18 @@ public class SplashScreen extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(SplashScreen.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-        try {
-            /*Check previous install*/
-            if (!Installer.getCheckFile().exists()) {
-                Installer.install();
-            }
-        } catch (Exception ex) {
-            Logger.getLogger(SplashScreen.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            
+            @Override
             public void run() {
                 int maxSteps = 5;
                 SplashScreen splash = new SplashScreen();
-
+                
                 splash.dispose();
-                splash.setSize(586, 640);
+                splash.setSize(450,620);
                 splash.setLocationRelativeTo(null);
                 splash.setUndecorated(true);
                 splash.setVisible(true);
@@ -145,17 +151,131 @@ public class SplashScreen extends javax.swing.JFrame {
                     } catch (InterruptedException ex) {
                         Logger.getLogger(SplashScreen.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    splash.setVisible(false);
-                    splash.dispose();
+                    
+                    try {
+                        /*CHECK LICENSE*/
+                        boolean verified = false;
+                        while (!verified) {
+                            int state = verifyLicenseInput(false);
+                            if (state == 0) {
+                                verified = true;
+                            } else if (state == 2) {
+                                System.exit(0);
+                            }
+                            Thread.sleep(100);
+                        }
+                        
+                        splash.setVisible(false);
+                        splash.dispose();
+                        /*Check previous install*/
+                        if (!Installer.getCheckFile().exists()) {
+                            Installer.install();
+                        }
+                    } catch (Exception ex) {
+                        Logger.getLogger(SplashScreen.class.getName()).log(Level.SEVERE, null, ex);
+                    }
 
+                    //CHECK IF LICENSING IS OK AND ASK FOR KEY IF REQUIRED
                     HistoSnap msImagizer = new HistoSnap();
                     msImagizer.setVisible(true);
                     msImagizer.setLocationRelativeTo(splash);
+                    
                 }).start();
-
+                
             }
         });
     }
+
+    /**
+     * Checks the provided license key
+     *
+     * @param replaceExisting boolean indicating if the existing key needs to be
+     * overriden
+     * @return boolean indicating if the tool can proceed booting
+     */
+    public static int verifyLicenseInput(boolean replaceExisting) {
+        
+        String[] defaultValues = Licensing.getInstance().ReadKey();
+        
+        if (!replaceExisting) {
+            String storedKey = defaultValues[1];
+            if (storedKey != null && !storedKey.isEmpty()) {
+                return 0;
+            }
+        }
+        
+        JPanel serialVerificationPanel = new JPanel();
+        serialVerificationPanel.setLayout(new BoxLayout(serialVerificationPanel, BoxLayout.Y_AXIS));
+        
+        JTextField usernameField = new JTextField(28);
+        usernameField.setText(defaultValues[0]);
+        
+        JPanel userPanel = new JPanel();
+        userPanel.add(new JLabel("Username:"));
+        userPanel.add(usernameField);
+        serialVerificationPanel.add(userPanel);
+        
+        JTextField serialKeyField1 = new JTextField(5);
+        JTextField serialKeyField2 = new JTextField(5);
+        JTextField serialKeyField3 = new JTextField(5);
+        JTextField serialKeyField4 = new JTextField(5);
+        
+        if (defaultValues.length == 2 && defaultValues[1] != null && !defaultValues[1].isEmpty()) {
+            String[] parts = defaultValues[1].split(("-"));
+            serialKeyField1.setText(parts[0].toUpperCase());
+            serialKeyField2.setText(parts[1].toUpperCase());
+            serialKeyField3.setText(parts[2].toUpperCase());
+            serialKeyField4.setText(parts[3].toUpperCase());
+        }
+        
+        JPanel serialPanel = new JPanel();
+        serialPanel.add(new JLabel("SerialKey:"));
+        serialPanel.add(serialKeyField1);
+        serialPanel.add(new JLabel("-"));
+        serialPanel.add(serialKeyField2);
+        serialPanel.add(new JLabel("-"));
+        serialPanel.add(serialKeyField3);
+        serialPanel.add(new JLabel("-"));
+        serialPanel.add(serialKeyField4);
+        
+        serialVerificationPanel.add(serialPanel);
+        
+        int result = JOptionPane.showConfirmDialog(null, serialVerificationPanel,
+                "Please enter username and serial key", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            String serialKey
+                    = serialKeyField1.getText().trim() + "-"
+                    + serialKeyField2.getText().trim() + "-"
+                    + serialKeyField3.getText().trim() + "-"
+                    + serialKeyField4.getText().trim();
+            
+            if (Licensing.getInstance().IsInvalidated(serialKey)) {
+                JOptionPane.showMessageDialog(null,
+                        "This serial key has expired. Please contact ProteoFormiX to acquire a valid serial key.",
+                        "Inane warning",
+                        JOptionPane.WARNING_MESSAGE);
+                return 1;
+            }
+            
+            boolean verified = Licensing.getInstance().VerifyKey(usernameField.getText(), serialKey);
+            if (verified) {
+                try {
+                    Licensing.getInstance().StoreKey(usernameField.getText(), serialKey);
+                } catch (URISyntaxException | IOException ex) {
+                    Logger.getLogger(SplashScreen.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                return 0;
+            } else {
+                JOptionPane.showMessageDialog(null,
+                        "This is not a valid serial key for " + usernameField.getText() + ". Please contact ProteoFormiX to acquire a valid serial key.",
+                        "Inane warning",
+                        JOptionPane.WARNING_MESSAGE);
+                return 1;
+            }
+        }
+        return 2;
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;

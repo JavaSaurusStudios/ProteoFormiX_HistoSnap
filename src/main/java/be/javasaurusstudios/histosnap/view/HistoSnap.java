@@ -14,6 +14,7 @@ import be.javasaurusstudios.histosnap.control.util.UILogger;
 import be.javasaurusstudios.histosnap.model.image.MultiMSiImage;
 import be.javasaurusstudios.histosnap.model.image.annotation.AnnotationShapeType;
 import be.javasaurusstudios.histosnap.model.task.WorkingTask;
+import be.javasaurusstudios.histosnap.security.Licensing;
 import be.javasaurusstudios.histosnap.view.component.ImageLabel;
 import be.javasaurusstudios.histosnap.view.component.ProgressBar;
 import be.javasaurusstudios.histosnap.view.handlers.DHBBackgroundExtractionHandler;
@@ -354,6 +355,7 @@ public class HistoSnap extends javax.swing.JFrame {
         btnHelp = new javax.swing.JMenu();
         btnAbout = new javax.swing.JMenuItem();
         btnDependencies = new javax.swing.JMenuItem();
+        btnLicense = new javax.swing.JMenuItem();
         btnHelpText = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -997,6 +999,14 @@ public class HistoSnap extends javax.swing.JFrame {
         });
         btnHelp.add(btnDependencies);
 
+        btnLicense.setText("License...");
+        btnLicense.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLicenseActionPerformed(evt);
+            }
+        });
+        btnHelp.add(btnLicense);
+
         btnHelpText.setText("Help");
         btnHelpText.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1617,11 +1627,58 @@ public class HistoSnap extends javax.swing.JFrame {
             Installer.install();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,
-                    "Could not update dependencies due to an unforeseen error : "+ex.getMessage(),
+                    "Could not update dependencies due to an unforeseen error : " + ex.getMessage(),
                     "Error updating dependencies",
                     JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnDependenciesActionPerformed
+
+    private void btnLicenseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLicenseActionPerformed
+
+        String[] values = Licensing.getInstance().ReadKey();
+
+        if (values[0].isEmpty() || values[1].isEmpty()) {
+            try {
+                updateLicense();
+            } catch (URISyntaxException | IOException ex) {
+                Logger.getLogger(HistoSnap.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            int a = JOptionPane.showConfirmDialog(this,
+                    "This HistoSnap license was provided to \n"
+                    + "User : " + values[0] + "\n"
+                    + "Serial : " + values[1].toUpperCase() + "\n"
+                    + "Would you like to reset the license?",
+                    "License Information", JOptionPane.YES_NO_OPTION);
+            System.out.println(a);
+            if (a == 0) {
+                try {
+                    updateLicense();
+                } catch (URISyntaxException | IOException ex) {
+                    Logger.getLogger(HistoSnap.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+
+    }//GEN-LAST:event_btnLicenseActionPerformed
+
+    private void updateLicense() throws URISyntaxException, IOException {
+        boolean verified = false;
+
+        while (!verified) {
+            int state = SplashScreen.verifyLicenseInput(true);
+            if (state == 0) {
+                verified = true;
+            } else if (state == 2) {
+                return;
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(HistoSnap.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
 
     /**
      * Adds a new image into the cache
@@ -2283,6 +2340,7 @@ public class HistoSnap extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem btnHighMemory;
     private javax.swing.JMenu btnIntensityMode;
     private javax.swing.JRadioButtonMenuItem btnInvertedColorScale;
+    private javax.swing.JMenuItem btnLicense;
     private javax.swing.JMenuItem btnLoad;
     private javax.swing.JMenuItem btnLoadSession;
     private javax.swing.JCheckBoxMenuItem btnLowMemory;
